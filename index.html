@@ -9,7 +9,7 @@
 <meta property="og:title" content="Bulkup Log">
 <meta property="og:description" content="상체 벌크업 5분할 루틴 기록장">
 <meta property="og:image" content="https://d2ol7oe51mr4n9.cloudfront.net/user_39Bv7Twf1ididBYxsmBgq7k5JAA/d42221b3-8043-477c-a727-9200cc626abb.png">
-<meta name="theme-color" content="#09090b">
+<meta name="theme-color" content="#090a0c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,229 +18,275 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <style>
-  /* ---- shadcn/ui tokens (zinc) ---- */
+  /* ---- tokens: 다크 기본 (버핏그라운드 톤) ---- */
   :root{
-    --background:240 10% 3.9%;--foreground:0 0% 98%;
-    --card:240 10% 3.9%;--card-foreground:0 0% 98%;
-    --primary:0 0% 98%;--primary-foreground:240 5.9% 10%;
-    --secondary:240 3.7% 15.9%;--secondary-foreground:0 0% 98%;
-    --muted:240 3.7% 15.9%;--muted-foreground:240 5% 64.9%;
-    --accent:240 3.7% 15.9%;--accent-foreground:0 0% 98%;
-    --destructive:0 62.8% 50%;--destructive-foreground:0 0% 98%;
-    --border:240 3.7% 15.9%;--input:240 3.7% 15.9%;--ring:240 4.9% 83.9%;
-    --success:142 71% 45%;--warning:38 92% 50%;--info:217 91% 60%;
-    --radius:.5rem;
+    --background:228 14% 4%;--foreground:0 0% 98%;
+    --card:228 12% 9%;--card-foreground:0 0% 98%;
+    --elev:228 11% 14%;--elev2:228 10% 19%;
+    --primary:142 90% 45%;--primary-foreground:150 70% 6%;
+    --secondary:228 11% 14%;--secondary-foreground:0 0% 96%;
+    --muted:228 11% 14%;--muted-foreground:228 9% 62%;
+    --accent:228 10% 19%;--accent-foreground:0 0% 98%;
+    --destructive:0 84% 63%;--destructive-foreground:0 0% 98%;
+    --border:228 10% 17%;--input:228 10% 24%;--ring:142 90% 45%;
+    --success:142 90% 45%;--warning:38 95% 56%;--info:213 94% 66%;
+    --radius:14px;
   }
   html[data-theme=light]{
-    --background:0 0% 100%;--foreground:240 10% 3.9%;
-    --card:0 0% 100%;--card-foreground:240 10% 3.9%;
-    --primary:240 5.9% 10%;--primary-foreground:0 0% 98%;
-    --secondary:240 4.8% 95.9%;--secondary-foreground:240 5.9% 10%;
-    --muted:240 4.8% 95.9%;--muted-foreground:240 3.8% 46.1%;
-    --accent:240 4.8% 95.9%;--accent-foreground:240 5.9% 10%;
-    --destructive:0 84.2% 60.2%;
-    --border:240 5.9% 90%;--input:240 5.9% 90%;--ring:240 5.9% 10%;
-    --success:142 76% 36%;--warning:32 95% 44%;--info:221 83% 53%;
+    --background:228 20% 97%;--foreground:228 25% 8%;
+    --card:0 0% 100%;--card-foreground:228 25% 8%;
+    --elev:228 20% 95%;--elev2:228 16% 90%;
+    --primary:142 72% 36%;--primary-foreground:0 0% 100%;
+    --secondary:228 20% 95%;--secondary-foreground:228 25% 12%;
+    --muted:228 20% 95%;--muted-foreground:228 8% 44%;
+    --accent:228 16% 91%;--accent-foreground:228 25% 8%;
+    --destructive:0 72% 50%;
+    --border:228 14% 89%;--input:228 12% 82%;--ring:142 72% 36%;
+    --success:142 72% 34%;--warning:32 95% 42%;--info:221 83% 50%;
   }
-  *{box-sizing:border-box;border-color:hsl(var(--border))}
+  *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
-  body{margin:0;background:hsl(var(--background));color:hsl(var(--foreground));font-family:"Pretendard Variable",Pretendard,Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum"}
-  a{color:hsl(var(--foreground));text-underline-offset:3px}
+  body{margin:0;background:hsl(var(--background));color:hsl(var(--foreground));font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+  button{font:inherit;color:inherit}
+  a{color:inherit}
   ::selection{background:hsl(var(--primary));color:hsl(var(--primary-foreground))}
+  .muted{color:hsl(var(--muted-foreground));font-size:13px}
+  ul{padding-left:18px;margin:6px 0}li{margin:5px 0;font-size:14px}
 
-  /* header */
-  header{position:sticky;top:0;z-index:10;background:hsl(var(--background)/.92);backdrop-filter:blur(10px);border-bottom:1px solid hsl(var(--border))}
-  .hwrap{max-width:760px;margin:0 auto;padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-  header h1{margin:0;font-size:16px;font-weight:600;letter-spacing:-.01em;line-height:1.2}
-  header .meta{font-size:12px;color:hsl(var(--muted-foreground));margin-top:2px}
-  .hright{display:flex;align-items:center;gap:8px}
+  /* ---- header ---- */
+  header{position:sticky;top:0;z-index:20;background:hsl(var(--background)/.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .hwrap{max-width:720px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:36px;height:36px;border-radius:11px;background:hsl(var(--primary));color:hsl(var(--primary-foreground));display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .logo svg{width:24px;height:24px}
+  header h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+  header .meta{font-size:12px;color:hsl(var(--muted-foreground));white-space:nowrap}
+  #weekBadge{color:hsl(var(--primary));font-weight:700}
+  #weekBadge.deload{color:hsl(var(--warning))}
+  .hright{display:flex;align-items:center;gap:6px;flex:0 0 auto}
 
-  /* tabs (shadcn TabsList / TabsTrigger) */
-  .tabs-wrap{max-width:760px;margin:0 auto;padding:12px 16px 0}
-  .tabs{display:inline-flex;max-width:100%;height:40px;align-items:center;gap:2px;border-radius:calc(var(--radius) + 2px);background:hsl(var(--muted));padding:4px;overflow-x:auto;scrollbar-width:none}
+  /* ---- tabs ---- */
+  .tabs-wrap{max-width:720px;margin:0 auto;padding:4px 0 0}
+  .tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 16px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .tabs::-webkit-scrollbar{display:none}
-  .tab{flex:0 0 auto;height:32px;display:inline-flex;align-items:center;padding:0 12px;border-radius:calc(var(--radius) - 2px);font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer;white-space:nowrap;transition:all .15s;user-select:none}
-  .tab.active{background:hsl(var(--background));color:hsl(var(--foreground));box-shadow:0 1px 2px rgba(0,0,0,.25)}
-  html[data-theme=light] .tab.active{box-shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06)}
+  .tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:9999px;border:0;background:hsl(var(--card));color:hsl(var(--muted-foreground));font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s;-webkit-tap-highlight-color:transparent}
+  .tab i{width:8px;height:8px;border-radius:50%;background:hsl(var(--c))}
+  .tab.active{background:hsl(var(--c));color:#fff}
+  .tab.active i{background:#fff}
+  .tab.plain.active{background:hsl(var(--foreground));color:hsl(var(--background))}
+  .tab em{font-style:normal;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:9999px;background:hsl(var(--primary));color:hsl(var(--primary-foreground))}
+  .tsep{flex:0 0 1px;margin:8px 2px;background:hsl(var(--border))}
 
-  main{padding:12px 16px 96px;max-width:760px;margin:0 auto}
+  main{padding:8px 16px 110px;max-width:720px;margin:0 auto}
 
-  /* card */
-  .card{background:hsl(var(--card));color:hsl(var(--card-foreground));border:1px solid hsl(var(--border));border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-  .card h3{margin:0 0 4px;font-size:15px;font-weight:600;letter-spacing:-.01em;display:flex;justify-content:space-between;align-items:center;gap:8px}
-  .card h3 .idx{color:hsl(var(--muted-foreground));font-weight:400;font-size:12px}
-  .card.current{border-color:hsl(var(--ring));box-shadow:0 0 0 1px hsl(var(--ring)),0 1px 2px rgba(0,0,0,.05)}
-  .cur-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:hsl(var(--success))}
-  .cur-badge:before{content:"";width:6px;height:6px;border-radius:50%;background:hsl(var(--success));box-shadow:0 0 0 3px hsl(var(--success)/.25)}
+  /* ---- day head ---- */
+  .dayhead{position:relative;overflow:hidden;background:hsl(var(--card));border-radius:20px;padding:18px 18px 16px;margin:4px 0 14px}
+  .dayhead:before{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 100% 0%,hsl(var(--c)/.28),transparent 60%);pointer-events:none}
+  .dayhead>*{position:relative}
+  .dh-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .kicker{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.04em;color:hsl(var(--c))}
+  .kicker i{width:8px;height:8px;border-radius:50%;background:hsl(var(--c))}
+  .datebtn{position:relative;display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 10px 0 12px;border-radius:9999px;background:hsl(var(--elev));font-size:13px;font-weight:600;cursor:pointer}
+  .datebtn svg{width:14px;height:14px;opacity:.7}
+  .datebtn input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;color-scheme:dark}
+  .dayhead h2{margin:10px 0 2px;font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
+  .dh-meta{font-size:13px;color:hsl(var(--muted-foreground))}
+  .dh-prog{margin-top:16px}
+  .dh-nums{display:flex;align-items:baseline;gap:6px}
+  .dh-nums b{font-size:30px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+  .dh-nums span{font-size:13px;color:hsl(var(--muted-foreground))}
+  .dh-nums em{margin-left:auto;font-style:normal;font-size:14px;font-weight:800;color:hsl(var(--c));font-variant-numeric:tabular-nums}
+  .prog{height:8px;background:hsl(var(--elev2));border-radius:9999px;overflow:hidden;margin-top:10px}
+  .prog div{height:100%;background:hsl(var(--c,var(--primary)));border-radius:9999px;transition:width .3s}
 
-  .target{font-size:12px;color:hsl(var(--muted-foreground));display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 10px}
-  .target b{color:hsl(var(--foreground));font-weight:600}
+  /* ---- card ---- */
+  .card{background:hsl(var(--card));color:hsl(var(--card-foreground));border:1.5px solid transparent;border-radius:18px;padding:16px;margin-bottom:12px}
+  html[data-theme=light] .card,html[data-theme=light] .dayhead{box-shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06)}
+  .card h3{margin:0 0 4px;font-size:16px;font-weight:700;letter-spacing:-.02em;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .card h3 .idx{color:hsl(var(--muted-foreground));font-weight:600;font-size:12px;font-variant-numeric:tabular-nums}
+  .card.current{border-color:hsl(var(--c,var(--primary)))}
+  .exn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;background:hsl(var(--elev));font-size:12px;font-weight:800;margin-right:8px;vertical-align:1px;font-variant-numeric:tabular-nums}
+  .card.current .exn{background:hsl(var(--c,var(--primary)));color:#fff}
+  .cur-badge{display:inline-flex;align-items:center;gap:5px;margin-left:6px;font-size:11px;font-weight:700;color:hsl(var(--primary));vertical-align:2px}
+  .cur-badge:before{content:"";width:6px;height:6px;border-radius:50%;background:hsl(var(--primary));box-shadow:0 0 0 3px hsl(var(--primary)/.25)}
 
-  /* alert / note */
-  .note{position:relative;font-size:13px;color:hsl(var(--foreground));background:hsl(var(--muted)/.5);border:1px solid hsl(var(--border));border-radius:calc(var(--radius) - 2px);padding:8px 10px 8px 30px;margin:8px 0}
-  .note:before{content:"";position:absolute;left:10px;top:10px;width:12px;height:12px;border-radius:50%;border:1.5px solid hsl(var(--muted-foreground))}
-  .note:after{content:"i";position:absolute;left:10px;top:9px;width:12px;text-align:center;font-size:9px;font-weight:700;color:hsl(var(--muted-foreground))}
+  .target{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 10px}
+  .target span{display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 4px;border-radius:12px;background:hsl(var(--elev));font-size:11px;color:hsl(var(--muted-foreground))}
+  .target b{font-size:15px;font-weight:800;color:hsl(var(--foreground));font-variant-numeric:tabular-nums;order:-1}
 
-  .last{font-size:12px;color:hsl(var(--muted-foreground));margin:8px 0}
-  .last b{color:hsl(var(--foreground));font-weight:500}
-  .last .hint{color:hsl(var(--success));font-weight:600}
-  .last .hint.warn{color:hsl(var(--warning))}
-  .last .hint.keep{color:hsl(var(--muted-foreground));font-weight:500}
+  .note{display:flex;gap:8px;font-size:13.5px;line-height:1.55;color:hsl(var(--foreground)/.9);background:hsl(var(--elev));border-radius:12px;padding:10px 12px;margin:8px 0}
+  .note:before{content:"TIP";flex:0 0 auto;height:18px;padding:0 6px;border-radius:6px;background:hsl(var(--c,var(--primary))/.18);color:hsl(var(--c,var(--primary)));font-size:10px;font-weight:800;line-height:18px;margin-top:1px}
 
-  /* table */
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th{height:32px;padding:0 4px;text-align:center;color:hsl(var(--muted-foreground));font-weight:500;font-size:11px;letter-spacing:.02em;border-bottom:1px solid hsl(var(--border))}
-  td{padding:6px 4px;text-align:center;border-bottom:1px solid hsl(var(--border))}
-  tr:last-child td{border-bottom:none}
-  td:first-child{color:hsl(var(--muted-foreground));font-size:12px;width:36px}
-  .row-done td{opacity:.5}
+  .last{font-size:12.5px;color:hsl(var(--muted-foreground));margin:10px 0 8px;line-height:1.6}
+  .last b{color:hsl(var(--foreground));font-weight:600}
+  .last .hint{display:inline-block;margin-top:2px;padding:2px 8px;border-radius:9999px;font-size:12px;font-weight:700;color:hsl(var(--primary));background:hsl(var(--primary)/.14)}
+  .last .hint.warn{color:hsl(var(--warning));background:hsl(var(--warning)/.14)}
+  .last .hint.keep{color:hsl(var(--muted-foreground));background:hsl(var(--elev))}
 
-  /* input */
-  input[type=number]{width:100%;max-width:84px;height:36px;padding:0 8px;border-radius:calc(var(--radius) - 2px);border:1px solid hsl(var(--input));background:transparent;color:hsl(var(--foreground));font:inherit;font-size:14px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.05);transition:box-shadow .15s,border-color .15s;-moz-appearance:textfield}
+  /* ---- set table ---- */
+  table{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:14px}
+  th{padding:0 4px;text-align:center;color:hsl(var(--muted-foreground));font-weight:600;font-size:11px}
+  td{padding:0 3px;text-align:center}
+  td:first-child{width:40px}
+  .sn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:hsl(var(--elev));font-size:13px;font-weight:800;color:hsl(var(--muted-foreground));font-variant-numeric:tabular-nums}
+  .row-done .sn{background:hsl(var(--primary));color:hsl(var(--primary-foreground))}
+  .row-done input[type=number]{color:hsl(var(--primary));background:hsl(var(--primary)/.1)}
+  input[type=number].carry{color:hsl(var(--foreground)/.55)}
+  .row-done input[type=number].carry{color:hsl(var(--primary))}
+  input[type=number]{width:100%;height:46px;padding:0 6px;border-radius:12px;border:1.5px solid transparent;background:hsl(var(--elev));color:hsl(var(--foreground));font:inherit;font-size:17px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield;transition:border-color .15s,background .15s}
   input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-  input[type=number]:focus{outline:none;border-color:hsl(var(--ring));box-shadow:0 0 0 1px hsl(var(--ring))}
-  input[type=number]::placeholder{color:hsl(var(--muted-foreground)/.55)}
-  input[type=date].date-in{height:32px;padding:0 10px;border-radius:calc(var(--radius) - 2px);border:1px solid hsl(var(--input));background:transparent;color:hsl(var(--foreground));font:inherit;font-size:13px;color-scheme:dark}
-  html[data-theme=light] input[type=date].date-in{color-scheme:light}
-  textarea{width:100%;min-height:60px;background:transparent;color:hsl(var(--foreground));border:1px solid hsl(var(--input));border-radius:calc(var(--radius) - 2px);padding:8px 10px;font:inherit;font-size:13px;resize:vertical;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-  textarea:focus{outline:none;border-color:hsl(var(--ring));box-shadow:0 0 0 1px hsl(var(--ring))}
-
-  /* checkbox */
-  .chk{appearance:none;-webkit-appearance:none;width:20px;height:20px;margin:0;border:1px solid hsl(var(--primary));border-radius:4px;background:transparent;cursor:pointer;position:relative;vertical-align:middle;transition:background .12s}
+  input[type=number]:focus{outline:none;border-color:hsl(var(--primary));background:hsl(var(--elev2))}
+  input[type=number]::placeholder{color:hsl(var(--muted-foreground)/.5);font-weight:600}
+  .chk{appearance:none;-webkit-appearance:none;width:34px;height:34px;margin:0;border:2px solid hsl(var(--input));border-radius:50%;background:transparent;cursor:pointer;position:relative;vertical-align:middle;transition:background .12s,border-color .12s;-webkit-tap-highlight-color:transparent}
   .chk:checked{background:hsl(var(--primary));border-color:hsl(var(--primary))}
-  .chk:checked:after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid hsl(var(--primary-foreground));border-width:0 2px 2px 0;transform:rotate(45deg)}
-  .chk:focus-visible{outline:none;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring))}
+  .chk:checked:after{content:"";position:absolute;left:10px;top:5px;width:7px;height:13px;border:solid hsl(var(--primary-foreground));border-width:0 3px 3px 0;transform:rotate(45deg)}
+  .chk:active{transform:scale(.92)}
+  textarea{width:100%;min-height:64px;background:hsl(var(--elev));color:hsl(var(--foreground));border:1.5px solid transparent;border-radius:12px;padding:10px 12px;font:inherit;font-size:14px;resize:vertical}
+  textarea:focus{outline:none;border-color:hsl(var(--primary))}
 
-  /* buttons */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 16px;border-radius:calc(var(--radius) - 2px);border:1px solid hsl(var(--input));background:hsl(var(--background));color:hsl(var(--foreground));font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.05);transition:background .15s,color .15s,opacity .15s}
-  .btn:hover{background:hsl(var(--accent));color:hsl(var(--accent-foreground))}
-  .btn:focus-visible{outline:none;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring))}
-  .btn.primary,.btn.ok{background:hsl(var(--primary));color:hsl(var(--primary-foreground));border-color:hsl(var(--primary))}
-  .btn.primary:hover,.btn.ok:hover{opacity:.9;background:hsl(var(--primary));color:hsl(var(--primary-foreground))}
-  .btn.ghost{border-color:transparent;background:transparent;box-shadow:none}
-  .btn.danger{border-color:transparent;background:transparent;box-shadow:none;color:hsl(var(--destructive))}
-  .btn.danger:hover{background:hsl(var(--destructive)/.1);color:hsl(var(--destructive))}
-  .btn.small{height:32px;padding:0 12px;font-size:12px}
-  .btn.icon{width:36px;padding:0}
-  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  /* ---- buttons ---- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:12px;border:0;background:hsl(var(--elev));color:hsl(var(--foreground));font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;text-decoration:none;transition:background .15s,opacity .15s,transform .1s;-webkit-tap-highlight-color:transparent}
+  .btn:hover{background:hsl(var(--elev2))}
+  .btn:active{transform:scale(.97)}
+  .btn:focus-visible{outline:2px solid hsl(var(--ring));outline-offset:2px}
+  .btn.primary,.btn.ok{background:hsl(var(--primary));color:hsl(var(--primary-foreground))}
+  .btn.primary:hover,.btn.ok:hover{background:hsl(var(--primary));opacity:.92}
+  .btn.ghost{background:transparent}
+  .btn.ghost:hover{background:hsl(var(--elev))}
+  .btn.danger{background:transparent;color:hsl(var(--destructive))}
+  .btn.danger:hover{background:hsl(var(--destructive)/.1)}
+  .btn.small{height:34px;padding:0 12px;font-size:13px;border-radius:10px}
+  .btn.icon{width:40px;padding:0}
+  .btn.big{height:54px;font-size:16px;border-radius:16px;width:100%}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .finish{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:16px}
+  .tt{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:0;background:hsl(var(--elev));color:hsl(var(--foreground));cursor:pointer}
+  .tt:hover{background:hsl(var(--elev2))}
+  .tt svg{width:16px;height:16px}
+  #viewBtn svg{width:15px;height:15px}
+  .sun{display:none}.moon{display:block}
+  html[data-theme=light] .sun{display:block}html[data-theme=light] .moon{display:none}
 
-  /* badge */
-  .badge{display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:9999px;border:1px solid hsl(var(--border));font-size:11px;font-weight:600;color:hsl(var(--foreground));background:transparent;white-space:nowrap}
-  .badge.deload{border-color:hsl(var(--warning)/.5);color:hsl(var(--warning));background:hsl(var(--warning)/.1)}
-  .badge.today{border-color:hsl(var(--success)/.5);color:hsl(var(--success));background:hsl(var(--success)/.1)}
-  .badge.sec{background:hsl(var(--secondary));border-color:transparent;color:hsl(var(--secondary-foreground));font-weight:500}
+  /* ---- badge ---- */
+  .badge{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:9999px;font-size:12px;font-weight:700;background:hsl(var(--elev));color:hsl(var(--foreground));white-space:nowrap}
+  .badge.deload{background:hsl(var(--warning)/.15);color:hsl(var(--warning))}
+  .badge.today{background:hsl(var(--primary)/.15);color:hsl(var(--primary))}
+  .badge.sec{background:hsl(var(--card));color:hsl(var(--muted-foreground))}
+  .badge.sec b{color:hsl(var(--foreground));margin-left:4px}
 
-  /* progress */
-  .prog{height:8px;background:hsl(var(--primary)/.15);border-radius:9999px;overflow:hidden;margin-top:8px}
-  .prog div{height:100%;background:hsl(var(--primary));border-radius:9999px;transition:width .25s}
+  /* ---- videos ---- */
+  .videos{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .videos a{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px 0 10px;border-radius:9999px;background:hsl(var(--elev));color:hsl(var(--foreground));font-size:12.5px;font-weight:600;text-decoration:none;transition:background .15s}
+  .videos a:hover{background:hsl(var(--elev2))}
+  .videos a:before{content:"";width:16px;height:12px;border-radius:3px;flex:0 0 auto;background:#ff0033 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 12'%3E%3Cpath d='M6.5 3.5v5l4-2.5z' fill='white'/%3E%3C/svg%3E") center/100% no-repeat}
 
-  /* video links */
-  .videos{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-  .videos a{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:9999px;border:1px solid hsl(var(--border));background:transparent;color:hsl(var(--foreground));font-size:12px;font-weight:500;text-decoration:none;transition:background .15s}
-  .videos a:hover{background:hsl(var(--accent))}
-  .videos a:before{content:"";width:0;height:0;border-left:7px solid hsl(var(--muted-foreground));border-top:4.5px solid transparent;border-bottom:4.5px solid transparent}
-
-  /* details / form */
-  details{margin:4px 0}
-  summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 8px 0 4px;border-radius:calc(var(--radius) - 2px);font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));user-select:none;transition:background .15s,color .15s}
+  /* ---- details / form ---- */
+  details{margin:6px 0 0}
+  summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px 0 8px;border-radius:10px;font-size:13.5px;font-weight:700;color:hsl(var(--muted-foreground));user-select:none;-webkit-tap-highlight-color:transparent}
   summary::-webkit-details-marker{display:none}
-  summary:hover{background:hsl(var(--accent));color:hsl(var(--accent-foreground))}
-  summary:before{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);margin:0 4px 0 6px;transition:transform .15s}
-  details[open]>summary:before{transform:rotate(45deg);margin-top:-3px}
-  .fbox{border:1px solid hsl(var(--border));border-radius:calc(var(--radius) - 2px);padding:4px 12px;margin:6px 0 10px;background:hsl(var(--muted)/.3)}
-  .frow{display:grid;grid-template-columns:56px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid hsl(var(--border));font-size:13px;line-height:1.6}
+  summary:hover{background:hsl(var(--elev))}
+  summary:before{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);margin:0 4px;transition:transform .15s}
+  details[open]>summary{color:hsl(var(--foreground))}
+  details[open]>summary:before{transform:rotate(45deg);margin-top:-4px}
+  .fbox{border-radius:14px;padding:4px 14px;margin:6px 0 4px;background:hsl(var(--elev))}
+  .frow{display:grid;grid-template-columns:48px 1fr;gap:10px;padding:11px 0;border-bottom:1px solid hsl(var(--border));font-size:14px;line-height:1.65;color:hsl(var(--foreground)/.92)}
   .frow:last-child{border-bottom:none}
-  .frow b{color:hsl(var(--muted-foreground));font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding-top:3px}
+  .frow b{font-size:11.5px;font-weight:800;padding-top:3px;color:hsl(var(--info))}
   .frow.bad b{color:hsl(var(--destructive))}
   .frow.hcs b{color:hsl(var(--warning))}
 
-  /* misc */
+  /* ---- misc lists ---- */
   .day-title{display:flex;justify-content:space-between;align-items:center;margin:8px 0 12px;gap:8px}
-  .day-title h2{margin:0;font-size:20px;font-weight:600;letter-spacing:-.02em}
-  .kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid hsl(var(--border));font-size:13px}
+  .day-title h2{margin:0;font-size:24px;font-weight:800;letter-spacing:-.03em}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid hsl(var(--border));font-size:14px}
   .kv:last-child{border-bottom:none}
   .kv span:last-child{color:hsl(var(--muted-foreground));text-align:right}
-  .hist{padding:6px 0;border-bottom:1px solid hsl(var(--border));font-size:13px}
+  .hist{padding:8px 0;border-bottom:1px solid hsl(var(--border));font-size:14px}
   .hist:last-child{border-bottom:none}
-  .hist .d{color:hsl(var(--foreground));font-weight:600}
-  .hist .v{color:hsl(var(--muted-foreground));font-size:12px;margin-left:6px}
-  .hist .ex{margin:2px 0 2px 12px;color:hsl(var(--foreground)/.85);font-size:12.5px}
-  .muted{color:hsl(var(--muted-foreground));font-size:12.5px}
-  ul{padding-left:18px;margin:6px 0}li{margin:4px 0;font-size:13.5px}
-  .research td{text-align:left;font-size:12.5px;vertical-align:top;padding:8px 6px}
-  .research th{text-align:left;padding:0 6px}
-  .research a{color:hsl(var(--info));text-decoration:none}
-  .research a:hover{text-decoration:underline}
+  .hist .d{font-weight:700}
+  .hist .v{color:hsl(var(--muted-foreground));font-size:12.5px;margin-left:6px}
+  .hist .ex{margin:3px 0 3px 12px;color:hsl(var(--foreground)/.85);font-size:13px}
   .stat{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+  .research td{text-align:left;font-size:13px;vertical-align:top;padding:10px 6px;border-bottom:1px solid hsl(var(--border))}
+  .research th{text-align:left;padding:0 6px 6px}
+  .research{border-spacing:0}
+  .research a{color:hsl(var(--info));text-decoration:none}
 
-  /* timer (bottom bar) */
-  .timer{position:fixed;bottom:0;left:0;right:0;background:hsl(var(--background)/.92);border-top:1px solid hsl(var(--border));backdrop-filter:blur(10px);z-index:10}
-  .timer .in{max-width:760px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:6px}
-  .timer .t{font-size:24px;font-weight:600;letter-spacing:-.02em;min-width:74px;font-variant-numeric:tabular-nums}
-  .timer .t.done{color:hsl(var(--success))}
-  .timer .btn{height:32px;padding:0 10px;font-size:12px}
+  /* ---- timer ---- */
+  .timer{position:fixed;bottom:0;left:0;right:0;z-index:20;background:hsl(var(--card)/.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid hsl(var(--border));padding-bottom:env(safe-area-inset-bottom)}
+  .timer .in{max-width:720px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:6px}
+  .timer .t{font-size:30px;font-weight:800;letter-spacing:-.03em;min-width:84px;font-variant-numeric:tabular-nums;color:hsl(var(--muted-foreground))}
+  .timer.running .t{color:hsl(var(--foreground))}
+  .timer .t.done{color:hsl(var(--primary))}
+  .timer .btn{height:38px;padding:0 11px;font-size:13px;border-radius:10px}
   .timer .sp{flex:1}
+  .timer.running{border-top-color:hsl(var(--primary)/.6)}
 
-  /* theme toggle */
-  .tt{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:calc(var(--radius) - 2px);border:1px solid hsl(var(--input));background:transparent;color:hsl(var(--foreground));cursor:pointer}
-  .tt:hover{background:hsl(var(--accent))}
-  .tt svg{width:16px;height:16px}
-  #viewBtn svg{width:15px;height:15px}
+  /* ---- 명언 ---- */
+  .quote{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 4px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .quote p{position:relative;margin:0;padding-left:26px;font-size:15.5px;font-weight:700;line-height:1.5;letter-spacing:-.02em;color:hsl(var(--foreground))}
+  .quote p:before{content:"\201C";position:absolute;left:0;top:-8px;font-size:38px;font-weight:900;line-height:1;color:hsl(var(--primary))}
+  .quote span{display:block;margin-top:4px;padding-left:26px;font-size:12.5px;font-weight:600;color:hsl(var(--muted-foreground))}
+  .quote span:before{content:"— "}
+  /* ---- 디로드 / 저장 표시 ---- */
+  .dl-note{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 10px;border-radius:10px;font-size:12.5px;font-weight:700;background:hsl(var(--warning)/.15);color:hsl(var(--warning))}
+  .saved{position:fixed;top:12px;left:50%;z-index:50;transform:translate(-50%,-80px);display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:9999px;background:hsl(var(--foreground));color:hsl(var(--background));font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.35);transition:transform .25s ease;pointer-events:none}
+  .saved.on{transform:translate(-50%,calc(env(safe-area-inset-top) + 0px))}
+  .saved:before{content:"";width:14px;height:14px;border-radius:50%;background:hsl(var(--primary)) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M4 7.2l2 2 4-4.4' fill='none' stroke='%23052' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat}
 
   /* ---- 달력 ---- */
   body.cal-view .tabs-wrap,body.cal-view .timer{display:none}
-  body.cal-view main{padding-bottom:32px}
-  .calhead{display:flex;align-items:center;justify-content:center;gap:12px;margin:12px 0}
-  .calhead h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em;min-width:150px;text-align:center;font-variant-numeric:tabular-nums}
-  .card.cal{padding:10px 6px 12px}
+  body.cal-view main{padding-bottom:40px}
+  .calhead{display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 0 12px}
+  .calhead h2{margin:0;font-size:24px;font-weight:800;letter-spacing:-.03em;min-width:160px;text-align:center;font-variant-numeric:tabular-nums}
+  .card.cal{padding:12px 6px 14px}
   .cgrid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px}
-  .cwd{text-align:center;font-size:12px;font-weight:600;color:hsl(var(--muted-foreground));padding:6px 0 8px}
-  .cwd.sun{color:hsl(var(--destructive))}
-  .cday{position:relative;background:none;border:0;padding:14px 0 4px;display:flex;justify-content:center;cursor:pointer;color:hsl(var(--foreground));font:inherit;-webkit-tap-highlight-color:transparent}
-  .cday .dot{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-variant-numeric:tabular-nums;transition:transform .12s,box-shadow .12s}
-  .cday.done .dot{background:hsl(var(--c));color:#fff;font-weight:700;font-size:13px}
-  .cday.sel .dot{box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring))}
-  .cday:not(.done).sel .dot{background:hsl(var(--accent))}
+  .cwd{text-align:center;font-size:13px;font-weight:700;color:hsl(var(--foreground));padding:6px 0 8px}
+  .cwd.wsun{color:hsl(var(--destructive))}
+  .cday{position:relative;background:none;border:0;padding:14px 0 4px;display:flex;justify-content:center;cursor:pointer;color:hsl(var(--foreground));-webkit-tap-highlight-color:transparent}
+  .cday .dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;transition:transform .12s,box-shadow .12s}
+  .cday.done .dot{background:hsl(var(--c));color:#fff;font-weight:800;font-size:14px}
+  .cday.sel .dot{box-shadow:0 0 0 2px hsl(var(--card)),0 0 0 4px hsl(var(--foreground))}
+  .cday:not(.done).sel .dot{background:hsl(var(--elev2))}
   .cday:active .dot{transform:scale(.9)}
-  .cday.today:not(.done) .dot{color:hsl(var(--success));font-weight:700}
-  .tlabel{position:absolute;top:0;left:0;right:0;text-align:center;font-size:10px;font-weight:700;color:hsl(var(--success))}
-  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin:2px 4px 12px;font-size:12.5px;color:hsl(var(--muted-foreground))}
-  .lg{display:inline-flex;align-items:center;gap:6px}
-  .lg i{width:12px;height:12px;border-radius:50%;background:hsl(var(--c))}
-  .msum{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 8px}
+  .cday.today:not(.done) .dot{color:hsl(var(--primary));font-weight:800}
+  .tlabel{position:absolute;top:0;left:0;right:0;text-align:center;font-size:10.5px;font-weight:800;color:hsl(var(--primary))}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:4px 4px 14px;font-size:13px;font-weight:600;color:hsl(var(--foreground)/.85)}
+  .lg{display:inline-flex;align-items:center;gap:7px}
+  .lg i{width:14px;height:14px;border-radius:50%;background:hsl(var(--c))}
+  .msum{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 10px}
   .cdot{display:inline-block;width:10px;height:10px;border-radius:50%;background:hsl(var(--c));margin-right:8px;vertical-align:1px}
-  .crow{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:center;padding:6px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .cdate{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:700}
-  .cdate i{width:28px;height:28px;border-radius:50%;background:hsl(var(--c))}
-  .citem{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--radius);padding:14px;display:flex;justify-content:space-between;align-items:center;gap:8px;transition:background .15s}
-  .crow:hover .citem{background:hsl(var(--accent))}
-  .cname{font-weight:600;font-size:14px}
-  .cmeta{font-size:12px;color:hsl(var(--muted-foreground));font-variant-numeric:tabular-nums;text-align:right}
-  .dcard{border-top:3px solid hsl(var(--c))}
+  .crow{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:center;padding:6px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .crow+.crow{border-top:1px solid hsl(var(--border));padding-top:12px;margin-top:6px}
+  .cdate{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:14px;font-weight:800}
+  .cdate i{width:32px;height:32px;border-radius:50%;background:hsl(var(--c))}
+  .citem{background:hsl(var(--card));border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;transition:background .15s}
+  .crow:hover .citem{background:hsl(var(--elev))}
+  .cname{font-weight:700;font-size:15px}
+  .cmeta{font-size:13px;color:hsl(var(--muted-foreground));font-variant-numeric:tabular-nums;text-align:right;line-height:1.4}
+  .dcard{border-top:4px solid hsl(var(--c))}
   .dtop{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px}
-  .stats div{background:hsl(var(--muted)/.5);border-radius:calc(var(--radius) - 2px);padding:10px 6px;text-align:center}
-  .stats b{display:block;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
-  .stats span{font-size:11px;color:hsl(var(--muted-foreground))}
-  .dex{padding:10px 0;border-top:1px solid hsl(var(--border))}
-  .dexh{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;font-weight:600;margin-bottom:6px}
-  .dexh .muted{font-weight:400;white-space:nowrap}
+  .dtop h3{font-size:20px!important}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 4px}
+  .stats div{background:hsl(var(--elev));border-radius:12px;padding:12px 6px;text-align:center}
+  .stats b{display:block;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+  .stats span{font-size:11.5px;color:hsl(var(--muted-foreground))}
+  .dex{padding:12px 0;border-top:1px solid hsl(var(--border))}
+  .dexh{display:flex;justify-content:space-between;gap:8px;font-size:14.5px;font-weight:700;margin-bottom:8px}
+  .dexh .muted{font-weight:500;white-space:nowrap}
   .chips{display:flex;flex-wrap:wrap;gap:6px}
-  .chip{font-size:12px;padding:3px 9px;border-radius:9999px;background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-variant-numeric:tabular-nums}
+  .chip{font-size:13px;font-weight:600;padding:4px 10px;border-radius:9999px;background:hsl(var(--elev));font-variant-numeric:tabular-nums}
   .chip.undone{opacity:.45}
-  .sun{display:none}.moon{display:block}
-  html[data-theme=light] .sun{display:block}html[data-theme=light] .moon{display:none}
 </style>
 </head>
 <body>
 <header>
   <div class="hwrap">
-    <div>
-      <h1>상체 벌크업 루틴</h1>
-      <div class="meta">33세 · 182cm · 73kg · 주 5회 · 하체 1회</div>
+    <div class="brand">
+      <span class="logo"><svg viewBox="0 0 64 64"><rect x="10" y="28" width="44" height="8" rx="3" fill="currentColor"/><rect x="7" y="19" width="8" height="26" rx="2.5" fill="currentColor"/><rect x="49" y="19" width="8" height="26" rx="2.5" fill="currentColor"/></svg></span>
+      <div><h1>Bulkup Log</h1><div class="meta"><span id="weekBadge"></span></div></div>
     </div>
     <div class="hright">
-      <span id="weekBadge" class="badge"></span>
       <button class="btn small" id="viewBtn" onclick="toggleView()"></button>
       <button class="tt" onclick="toggleTheme()" aria-label="테마 전환">
         <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
@@ -251,6 +297,7 @@
 </header>
 <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
 <main id="main"></main>
+<div id="saved" class="saved">자동 저장됨</div>
 
 <div class="timer"><div class="in">
   <div class="t" id="timerText">0:00</div>
@@ -259,7 +306,7 @@
   <button class="btn" onclick="startTimer(120)">2분</button>
   <button class="btn" onclick="startTimer(180)">3분</button>
   <span class="sp"></span>
-  <button class="btn ghost" onclick="stopTimer()" aria-label="정지"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+  <button class="btn ghost" onclick="stopTimer();tick()" aria-label="정지"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
 </div></div>
 
 <script>
@@ -418,36 +465,40 @@ const FORM = {
  no:'슈퍼세트라고 자세 무너뜨리기 · 무게 욕심',
  hcs:'팔은 주 3회 짧게 자극. 이날은 펌핑 목적이라 가볍게 12회 깔끔하게.'},
 };
+const QUOTES=[{"t": "마지막 서너 번의 반복이 근육을 자라게 한다. 그 고통의 구간이 챔피언과 아닌 사람을 가른다.", "a": "아놀드 슈워제네거"}, {"t": "모두가 보디빌더가 되고 싶어 한다. 근데 아무도 무거운 건 들고 싶어 하지 않는다.", "a": "로니 콜먼"}, {"t": "훈련하는 매 순간이 싫었다. 그래도 말했다. 포기하지 마라. 지금 고통받고 남은 인생을 챔피언으로 살아라.", "a": "무하마드 알리"}, {"t": "몸을 돌봐라. 그곳이 네가 평생 살아야 할 유일한 곳이다.", "a": "짐 론"}, {"t": "자극하라, 파괴하지 마라.", "a": "리 헤이니"}, {"t": "만 가지 발차기를 한 번씩 연습한 사람은 두렵지 않다. 한 가지 발차기를 만 번 연습한 사람이 두렵다.", "a": "이소룡"}, {"t": "힘은 승리에서 오지 않는다. 고난을 지나며 포기하지 않기로 결심할 때, 그게 힘이다.", "a": "아놀드 슈워제네거"}, {"t": "Light weight, baby!", "a": "로니 콜먼"}, {"t": "우리가 반복적으로 하는 것이 곧 우리다. 탁월함은 행동이 아니라 습관이다.", "a": "윌 듀런트"}, {"t": "고통은 잠깐이다. 포기는 영원하다.", "a": "랜스 암스트롱"}, {"t": "시작하려고 대단할 필요는 없다. 대단해지려면 시작해야 한다.", "a": "지그 지글러"}, {"t": "몸은 거의 모든 걸 견딘다. 설득해야 할 건 마음이다.", "a": ""}, {"t": "오늘의 한 세트가 석 달 뒤의 거울을 바꾼다.", "a": ""}, {"t": "무게는 거짓말을 하지 않는다.", "a": ""}, {"t": "동기는 시작하게 하고, 습관은 계속하게 한다.", "a": ""}, {"t": "쉬운 날은 없다. 익숙해질 뿐이다.", "a": ""}, {"t": "오늘 안 하면 내일은 두 배로 하기 싫다.", "a": ""}, {"t": "근육은 헬스장에서 찢고, 식탁에서 만들고, 침대에서 자란다.", "a": ""}, {"t": "느낌이 올 때까지 기다리지 마라. 하다 보면 느낌이 온다.", "a": ""}, {"t": "한 개만 더. 그 한 개가 차이를 만든다.", "a": ""}, {"t": "완벽한 루틴보다 꾸준한 루틴이 이긴다.", "a": ""}, {"t": "기록하지 않으면 성장도 모른다.", "a": ""}, {"t": "어제의 나보다 1kg만 더.", "a": ""}, {"t": "몸은 네가 반복한 것을 기억한다.", "a": ""}, {"t": "피곤한 날의 운동이 진짜 운동이다.", "a": ""}, {"t": "변명과 근육은 같이 자라지 않는다.", "a": ""}, {"t": "땀은 지방이 우는 소리다.", "a": ""}, {"t": "자세가 먼저, 무게는 그다음.", "a": ""}, {"t": "오늘 할 세트를 내일로 미루지 마라.", "a": ""}, {"t": "멈추지만 않으면 느려도 괜찮다.", "a": ""}, {"t": "결과는 늦게 오지만 반드시 온다.", "a": ""}, {"t": "헬스장 문을 연 순간 이미 절반은 이겼다.", "a": ""}, {"t": "오늘의 통증은 내일의 힘이 된다.", "a": ""}, {"t": "남과 비교하지 말고 지난주의 나와 비교하라.", "a": ""}, {"t": "정체기는 실패가 아니라 다음 성장의 대기실이다.", "a": ""}, {"t": "무거운 날도, 가벼운 날도 결국 쌓인다.", "a": ""}, {"t": "의지는 떨어져도 루틴은 남는다.", "a": ""}, {"t": "근성장은 한 번의 영웅적인 날이 아니라 백 번의 평범한 날에서 나온다.", "a": ""}, {"t": "펌핑은 잠깐이지만 기록은 영원하다.", "a": ""}, {"t": "진짜 세트는 힘들다고 느낀 다음부터 시작된다.", "a": ""}, {"t": "잘 먹는 것도 훈련이다.", "a": ""}, {"t": "잘 자는 것도 훈련이다.", "a": ""}, {"t": "귀찮음을 이기는 순간, 이미 어제보다 강하다.", "a": ""}, {"t": "바벨은 공평하다. 들어 올린 만큼만 돌려준다.", "a": ""}, {"t": "오늘 흘린 땀은 거짓말하지 않는다.", "a": ""}, {"t": "가장 힘든 무게는 현관문이다.", "a": ""}, {"t": "몸이 변하기 전에 습관이 먼저 변한다.", "a": ""}, {"t": "천천히 내리고, 강하게 올려라.", "a": ""}, {"t": "늘어날 때 자극을 느껴라. 거기서 근육이 자란다.", "a": ""}, {"t": "실패 직전까지, 그러나 자세는 끝까지.", "a": ""}, {"t": "휴식도 루틴의 일부다.", "a": ""}, {"t": "한 달 뒤의 너는 오늘의 너에게 고마워할 것이다.", "a": ""}, {"t": "운동하기 싫은 날일수록 가볍게라도 시작하라.", "a": ""}, {"t": "쇠는 차갑지만 결과는 뜨겁다.", "a": ""}, {"t": "누구나 시작은 약했다.", "a": ""}, {"t": "강해지는 데 지름길은 없다. 그래서 공평하다.", "a": ""}, {"t": "거울은 매일 확인하지 말고, 기록은 매일 확인하라.", "a": ""}, {"t": "오늘의 선택이 내일의 몸이 된다.", "a": ""}, {"t": "근육은 편안함 밖에서 자란다.", "a": ""}, {"t": "세트 사이의 휴식도 집중의 일부다.", "a": ""}, {"t": "하루 빠지면 내가 알고, 이틀 빠지면 몸이 안다.", "a": ""}, {"t": "무게를 드는 게 아니라 나를 드는 것이다.", "a": ""}, {"t": "목표는 멀어도 오늘 할 일은 가깝다.", "a": ""}, {"t": "꾸준함은 재능을 이긴다.", "a": ""}, {"t": "오늘도 해냈다면 그걸로 충분하다.", "a": ""}, {"t": "힘들다는 건 제대로 하고 있다는 뜻이다.", "a": ""}, {"t": "의심이 들 땐 한 세트 더.", "a": ""}, {"t": "몸은 정직하다. 넣은 만큼 나온다.", "a": ""}, {"t": "느리게 크는 근육이 오래 간다.", "a": ""}, {"t": "오늘의 1회가 다음 달의 1kg이다.", "a": ""}, {"t": "기분은 운동을 안 해도 되는 이유가 되지 못한다.", "a": ""}, {"t": "변화는 불편함에서 시작된다.", "a": ""}, {"t": "잘하는 사람은 매일 하는 사람이다.", "a": ""}, {"t": "집중하라. 핸드폰은 세트 끝나고.", "a": ""}, {"t": "무게보다 자극, 자극보다 꾸준함.", "a": ""}, {"t": "몸이 무거운 날엔 기본만 지켜라.", "a": ""}, {"t": "점진적 과부하, 그게 전부다.", "a": ""}, {"t": "근육에게 이유를 줘라. 그래야 자란다.", "a": ""}, {"t": "지난 기록을 이기는 게 오늘의 목표다.", "a": ""}, {"t": "땀 한 방울이 핑계 백 개보다 낫다.", "a": ""}, {"t": "출석이 곧 실력이다.", "a": ""}, {"t": "오늘 안 무너지면 된다.", "a": ""}, {"t": "큰 목표는 작은 세트로 쪼개라.", "a": ""}, {"t": "체중계보다 기록장을 믿어라.", "a": ""}, {"t": "부상 없이 오래 하는 사람이 결국 제일 크다.", "a": ""}, {"t": "준비운동을 건너뛰는 건 시간을 아끼는 게 아니다.", "a": ""}, {"t": "단백질은 챙기고, 핑계는 버려라.", "a": ""}, {"t": "하기 싫은 날의 운동이 가장 값지다.", "a": ""}, {"t": "지금 이 세트에만 집중하라.", "a": ""}, {"t": "마지막 반복에서 도망치지 마라.", "a": ""}, {"t": "강해지고 싶다면 불편함과 친해져라.", "a": ""}, {"t": "몸은 한 번에 변하지 않는다. 하지만 매번 조금씩 변한다.", "a": ""}, {"t": "오늘의 루틴을 끝낸 너는 어제보다 낫다.", "a": ""}, {"t": "큰 사람은 기본을 크게 한다.", "a": ""}, {"t": "뭘 할지 고민할 시간에 첫 세트를 해라.", "a": ""}, {"t": "쉬는 날엔 제대로 쉬고, 하는 날엔 제대로 해라.", "a": ""}, {"t": "쇳덩이 앞에서는 모두 초보자다.", "a": ""}, {"t": "근육은 기다림을 배신하지 않는다.", "a": ""}, {"t": "한계는 생각보다 한 개 뒤에 있다.", "a": ""}, {"t": "오늘도 기록하고, 내일 또 이겨라.", "a": ""}];
+let qIdx=Math.floor(Math.random()*QUOTES.length);
+function nextQuote(){qIdx=(qIdx+1)%QUOTES.length;const el=document.getElementById('quote');if(el)el.outerHTML=renderQuote();}
+function renderQuote(){const q=QUOTES[qIdx];return `<button id="quote" class="quote" onclick="nextQuote()" aria-label="다른 명언"><p>${q.t}</p>${q.a?`<span>${q.a}</span>`:''}</button>`;}
 const PROGRAM = [
- {id:'mon',short:'월 가슴+삼두',name:'월요일 · 가슴 + 삼두 (13세트)',ex:[
+ {id:'mon',short:'가슴·삼두',name:'가슴 · 삼두',ex:[
   {n:'인클라인 덤벨프레스',s:3,r:[8,12],rir:'1~2',rest:120,note:'첫 세트 가볍게 15회로 자극 잡고 올림 (황철순식 정피라미드)',v:['chest1','chest2']},
   {n:'플랫 바벨/머신 프레스',s:3,r:[6,10],rir:'1~2',rest:120,note:'마지막 세트 파트너 강제반복 2~3회 or 드롭세트',v:['chest1','chest3']},
   {n:'케이블 플라이 (로우→하이)',s:2,r:[12,15],rir:'0~1',rest:75,note:'마지막 세트 스트레치 파셜 +5회',v:['chest1']},
   {n:'오버헤드 케이블 익스텐션',s:3,r:[12,15],rir:'0~1',rest:75,note:'장두 — 황철순 EP.7 포인트',v:['tri1']},
   {n:'라잉 트라이셉스 익스텐션',s:2,r:[10,12],rir:'1',rest:90,note:'팔꿈치 고정, 내릴 때 3초',v:['tri2','tri1']},
  ]},
- {id:'tue',short:'화 등+이두',name:'화요일 · 등 + 이두 (14세트)',ex:[
+ {id:'tue',short:'등·이두',name:'등 · 이두',ex:[
   {n:'턱걸이 (가중)',s:3,r:[6,10],rir:'1~2',rest:120,note:'10개 가능 → 5kg 가중부터. 무게 칸에 추가중량 입력',v:['back1','back3']},
   {n:'바벨 로우 / 체스트서포트 로우',s:3,r:[8,10],rir:'1~2',rest:120,note:'팔꿈치 방향으로 광배/상부 조절 (EP.4)',v:['back2','back1']},
   {n:'랫풀다운 (와이드)',s:3,r:[10,12],rir:'1',rest:90,note:'상단 스트레치 충분히 (EP.8). 마지막 세트 드롭',v:['back3','back4']},
   {n:'인클라인 덤벨컬',s:3,r:[10,12],rir:'0~1',rest:75,note:'이두 신장 위치. 반동 금지',v:['bi1']},
   {n:'바벨컬 (EZ바)',s:2,r:[8,10],rir:'1',rest:90,note:'첫 세트 가볍게 15회 자극 → 중량',v:['bi1']},
  ]},
- {id:'thu',short:'목 어깨+팔',name:'목요일 · 어깨 + 팔 (15세트)',ex:[
+ {id:'thu',short:'어깨·팔',name:'어깨 · 팔',ex:[
   {n:'덤벨 숄더프레스',s:3,r:[8,10],rir:'1~2',rest:120,note:'',v:['sh1','sh4']},
   {n:'덤벨 사이드 레터럴',s:4,r:[12,15],rir:'0',rest:70,note:'가볍게 자극 먼저, 마지막 세트 드롭 2단 (황금비율)',v:['sh2','sh1']},
   {n:'리어델트 플라이',s:2,r:[15,15],rir:'0~1',rest:60,note:'머신/케이블',v:['sh5','sh3']},
   {n:'해머컬',s:3,r:[10,12],rir:'0~1',rest:75,note:'',v:['bi1']},
   {n:'케이블 푸시다운',s:3,r:[12,15],rir:'0~1',rest:60,note:'',v:['tri1']},
  ]},
- {id:'fri',short:'금 하체',name:'금요일 · 하체 (12세트)',ex:[
+ {id:'fri',short:'하체',name:'하체',ex:[
   {n:'레그프레스 / 핵스쿼트',s:3,r:[8,12],rir:'1~2',rest:150,note:'스쿼트 익숙치 않으니 머신으로 볼륨 확보',v:['leg1','leg2']},
   {n:'루마니안 데드리프트',s:3,r:[8,10],rir:'1~2',rest:120,note:'데드 80kg 기준 60kg부터',v:['leg1']},
   {n:'레그 익스텐션',s:2,r:[12,15],rir:'0',rest:75,note:'',v:['leg2']},
   {n:'라잉 레그컬',s:2,r:[12,15],rir:'0',rest:75,note:'',v:['leg2']},
   {n:'카프레이즈',s:2,r:[12,15],rir:'0',rest:60,note:'하단 정지 2초',v:['leg1']},
  ]},
- {id:'sat',short:'토 상체전체',name:'토요일 · 상체 전체 (14세트 · 생략 가능)',ex:[
+ {id:'sat',short:'상체',name:'상체 전체',opt:'선택 · 피곤하면 생략',ex:[
   {n:'플랫 덤벨프레스',s:3,r:[10,12],rir:'1',rest:120,note:'',v:['chest1']},
   {n:'펙덱 / 인클라인 케이블 플라이',s:2,r:[15,15],rir:'0',rest:75,note:'',v:['chest3']},
   {n:'체스트서포트 로우 / 티바 로우',s:3,r:[10,10],rir:'1',rest:120,note:'',v:['back2']},
@@ -463,24 +514,36 @@ const store = JSON.parse(localStorage.getItem(KEY)||'{}');
 store.logs = store.logs||{};     // {date: {day, ex:{name:{sets:[{w,r,d}],note}}}}
 store.bw = store.bw||[];         // [{date,kg}]
 store.start = store.start||null;
-function save(){localStorage.setItem(KEY,JSON.stringify(store));renderWeek();}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+function save(){persist();renderWeek();}
+let savedT=null;
+function flashSaved(){const el=document.getElementById('saved');if(!el)return;el.classList.add('on');clearTimeout(savedT);savedT=setTimeout(()=>el.classList.remove('on'),1100);}
 function localISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function today(){return localISO(new Date());}
 let curDate = today();
-let curTab = (()=>{const w=new Date().getDay();return ({1:'mon',2:'tue',4:'thu',5:'fri',6:'sat'})[w]||'mon';})();
+let curTab = null; // 첫 렌더에서 suggestDay()로 결정
 
 // ---------- 주차 계산 ----------
-function weekNo(){
-  if(!store.start) return null;
-  const diff=(new Date(curDate)-new Date(store.start))/864e5;
-  return Math.floor(diff/7)+1;
-}
+function dnum(iso){const [y,m,d]=iso.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/864e5);}
+// 프로그램 시작일 기준 주차 (1주차부터). 7주차마다 디로드.
+function weekNo(iso){if(!store.start)return null;return Math.floor((dnum(iso||today())-dnum(store.start))/7)+1;}
+function isDeload(iso){const w=weekNo(iso);return !!w&&w>0&&w%7===0;}
+function weekSessions(){const w=weekNo(today());if(!w||w<1)return 0;const s0=dnum(store.start)+(w-1)*7;return Object.keys(store.logs).filter(d=>{const n=dnum(d);return n>=s0&&n<s0+7&&isDone(store.logs[d]);}).length;}
 function renderWeek(){
-  const w=weekNo();const el=document.getElementById('weekBadge');
-  if(!w){el.textContent='시작 전';el.className='badge';return;}
-  const deload = w%7===0;
-  el.textContent=(deload?'디로드 주 · ':'')+w+'주차';
-  el.className='badge'+(deload?' deload':'');
+  const el=document.getElementById('weekBadge');if(!el)return;const w=weekNo(today());
+  if(!w||w<1){el.textContent='첫 세트를 완료하면 1주차 시작';el.className='';return;}
+  const dl=w%7===0;
+  el.textContent=`${w}주차${dl?' 디로드':''} · 이번 주 ${weekSessions()}/5회`;
+  el.className=dl?'deload':'';
+}
+// 요일이 아니라 순서로 진행: 마지막으로 완료한 DAY 다음 순서를 추천
+const ORDER=['mon','tue','thu','fri','sat'];
+function suggestDay(){
+  const t=today();
+  if(store.logs[t]&&isDone(store.logs[t])) return store.logs[t].day;
+  const past=Object.keys(store.logs).filter(d=>d<t&&isDone(store.logs[d])).sort();
+  if(!past.length) return 'mon';
+  return ORDER[(ORDER.indexOf(store.logs[past[past.length-1]].day)+1)%ORDER.length];
 }
 
 // ---------- 지난 기록 찾기 ----------
@@ -504,7 +567,11 @@ function progressionHint(ex, last){
 // ---------- 탭 ----------
 const TABS=[...PROGRAM.map(d=>({id:d.id,label:d.short})),{id:'hist',label:'기록'},{id:'info',label:'가이드'}];
 function renderTabs(){
-  document.getElementById('tabs').innerHTML=TABS.map(t=>`<div class="tab ${t.id===curTab?'active':''}" onclick="curTab='${t.id}';render()">${t.label}</div>`).join('');
+  const next=suggestDay();
+  document.getElementById('tabs').innerHTML=
+    PROGRAM.map(p=>`<button class="tab ${p.id===curTab?'active':''}" style="--c:${DAY_COLOR[p.id]}" onclick="curTab='${p.id}';render()"><i></i>${p.short}${p.id===next&&p.id!==curTab?'<em>추천</em>':''}</button>`).join('')
+    +'<span class="tsep"></span>'
+    +[['hist','기록'],['info','가이드']].map(([id,l])=>`<button class="tab plain ${id===curTab?'active':''}" onclick="curTab='${id}';render()">${l}</button>`).join('');
 }
 
 // ---------- 운동일 화면 ----------
@@ -513,7 +580,10 @@ function getLog(dayId){
   store.logs[curDate].day=dayId;
   return store.logs[curDate];
 }
+function effDay(day,iso){if(!isDeload(iso))return day;return Object.assign({},day,{ex:day.ex.map(e=>Object.assign({},e,{s:Math.max(1,Math.ceil(e.s/2)),rir:'3~4'}))});}
+function carrySet(last,k){if(!last)return {};const v=last.sets.filter(x=>x&&(x.w!=null||x.r!=null));return last.sets[k]&&(last.sets[k].w!=null||last.sets[k].r!=null)?last.sets[k]:(v[v.length-1]||{});}
 function renderDay(day){
+  day=effDay(day,curDate);const dl=isDeload(curDate);
   const log=store.logs[curDate]&&store.logs[curDate].day===day.id?store.logs[curDate]:{ex:{}};
   let totalSets=0,doneSets=0;
   // 아직 완료 안 된 첫 종목 = 지금 하는 운동 → 자세 설명 자동 펼침
@@ -527,32 +597,41 @@ function renderDay(day){
     for(let k=0;k<ex.s;k++){
       const s=e.sets[k]||{};
       if(s.d) doneSets++;
-      const ph=last&&last.sets[k]?last.sets[k]:{};
+      const ph=carrySet(last,k);
       rows.push(`<tr class="${s.d?'row-done':''}">
-        <td>${k+1}</td>
-        <td><input type="number" class="ghost" inputmode="decimal" step="0.5" placeholder="${ph.w??''}" value="${s.w??''}" onchange="setVal('${day.id}','${esc(ex.n)}',${k},'w',this.value)"></td>
-        <td><input type="number" class="ghost" inputmode="numeric" placeholder="${ph.r??''}" value="${s.r??''}" onchange="setVal('${day.id}','${esc(ex.n)}',${k},'r',this.value)"></td>
+        <td><span class="sn">${k+1}</span></td>
+        <td><input type="number" class="ghost ${s.w==null&&ph.w!=null?'carry':''}" inputmode="decimal" step="0.5" value="${s.w??ph.w??''}" ${s.w==null&&ph.w!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'w',this.value)"></td>
+        <td><input type="number" class="ghost ${s.r==null&&ph.r!=null?'carry':''}" inputmode="numeric" value="${s.r??ph.r??''}" ${s.r==null&&ph.r!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'r',this.value)"></td>
         <td><input type="checkbox" class="chk" ${s.d?'checked':''} onchange="setVal('${day.id}','${esc(ex.n)}',${k},'d',this.checked);if(this.checked)startTimer(${ex.rest})"></td>
       </tr>`);
     }
-    return `<div class="card ${isCurrent?'current':''}" id="ex${i}">
-      <h3><span>${ex.n}${isCurrent?' <span class="cur-badge">진행 중</span>':''}</span><span class="idx">${i+1}/${day.ex.length}</span></h3>
+    return `<div class="card ${isCurrent?'current':''}" id="ex${i}" style="--c:${DAY_COLOR[day.id]}">
+      <h3><span><span class="exn">${i+1}</span>${ex.n}${isCurrent?'<span class="cur-badge">진행 중</span>':''}</span><span class="idx">${i+1}/${day.ex.length}</span></h3>
       <div class="target"><span>세트 <b>${ex.s}</b></span><span>반복 <b>${ex.r[0]===ex.r[1]?ex.r[0]:ex.r[0]+'~'+ex.r[1]}</b></span><span>RIR <b>${ex.rir}</b></span><span>휴식 <b>${ex.rest>=120?(ex.rest/60)+'분':ex.rest+'초'}</b></span></div>
       ${ex.note?`<div class="note">${ex.note}</div>`:''}
       ${renderForm(ex.n, isCurrent)}
       <div class="last">지난 기록${last?` (${last.date.slice(5)}): <b>${fmtSets(last.sets)}</b>`:': 없음'} ${progressionHint(ex,last)}</div>
-      <table><tr><th>세트</th><th>무게(kg)</th><th>횟수</th><th>완료</th></tr>${rows.join('')}</table>
+      <table><tr><th>세트</th><th>kg</th><th>회</th><th>완료</th></tr>${rows.join('')}</table>
       <div class="videos">${ex.v.map(k=>`<a href="${V[k].u}" target="_blank" rel="noopener">${V[k].t}</a>`).join('')}</div>
-      <details><summary>메모</summary><textarea placeholder="느낌, 통증, 다음에 바꿀 것..." onchange="setNote('${day.id}','${esc(ex.n)}',this.value)">${e.note||''}</textarea></details>
+      <details><summary>메모</summary><textarea placeholder="느낌, 통증, 다음에 바꿀 것..." oninput="setNote('${day.id}','${esc(ex.n)}',this.value)">${e.note||''}</textarea></details>
     </div>`;
   }).join('');
   const pct=totalSets?Math.round(doneSets/totalSets*100):0;
-  return `<div class="day-title"><h2>${day.name}</h2><input type="date" class="date-in" value="${curDate}" onchange="curDate=this.value;render()"></div>
-    <div class="card" style="padding:12px 16px"><div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:500"><span>진행 ${doneSets}/${totalSets} 세트</span><span>${curDate===today()?'<span class="badge today">오늘</span>':''}</span></div><div class="prog"><div style="width:${pct}%"></div></div>
-    ${!store.start?`<div class="rowbtns"><button class="btn primary" onclick="store.start=curDate;save();render()">이 날짜를 프로그램 시작일로</button></div>`:''}
-    </div>
+  const idx=PROGRAM.findIndex(p=>p.id===day.id), c=DAY_COLOR[day.id];
+  const mins=Math.round(day.ex.reduce((a,e)=>a+e.s*(e.rest+45),0)/300)*5;
+  const isToday=curDate===today(), isNext=isToday&&suggestDay()===day.id;
+  const chevDown='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+  return `${renderQuote()}<section class="dayhead" style="--c:${c}">
+      <div class="dh-top"><span class="kicker"><i></i>DAY ${idx+1}${isNext?' · 오늘 추천':''}</span>
+        <label class="datebtn">${isToday?'오늘':dayLabel(curDate)}${chevDown}<input type="date" value="${curDate}" onchange="curDate=this.value||today();render()"></label></div>
+      <h2>${day.name}</h2>
+      <div class="dh-meta">${day.ex.length}종목 · ${totalSets}세트 · 약 ${mins}분${day.opt?' · '+day.opt:''}</div>
+      ${dl?'<div class="dl-note">디로드 주 · 세트 절반, RIR 3~4로 가볍게 회복</div>':''}
+      <div class="dh-prog"><div class="dh-nums"><b>${doneSets}</b><span>/ ${totalSets} 세트 완료</span><em>${pct}%</em></div><div class="prog"><div style="width:${pct}%"></div></div></div>
+      ${!store.start?`<div class="rowbtns"><button class="btn primary" onclick="store.start=curDate;save();render()">이 날짜를 프로그램 시작일로</button></div>`:''}
+    </section>
     ${cards}
-    <div class="rowbtns"><button class="btn ok" onclick="finishDay('${day.id}')">오늘 운동 마무리</button><button class="btn danger small" onclick="if(confirm('${curDate} 기록을 삭제할까요?')){delete store.logs[curDate];save();render()}">기록 삭제</button></div>`;
+    <div class="finish"><button class="btn ok big" onclick="finishDay('${day.id}')">운동 마무리</button><button class="btn danger small" onclick="if(confirm('${curDate} 기록을 삭제할까요?')){delete store.logs[curDate];save();render()}">이 날 기록 삭제</button></div>`;
 }
 function esc(s){return s.replace(/'/g,"\\'");}
 function renderForm(name, open){
@@ -569,12 +648,13 @@ function setVal(dayId,exName,k,f,v){
   const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};
   e.sets[k]=e.sets[k]||{};
   if(f==='d') e.sets[k].d=v; else e.sets[k][f]=v===''?null:Number(v);
+  if(f==='d'&&v){const ph=carrySet(lastLog(dayId,exName),k);if(e.sets[k].w==null&&ph.w!=null)e.sets[k].w=ph.w;if(e.sets[k].r==null&&ph.r!=null)e.sets[k].r=ph.r;}
   if(f==='d'&&v&&!log.at){const n=new Date();log.at=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
   if(!store.start) store.start=curDate;
-  save();
+  save();flashSaved();
   if(f==='d') render();
 }
-function setNote(dayId,exName,v){const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};e.note=v;save();}
+function setNote(dayId,exName,v){const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};e.note=v;save();flashSaved();}
 function finishDay(dayId){
   const log=getLog(dayId);
   // 빈 칸은 placeholder(지난 기록) 값으로 채움
@@ -667,24 +747,27 @@ function toggleTheme(){store.theme=(store.theme==='light')?'dark':'light';save()
 applyTheme();
 
 // ---------- 타이머 ----------
-let tInt=null,tLeft=0;
-function startTimer(sec){
-  stopTimer();tLeft=sec;tick();
-  tInt=setInterval(()=>{tLeft--;tick();if(tLeft<=0){stopTimer();document.getElementById('timerText').classList.add('done');beep();if(navigator.vibrate)navigator.vibrate([200,100,200]);}},1000);
+let tInt=null,tLeft=0,tEnd=0;
+function startTimer(sec){stopTimer();tEnd=Date.now()+sec*1000;store.timerEnd=tEnd;persist();runTimer();}
+function runTimer(){const b=document.querySelector('.timer');if(b)b.classList.add('running');tick();tInt=setInterval(tick,250);}
+function stopTimer(){clearInterval(tInt);tInt=null;tEnd=0;if(store.timerEnd){store.timerEnd=0;persist();}const b=document.querySelector('.timer');if(b)b.classList.remove('running');}
+function tick(){
+  const el=document.getElementById('timerText');
+  tLeft=tEnd?Math.max(0,Math.ceil((tEnd-Date.now())/1000)):0;
+  el.classList.remove('done');el.textContent=Math.floor(tLeft/60)+':'+String(tLeft%60).padStart(2,'0');
+  if(tEnd&&tLeft<=0){stopTimer();el.classList.add('done');beep();if(navigator.vibrate)navigator.vibrate([200,100,200]);}
 }
-function stopTimer(){clearInterval(tInt);tInt=null;}
-function tick(){const el=document.getElementById('timerText');el.classList.remove('done');el.textContent=Math.floor(tLeft/60)+':'+String(tLeft%60).padStart(2,'0');}
 function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.2;o.start();setTimeout(()=>{o.stop();c.close();},350);}catch(e){}}
 
 // ---------- 달력 ----------
-const DAY_COLOR={mon:'221 83% 58%',tue:'160 70% 40%',thu:'28 90% 52%',fri:'271 70% 60%',sat:'340 80% 58%'};
+const DAY_COLOR={mon:'217 91% 60%',tue:'188 86% 45%',thu:'28 95% 55%',fri:'265 85% 66%',sat:'335 85% 62%'};
 const WD=['일','월','화','수','목','금','토'];
 const ICON_CAL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
 const ICON_HOME='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>';
 let view='home',calY=new Date().getFullYear(),calM=new Date().getMonth(),selDate=null;
 function isDone(l){return !!l&&Object.values(l.ex).some(e=>e.sets.some(s=>s&&s.d));}
 function doneSets(l){let n=0;Object.values(l.ex).forEach(e=>e.sets.forEach(s=>{if(s&&s.d)n++;}));return n;}
-function dayTitle(id){const p=PROGRAM.find(x=>x.id===id);if(!p)return id;const t=p.name.slice(p.name.indexOf(' · ')+3);return t.replace(/\s*\(.*$/,'');}
+function dayTitle(id){const p=PROGRAM.find(x=>x.id===id);return p?p.name:id;}
 function dayLabel(iso){const d=new Date(iso+'T00:00:00');return `${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;}
 function toggleView(){view=view==='home'?'cal':'home';if(view==='cal'){const t=new Date();calY=t.getFullYear();calM=t.getMonth();selDate=null;}render();window.scrollTo(0,0);}
 function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}selDate=null;render();}
@@ -694,7 +777,7 @@ function renderCal(){
   const prefix=`${calY}-${String(calM+1).padStart(2,'0')}-`;
   const days=new Date(calY,calM+1,0).getDate(),lead=new Date(calY,calM,1).getDay(),tISO=today();
   const monthLogs=Object.keys(store.logs).filter(d=>d.startsWith(prefix)&&isDone(store.logs[d])).sort();
-  let cells=WD.map((w,i)=>`<div class="cwd ${i===0?'sun':''}">${w}</div>`).join('');
+  let cells=WD.map((w,i)=>`<div class="cwd ${i===0?'wsun':''}">${w}</div>`).join('');
   for(let i=0;i<lead;i++)cells+='<div></div>';
   for(let d=1;d<=days;d++){
     const iso=prefix+String(d).padStart(2,'0'),l=store.logs[iso],done=isDone(l);
@@ -706,7 +789,7 @@ function renderCal(){
   return `<div class="calhead"><button class="btn ghost icon" onclick="calMove(-1)" aria-label="이전 달">${chev('m15 18-6-6 6-6')}</button><h2>${calY}년 ${String(calM+1).padStart(2,'0')}월</h2><button class="btn ghost icon" onclick="calMove(1)" aria-label="다음 달">${chev('m9 18 6-6-6-6')}</button></div>
   <div class="card cal"><div class="cgrid">${cells}</div></div>
   <div class="legend">${legend}</div>
-  <div class="msum"><span class="badge sec">이번 달 ${monthLogs.length}회</span><span class="badge sec">총 볼륨 ${Math.round(vol).toLocaleString()}kg</span>${selDate?`<button class="btn ghost small" style="margin-left:auto" onclick="selectDay('${selDate}')">전체 목록</button>`:''}</div>
+  <div class="msum"><span class="badge sec">이번 달<b>${monthLogs.length}회</b></span><span class="badge sec">총 볼륨<b>${Math.round(vol).toLocaleString()}kg</b></span>${selDate?`<button class="btn ghost small" style="margin-left:auto" onclick="selectDay('${selDate}')">전체 목록</button>`:''}</div>
   <div id="calDetail">${selDate?renderCalDetail(selDate):renderCalList(monthLogs)}</div>`;
 }
 function renderCalList(list){
@@ -727,18 +810,34 @@ function renderCalDetail(iso){
 }
 
 // ---------- 렌더 ----------
+let lastKey='';
+function persistUI(){store.ui=Object.assign(store.ui||{},{tab:curTab,date:curDate,view,t:Date.now()});persist();}
 function render(){
+  if(!curTab) curTab=suggestDay();
+  persistUI();
   document.body.classList.toggle('cal-view',view==='cal');
   const vb=document.getElementById('viewBtn');if(vb)vb.innerHTML=view==='cal'?ICON_HOME+'루틴':ICON_CAL+'달력';
   if(view==='cal'){renderWeek();document.getElementById('main').innerHTML=renderCal();return;}
+  if(!curTab) curTab=suggestDay();
   renderTabs();renderWeek();
   const m=document.getElementById('main');
   if(curTab==='hist') m.innerHTML=renderHist();
   else if(curTab==='info') m.innerHTML=renderInfo();
   else m.innerHTML=renderDay(PROGRAM.find(d=>d.id===curTab));
-  window.scrollTo(0,0);
+  const key=view+'|'+curTab+'|'+curDate;
+  if(key!==lastKey){window.scrollTo(0,0);lastKey=key;}
 }
-render();
+// 앱 전환 후 돌아오면: 보던 화면·날짜·스크롤·타이머 그대로 복원 (6시간 이내)
+(function restore(){
+  const u=store.ui;
+  if(u&&Date.now()-u.t<6*3600e3){curTab=u.tab||null;curDate=u.date||today();view=u.view==='cal'?'cal':'home';}
+  render();
+  if(u&&Date.now()-u.t<6*3600e3&&u.y) setTimeout(()=>window.scrollTo(0,u.y),0);
+  if(store.timerEnd&&store.timerEnd>Date.now()){tEnd=store.timerEnd;runTimer();}
+})();
+function saveNow(){if(store.ui){store.ui.y=window.scrollY;store.ui.t=Date.now();}persist();}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow();else if(tEnd)tick();});
+window.addEventListener('pagehide',saveNow);
 </script>
 </body>
 </html>
