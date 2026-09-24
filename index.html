@@ -833,6 +833,21 @@
   .quote p:before{top:-3px;font-size:28px;line-height:.8}
   /* 가이드 출처 링크 터치 영역 */
   .research a{display:inline-block;padding:8px 0;margin:-8px 0}
+
+  /* 예측 카드 */
+  .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 6px}
+  .pgrid div{background:rgb(var(--gl-line)/var(--gl-in));border-radius:18px;padding:12px}
+  html[data-theme=light] .pgrid div{background:hsl(232 25% 20%/.05)}
+  .pgrid span{font-size:12px;font-weight:500;color:hsl(var(--muted-foreground))}
+  .pgrid b{display:block;margin-top:2px;font-size:17px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.25}
+  .pgrid b small{font-size:11px;font-weight:500;color:hsl(var(--muted-foreground));margin-left:2px}
+  .pgrid em{display:block;margin-top:3px;font-style:normal;font-size:11.5px;font-weight:600;color:hsl(var(--primary));font-variant-numeric:tabular-nums}
+  .pcalc p{margin:6px 0;font-size:12.5px;line-height:1.6;color:hsl(var(--foreground)/.85)}
+  .pcalc b{font-weight:600;margin-right:6px;color:hsl(var(--foreground))}
+  .proj .ch-head{align-items:center}
+  .chart .pj{fill:none;stroke:hsl(var(--chart));stroke-width:2;stroke-dasharray:5 5;opacity:.75}
+  .chart .pjpt{fill:hsl(var(--card));stroke:hsl(var(--chart));stroke-width:2}
+  .chart .pjl{fill:hsl(var(--chart))}
 </style>
 </head>
 <body>
@@ -1490,24 +1505,26 @@ function fmtN(v,dec){return (+v).toFixed(dec).replace(/\.0+$/,'');}
 function md(iso){return (+iso.slice(5,7))+'/'+(+iso.slice(8));}
 function niceMax(m){const e=Math.pow(10,Math.floor(Math.log10(m)));const f=m/e;return (f<=1?1:f<=2?2:f<=5?5:10)*e;}
 function fmtK(v){return v>=1000?(v/1000).toFixed(v>=10000?0:1).replace(/\.0$/,'')+'k':String(Math.round(v));}
-function lineChart(id,pts,unit,dec){
+function lineChart(id,pts,unit,dec,proj){
   const W=340,H=170,L=38,R=16,T=24,B=26;
-  const xs=pts.map(p=>dnum(p.d));let x0=Math.min(...xs),x1=Math.max(...xs);if(x0===x1){x0-=1;x1+=1;}
-  const vs=pts.map(p=>p.v);let lo=Math.min(...vs),hi=Math.max(...vs);const pad=Math.max((hi-lo)*.2,Math.abs(hi)*.01,.5);lo-=pad;hi+=pad;
+  const xs=pts.map(p=>dnum(p.d));let x0=Math.min(...xs),x1=Math.max(...xs,proj?dnum(proj.d):-Infinity);if(x0===x1){x0-=1;x1+=1;}
+  const vs=pts.map(p=>p.v).concat(proj?[proj.v]:[]);let lo=Math.min(...vs),hi=Math.max(...vs);const pad=Math.max((hi-lo)*.2,Math.abs(hi)*.01,.5);lo-=pad;hi+=pad;
   const X=x=>L+(x-x0)/(x1-x0)*(W-L-R),Y=v=>T+(1-(v-lo)/(hi-lo))*(H-T-B);
   const P=pts.map((p,i)=>({x:X(xs[i]),y:Y(p.v),d:p.d,v:p.v}));
   const grid=[.1,.5,.9].map(t=>lo+(hi-lo)*t).map(v=>`<line class="grid" x1="${L}" x2="${W-R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text class="axis" x="${L-6}" y="${(Y(v)+3.5).toFixed(1)}" text-anchor="end">${fmtN(v,dec)}</text>`).join('');
-  const ends=P.length===1?[P[0]]:[P[0],P[P.length-1]];
+  const PJ=proj?{x:X(dnum(proj.d)),y:Y(proj.v),d:proj.d,v:proj.v}:null;
+  const ends=PJ?[P[0],PJ]:(P.length===1?[P[0]]:[P[0],P[P.length-1]]);
   const xl=ends.map((p,i)=>`<text class="axis" x="${p.x.toFixed(1)}" y="${H-7}" text-anchor="${ends.length===1?'middle':i?'end':'start'}">${md(p.d)}</text>`).join('');
   const line=P.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join('');
   const last=P[P.length-1];
-  charts[id]={P,unit,dec,W,H};
+  charts[id]={P:PJ?P.concat([Object.assign({},PJ,{sub:dayLabel(PJ.d)+' 예상'})]):P,unit,dec,W,H};
   return `<div class="chart" data-id="${id}"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${id} 추이">
     <defs><linearGradient id="g_${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:hsl(var(--chart));stop-opacity:.25"/><stop offset="1" style="stop-color:hsl(var(--chart));stop-opacity:0"/></linearGradient></defs>
     ${grid}${xl}
     ${P.length>1?`<path d="${line}L${last.x.toFixed(1)} ${H-B}L${P[0].x.toFixed(1)} ${H-B}Z" fill="url(#g_${id})"/><path class="ln" d="${line}"/>`:''}
     ${P.map(p=>`<circle class="pt" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4"/>`).join('')}
-    <text class="lbl" x="${last.x.toFixed(1)}" y="${(last.y-11).toFixed(1)}" text-anchor="${P.length>1?'end':'middle'}">${fmtN(last.v,dec)}${unit}</text>
+    <text class="lbl" x="${last.x.toFixed(1)}" y="${(last.y-11).toFixed(1)}" text-anchor="${PJ?'middle':P.length>1?'end':'middle'}">${fmtN(last.v,dec)}${unit}</text>
+    ${PJ?`<path class="pj" d="M${last.x.toFixed(1)} ${last.y.toFixed(1)}L${PJ.x.toFixed(1)} ${PJ.y.toFixed(1)}"/><circle class="pjpt" cx="${PJ.x.toFixed(1)}" cy="${PJ.y.toFixed(1)}" r="4"/><text class="lbl pjl" x="${PJ.x.toFixed(1)}" y="${(PJ.y-11).toFixed(1)}" text-anchor="end">예상 ${fmtN(PJ.v,dec)}${unit}</text>`:''}
     <g class="cross" style="display:none"><line x1="0" x2="0" y1="${T-8}" y2="${H-B}"/><circle cx="0" r="5"/></g>
     <rect x="0" y="0" width="${W}" height="${H}" fill="transparent"/>
   </svg><div class="tip" hidden></div></div>`;
@@ -1551,6 +1568,61 @@ function weeklyVolume(n){
   return out;
 }
 
+// ---------- 예측: 지금 칼로리·운동량 유지 시 N주 뒤 ----------
+// 월간 제지방 증가율(체중 대비). 경력 6개월+ 중급 초입 기준 현실 범위.
+const LEAN_RATE={bulk:[0.005,0.01],lean:[0.004,0.008],keep:[0.002,0.005],cut:[0,0.0025]};
+const SMM_SHARE=0.6;      // 인바디 골격근량 ≈ 제지방 증가분의 60%
+const KCAL_PER_KG=7700;   // 체중 1kg ≈ 7,700kcal
+function fmtS(v,d=2){return (v>=0?'+':'')+v.toFixed(d);}
+function adherence(){
+  const t=dnum(today());let c=0;
+  Object.keys(store.logs).forEach(d=>{const x=dnum(d);if(x>t-28&&x<=t&&isDone(store.logs[d]))c++;});
+  const per=c/4;
+  if(!c&&!store.start) return {per:PROGRAM.length,ratio:1,assumed:true};   // 기록 전: 계획대로 한다고 가정
+  return {per,ratio:Math.min(1,per/PROGRAM.length),assumed:false};
+}
+function projection(weeks){
+  const wE=latestOf('w');if(!wE)return null;
+  const n=nutrition(),W0=wE.w,smmE=latestOf('smm'),bfE=latestOf('bf'),t=weightTrend();
+  const calRate=n.G.k*7/KCAL_PER_KG;
+  const rate=t?t.rate:calRate;
+  const dW=rate*weeks,W1=W0+dW;
+  const ad=adherence(),adj=Math.max(0.3,ad.ratio);
+  const [lo,hi]=LEAN_RATE[store.profile.goal]||LEAN_RATE.bulk,months=weeks/4.345;
+  let lLo=W0*lo*months*adj,lHi=W0*hi*months*adj;
+  if(dW>0){lLo=Math.min(lLo,dW);lHi=Math.min(lHi,dW);}   // 증량기엔 늘어난 체중 이상으로 근육이 늘 수 없음
+  let bf=null;
+  if(bfE){const f0=W0*bfE.bf/100;bf=[(f0+dW-lHi)/W1*100,(f0+dW-lLo)/W1*100].map(x=>Math.max(3,x));}
+  return {weeks,W0,W1,dW,rate,t,calRate,n,ad,adj,lo,hi,lLo,lHi,smm0:smmE?smmE.smm:null,bf0:bfE?bfE.bf:null,bf,
+    date:localISO(new Date(Date.now()+weeks*7*864e5))};
+}
+function projPoint(){const pj=projection(store.projW||8);return pj?{d:pj.date,v:pj.W1}:null;}
+function renderProj(){
+  const W=store.projW||8,pj=projection(W);
+  const seg=`<div class="seg sm" style="width:176px">${[4,8,12].map(w=>`<button class="${W===w?'on':''}" onclick="store.projW=${w};persist();render()">${w}주</button>`).join('')}</div>`;
+  if(!pj) return `<section class="card"><div class="ch-head"><h3>이대로 유지하면</h3>${seg}</div><div class="empty">체중을 한 번 입력하면 예상치를 계산해요</div></section>`;
+  const r=(a,b,d=1)=>Math.abs(a-b)<0.05?fmtN(a,d):`${fmtN(Math.min(a,b),d)}~${fmtN(Math.max(a,b),d)}`;
+  const smmTxt=pj.smm0!=null?`${r(pj.smm0+pj.lLo*SMM_SHARE,pj.smm0+pj.lHi*SMM_SHARE)}<small>kg</small>`:`${r(pj.lLo*SMM_SHARE,pj.lHi*SMM_SHARE)}<small>kg 증가</small>`;
+  const bfTxt=pj.bf?`${r(pj.bf[0],pj.bf[1])}<small>%</small>`:'–';
+  const wSrc=pj.t?`최근 ${pj.t.days}일 실제 추세 주 ${fmtS(pj.rate)}kg`:`칼로리 기준 하루 ${pj.n.G.k>=0?'+':''}${pj.n.G.k}kcal × 7 ÷ ${KCAL_PER_KG.toLocaleString()} = 주 ${fmtS(pj.calRate)}kg`;
+  const adTxt=pj.ad.assumed?'운동 기록 전이라 계획대로 한다고 가정':`최근 4주 평균 주 ${pj.ad.per.toFixed(1)}회 / 목표 ${PROGRAM.length}회 = ${Math.round(pj.adj*100)}%`;
+  return `<section class="card proj"><div class="ch-head"><h3>이대로 유지하면</h3>${seg}</div>
+    <div class="muted">${dayLabel(pj.date)} 예상 · 하루 ${pj.n.kcal.toLocaleString()}kcal와 지금 운동량 유지 시</div>
+    <div class="pgrid">
+      <div><span>체중</span><b>${fmtN(pj.W1,1)}<small>kg</small></b><em>${fmtS(pj.dW,1)}kg</em></div>
+      <div><span>골격근량</span><b>${smmTxt}</b><em>+${r(pj.lLo*SMM_SHARE,pj.lHi*SMM_SHARE)}kg</em></div>
+      <div><span>체지방률</span><b>${bfTxt}</b><em>${pj.bf&&pj.bf0!=null?`지금 ${fmtN(pj.bf0,1)}%`:'인바디 체지방 필요'}</em></div>
+    </div>
+    <details class="tbl"><summary>계산 근거</summary><div class="pcalc">
+      <p><b>체중</b> ${wSrc}</p>
+      <p><b>근육</b> 경력 6개월+ 기준 월 체중의 ${(pj.lo*100).toFixed(1)}~${(pj.hi*100).toFixed(1)}% 제지방 증가 × 운동 이행률 (${adTxt})</p>
+      <p><b>골격근량</b> 제지방 증가분 × ${SMM_SHARE*100}% (인바디 골격근량 비율)</p>
+      <p><b>체지방률</b> (현재 지방량 + 늘어난 체중 − 근육 증가분) ÷ 예상 체중</p>
+      <p class="muted">추정치예요. 수면·단백질 섭취·유전에 따라 달라져요. 2주마다 인바디를 입력하면 실제 추세로 자동 보정돼요.</p>
+    </div></details>
+  </section>`;
+}
+
 // ---------- 데이터 화면 ----------
 function tileHTML(k,label,unit,good){
   const b=bodySorted().filter(x=>x[k]!=null);
@@ -1563,7 +1635,7 @@ function renderData(){
   const series=k=>bs.filter(x=>x[k]!=null).map(x=>({d:x.date,v:x[k]}));
   const chartCard=(k,title,unit)=>{const pts=series(k);
     return `<div class="card"><div class="ch-head"><h3>${title}</h3><span class="muted">${pts.length?pts.length+'회 측정 · '+unit:''}</span></div>
-      ${pts.length?lineChart(k,pts,unit,1):'<div class="empty">인바디를 입력하면 그래프가 그려져요</div>'}
+      ${pts.length?lineChart(k,pts,unit,1,k==='w'?projPoint():null):'<div class="empty">인바디를 입력하면 그래프가 그려져요</div>'}
       ${pts.length?`<details class="tbl"><summary>표로 보기</summary><table>${pts.slice().reverse().map(p=>`<tr><td>${dayLabel(p.d)}</td><td style="text-align:right">${fmtN(p.v,1)}${unit}</td></tr>`).join('')}</table></details>`:''}</div>`;};
   const prs={};
   Object.keys(store.logs).forEach(d=>Object.entries(store.logs[d].ex).forEach(([nm,e])=>e.sets.forEach(x=>{if(x&&x.d&&x.w&&x.r&&!ASSIST.has(nm)){const e1=x.w*(1+x.r/30);if(!prs[nm]||e1>prs[nm].e1)prs[nm]={e1,w:x.w,r:x.r,d};}})));
@@ -1578,6 +1650,7 @@ function renderData(){
     <div class="muted calc">기초대사량 ${n.bmr.toLocaleString()}kcal (${n.src}) × 활동량 ${n.A.f} = 유지 ${n.tdee.toLocaleString()}kcal, 목표 ${n.G.k>=0?'+':''}${n.G.k}kcal<br>단백질 체중 ${fmtN(n.w,1)}kg × ${n.G.p}g · 지방 25% · 나머지 탄수화물</div>
     ${adviceHTML(n)}
   </section>
+  ${renderProj()}
   <div class="set-sec">신체 변화 · 처음 측정 대비</div>
   <div class="tiles">${tileHTML('w','체중','kg',gw)}${tileHTML('smm','골격근량','kg',1)}${tileHTML('bf','체지방률','%',-1)}</div>
   ${chartCard('w','체중','kg')}${chartCard('smm','골격근량','kg')}${chartCard('bf','체지방률','%')}
