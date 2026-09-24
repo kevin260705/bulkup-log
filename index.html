@@ -802,6 +802,18 @@
   .tabs.fl{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 28px);mask-image:linear-gradient(to right,transparent 0,#000 28px)}
   .tabs.fr{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 28px);mask-image:linear-gradient(to left,transparent 0,#000 28px)}
   .tabs.fl.fr{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%)}
+
+  /* 휴식 게이지: 시작 시 꽉 차고 남은 시간만큼 줄어듦 */
+  .timer{overflow:hidden;isolation:isolate}
+  .timer:before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(90deg,hsl(var(--primary)/.10),hsl(var(--primary)/.26));
+    transform-origin:left center;transform:scaleX(var(--p,0));will-change:transform}
+  .timer:after{content:"";position:absolute;top:8px;bottom:8px;left:calc(var(--p,0)*100%);width:2px;margin-left:-2px;z-index:-1;border-radius:2px;
+    background:hsl(var(--primary)/.7);opacity:0;transition:opacity .2s}
+  .timer.running:after{opacity:1}
+  .timer .t.done{color:hsl(var(--primary))}
+  /* 선택된 휴식 시간 */
+  .timer .btn.rp.on{background:hsl(var(--primary)/.16);color:hsl(var(--primary));box-shadow:inset 0 0 0 1.5px hsl(var(--primary)/.8)}
 </style>
 </head>
 <body>
@@ -818,12 +830,12 @@
 
 <div class="timer"><div class="in">
   <div class="t" id="timerText">0:00</div>
-  <button class="btn" onclick="startTimer(60)">60s</button>
-  <button class="btn" onclick="startTimer(90)">90s</button>
-  <button class="btn" onclick="startTimer(120)">2분</button>
-  <button class="btn" onclick="startTimer(180)">3분</button>
+  <button class="btn rp" data-s="60" onclick="pickRest(60)">60s</button>
+  <button class="btn rp" data-s="90" onclick="pickRest(90)">90s</button>
+  <button class="btn rp" data-s="120" onclick="pickRest(120)">2분</button>
+  <button class="btn rp" data-s="180" onclick="pickRest(180)">3분</button>
   <span class="sp"></span>
-  <button class="btn ghost" onclick="stopTimer();tick()" aria-label="정지"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+  <button class="btn ghost" onclick="stopBtn()" aria-label="정지"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
 </div></div>
 
 <script>
@@ -1127,7 +1139,7 @@ function renderDay(day){
         <td><span class="sn">${k+1}</span></td>
         <td><input type="number" class="ghost ${s.w==null&&ph.w!=null?'carry':''}" inputmode="decimal" step="0.5" value="${s.w??ph.w??''}" ${s.w==null&&ph.w!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'w',this.value)"></td>
         <td><input type="number" class="ghost ${s.r==null&&ph.r!=null?'carry':''}" inputmode="numeric" value="${s.r??ph.r??''}" ${s.r==null&&ph.r!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'r',this.value)"></td>
-        <td><input type="checkbox" class="chk" ${s.d?'checked':''} onchange="setVal('${day.id}','${esc(ex.n)}',${k},'d',this.checked);if(this.checked)startTimer(${ex.rest})"></td>
+        <td><input type="checkbox" class="chk" ${s.d?'checked':''} onchange="setVal('${day.id}','${esc(ex.n)}',${k},'d',this.checked);if(this.checked)startRest(${ex.rest})"></td>
       </tr>`);
     }
     return `<div class="card ${isCurrent?'current':''}" id="ex${i}" style="--c:${DAY_COLOR[day.id]}">
@@ -1268,10 +1280,17 @@ function toggleTheme(){store.theme=(store.theme==='light')?'dark':'light';save()
 applyTheme();
 
 // ---------- 타이머 ----------
-let tInt=null,tLeft=0,tEnd=0;
-function startTimer(sec){stopTimer();tEnd=Date.now()+sec*1000;store.timerEnd=tEnd;persist();runTimer();}
-function runTimer(){const b=document.querySelector('.timer');if(b)b.classList.add('running');tick();tInt=setInterval(tick,250);}
-function stopTimer(){clearInterval(tInt);tInt=null;tEnd=0;if(store.timerEnd){store.timerEnd=0;persist();}const b=document.querySelector('.timer');if(b)b.classList.remove('running');}
+let tInt=null,tLeft=0,tEnd=0,tTotal=0,tRaf=0;
+function startTimer(sec){stopTimer();tTotal=sec*1000;tEnd=Date.now()+tTotal;store.timerEnd=tEnd;store.timerTotal=tTotal;persist();runTimer();}
+// 세트 완료 시: 직접 고른 시간이 있으면 그 시간, 없으면 종목별 기본 휴식
+function startRest(def){startTimer(store.restSel||def);}
+function pickRest(sec){store.restSel=sec;persist();markRest();startTimer(sec);}
+function markRest(){document.querySelectorAll('.timer .rp').forEach(b=>b.classList.toggle('on',+b.dataset.s===store.restSel));}
+// ■: 도는 중이면 정지, 멈춘 상태면 선택 해제(종목별 기본 휴식으로)
+function stopBtn(){if(tEnd){stopTimer();tick();}else if(store.restSel){store.restSel=null;persist();markRest();flashSaved('종목별 기본 휴식 시간으로 돌아가요');}}
+function gauge(){const b=document.querySelector('.timer');if(!b)return;const p=tEnd&&tTotal?Math.max(0,Math.min(1,(tEnd-Date.now())/tTotal)):0;b.style.setProperty('--p',p.toFixed(4));if(tEnd)tRaf=requestAnimationFrame(gauge);}
+function runTimer(){const b=document.querySelector('.timer');if(b)b.classList.add('running');tick();tInt=setInterval(tick,250);cancelAnimationFrame(tRaf);gauge();}
+function stopTimer(){clearInterval(tInt);tInt=null;tEnd=0;cancelAnimationFrame(tRaf);if(store.timerEnd){store.timerEnd=0;persist();}const b=document.querySelector('.timer');if(b){b.classList.remove('running');b.style.setProperty('--p','0');}}
 function tick(){
   const el=document.getElementById('timerText');
   tLeft=tEnd?Math.max(0,Math.ceil((tEnd-Date.now())/1000)):0;
@@ -1592,7 +1611,8 @@ function render(){
   if(u&&Date.now()-u.t<6*3600e3){curTab=u.tab||null;curDate=u.date||today();view=['home','cal','data','set','guide'].includes(u.view)?u.view:'home';}
   render();
   if(u&&Date.now()-u.t<6*3600e3&&u.y) setTimeout(()=>window.scrollTo(0,u.y),0);
-  if(store.timerEnd&&store.timerEnd>Date.now()){tEnd=store.timerEnd;runTimer();}
+  markRest();
+  if(store.timerEnd&&store.timerEnd>Date.now()){tEnd=store.timerEnd;tTotal=store.timerTotal||Math.max(1,tEnd-Date.now());runTimer();}
 })();
 function saveNow(){if(store.ui){store.ui.y=window.scrollY;store.ui.t=Date.now();}persist();}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow();else if(tEnd)tick();});
