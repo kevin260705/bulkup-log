@@ -814,6 +814,25 @@
   .timer .t.done{color:hsl(var(--primary))}
   /* 선택된 휴식 시간 */
   .timer .btn.rp.on{background:hsl(var(--primary)/.16);color:hsl(var(--primary));box-shadow:inset 0 0 0 1.5px hsl(var(--primary)/.8)}
+
+  /* ===== 모바일 검수 수정 ===== */
+  /* 헤더: 긴 닉네임은 말줄임, 오른쪽 수치와 겹치지 않게 */
+  .hwrap{gap:12px}
+  .who{flex:1 1 auto;min-width:0}
+  .who>span:last-child{min-width:0;overflow:hidden}
+  /* 알림: 내용 길이에 맞게 늘어나고, 넘치면 줄바꿈 (고정 높이 제거) */
+  .saved{height:auto;min-height:38px;width:max-content;max-width:calc(100vw - 32px);padding:9px 16px;
+    white-space:normal;text-align:left;line-height:1.35;border-radius:19px;top:calc(10px + env(safe-area-inset-top));
+    background:hsl(var(--glass)/.94)}
+  .saved.on{transform:translate(-50%,0)}
+  .saved:before{flex:0 0 16px;width:16px;height:16px}
+  /* 큰 숫자 위아래 잘림 */
+  .hero b{line-height:1.1}
+  .dh-nums b{line-height:1.1}
+  /* 명언 따옴표가 줄 밖으로 삐져나오지 않게 */
+  .quote p:before{top:-3px;font-size:28px;line-height:.8}
+  /* 가이드 출처 링크 터치 영역 */
+  .research a{display:inline-block;padding:8px 0;margin:-8px 0}
 </style>
 </head>
 <body>
@@ -1422,7 +1441,7 @@ function renderBodyForm(){
   return `<div class="set-sec" style="margin-top:4px">새 인바디 기록</div>
   <div class="card irows">
     <label class="irow"><span>측정일</span><input type="date" value="${d.date||today()}" onchange="bodyDraft('date',this.value)"></label>
-    ${row('w','체중','kg',0.1)}${row('smm','골격근량','kg',0.1)}${row('bf','체지방률','%',0.1)}${row('bmr','기초대사량','kcal',1,'선택 · 인바디 결과지에 있으면 입력')}
+    ${row('w','체중','kg',0.1)}${row('smm','골격근량','kg',0.1)}${row('bf','체지방률','%',0.1)}${row('bmr','기초대사량','kcal',1,'선택')}
   </div>
   <div class="muted" style="margin:-4px 16px 10px">흐린 숫자는 지난 측정값이에요. 체중만 넣어도 저장돼요.</div>
   <button class="btn primary big" onclick="saveBody()">저장</button>
