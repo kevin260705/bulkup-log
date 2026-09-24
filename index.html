@@ -503,6 +503,236 @@
   .timer .t{font-weight:900}
   body[data-view=home] main{padding-bottom:calc(178px + env(safe-area-inset-bottom))}
   .timer{bottom:calc(69px + env(safe-area-inset-bottom))}
+
+  /* ================= Apple Liquid Glass (색 시스템 유지) ================= */
+  :root{--glass:232 18% 17%;--glass-a:.62;--gl-line:255 255 255;--gl-in:.06;--gl-hi:.10;--gl-bd:.08;--shadow:0 10px 30px rgba(0,0,0,.35)}
+  html[data-theme=light]{--glass:0 0% 100%;--glass-a:.72;--gl-line:255 255 255;--gl-in:.55;--gl-hi:.9;--gl-bd:.9;--shadow:0 8px 24px rgba(30,35,60,.08)}
+  html[data-theme=light] body{--in:232 20% 30%}
+  /* 유리가 비칠 은은한 배경 광원 */
+  body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+    radial-gradient(55% 35% at 10% 0%,hsl(var(--primary)/.13),transparent 70%),
+    radial-gradient(45% 30% at 100% 35%,hsl(var(--chart)/.12),transparent 70%),
+    radial-gradient(60% 35% at 40% 100%,hsl(250 70% 55%/.10),transparent 70%),hsl(var(--background))}
+  body{background:transparent}
+  html{background:hsl(var(--background))}
+
+  /* 유리 패널 */
+  .card,.dayhead,.tile,.citem{
+    background:hsl(var(--glass)/var(--glass-a));
+    border:1px solid rgb(var(--gl-line)/var(--gl-bd));
+    box-shadow:inset 0 1px 0 rgb(var(--gl-line)/var(--gl-hi)),var(--shadow);
+    border-radius:26px}
+  .tile{border-radius:22px}
+  .citem{border-radius:20px}
+  .card.current{border:1.5px solid hsl(var(--c,var(--primary)))}
+  .dcard{border-top:1px solid rgb(var(--gl-line)/var(--gl-bd));box-shadow:inset 0 3px 0 hsl(var(--c)),var(--shadow)}
+  /* 패널 안쪽 면: 한 겹 밝은 유리 */
+  .target span,.macros div,.stats div,.fbox,.note,.advice,.datebtn,.sn,.chip,.exn,
+  input[type=number],textarea,.bform input[type=date],.irow input[type=date],.field input[type=date]{
+    background:rgb(var(--gl-line)/var(--gl-in));border-color:transparent}
+  html[data-theme=light] .target span,html[data-theme=light] .macros div,html[data-theme=light] .stats div,html[data-theme=light] .fbox,html[data-theme=light] .note,html[data-theme=light] input[type=number],html[data-theme=light] textarea,html[data-theme=light] .sn,html[data-theme=light] .datebtn{background:hsl(232 25% 20%/.05)}
+  .target span,.macros div,.stats div{border-radius:18px}
+  .fbox{border-radius:20px}
+  .note,.advice{border-radius:16px}
+  input[type=number],textarea{border-radius:16px}
+  .iv input[type=number],.field .unit input[type=number]{background:transparent}
+  .advice.ok{background:hsl(var(--primary)/.13)}
+  .advice.warn{background:hsl(var(--warning)/.13)}
+  .card.current .exn{background:hsl(var(--c,var(--primary)))}
+  .row-done .sn{background:hsl(var(--primary))}
+  .row-done input[type=number]{background:hsl(var(--primary)/.12)}
+
+  /* 캡슐 버튼 */
+  .btn{border-radius:9999px;background:rgb(var(--gl-line)/.09);box-shadow:inset 0 1px 0 rgb(var(--gl-line)/.10)}
+  html[data-theme=light] .btn{background:hsl(232 25% 20%/.06)}
+  .btn:hover{background:rgb(var(--gl-line)/.14)}
+  .btn.primary,.btn.ok{background:hsl(var(--primary));color:hsl(var(--primary-foreground));box-shadow:inset 0 1px 0 rgb(255 255 255/.35),0 8px 22px hsl(var(--primary)/.28)}
+  .btn.big{border-radius:9999px;height:56px}
+  .btn.tint{background:hsl(var(--primary)/.1);box-shadow:inset 0 0 0 1.5px hsl(var(--primary)/.9)}
+  .btn.ghost,.btn.danger{background:transparent;box-shadow:none}
+  .badge,.videos a,.cur-badge,.tab em{border-radius:9999px}
+  .videos a{background:rgb(var(--gl-line)/var(--gl-in))}
+
+  /* 헤더: 유리 바 */
+  header{background:hsl(var(--background)/.45);backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);border-bottom:.5px solid rgb(var(--gl-line)/.06)}
+
+  /* 부위 탭: 유리 캡슐 트랙 + 선택 알약 */
+  .tabs-wrap{border-bottom:0;padding:4px 0 0}
+  .tabs{gap:4px;margin:0 16px;padding:4px;border-radius:9999px;background:hsl(var(--glass)/var(--glass-a));border:1px solid rgb(var(--gl-line)/var(--gl-bd));box-shadow:inset 0 1px 0 rgb(var(--gl-line)/var(--gl-hi))}
+  .tab{height:38px;padding:0 14px;border-radius:9999px!important;font-size:14.5px}
+  .tab.active{background:rgb(var(--gl-line)/.14)!important;box-shadow:inset 0 1px 0 rgb(var(--gl-line)/.18),0 2px 8px rgba(0,0,0,.25)}
+  html[data-theme=light] .tab.active{background:#fff!important;box-shadow:0 2px 8px rgba(30,35,60,.12)}
+  .tab.active:after{display:none}
+
+  /* 선택 컨트롤: 캡슐 */
+  .seg{border-radius:9999px;padding:3px;background:rgb(var(--gl-line)/var(--gl-in))}
+  html[data-theme=light] .seg{background:hsl(232 25% 20%/.06)}
+  .seg button{border-radius:9999px}
+  .seg button.on{box-shadow:inset 0 1px 0 rgb(255 255 255/.3),0 2px 8px hsl(var(--primary)/.25)}
+
+  /* 떠 있는 유리 탭바 + 타이머 */
+  .bnav{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));max-width:520px;margin:0 auto;padding:5px;border-radius:9999px;
+    background:hsl(var(--glass)/.66);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
+    border:1px solid rgb(var(--gl-line)/.10);box-shadow:inset 0 1px 0 rgb(var(--gl-line)/.14),0 12px 40px rgba(0,0,0,.45)}
+  html[data-theme=light] .bnav{box-shadow:inset 0 1px 0 #fff,0 10px 30px rgba(30,35,60,.14)}
+  .bnav button{height:54px;border-radius:9999px;font-size:11px}
+  .bnav button.on{background:rgb(var(--gl-line)/.10)}
+  html[data-theme=light] .bnav button.on{background:hsl(232 25% 20%/.06)}
+  .bnav svg{width:24px;height:24px}
+  .timer{left:12px;right:12px;bottom:calc(80px + env(safe-area-inset-bottom));max-width:520px;margin:0 auto;border-radius:9999px;
+    background:hsl(var(--glass)/.66);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
+    border:1px solid rgb(var(--gl-line)/.10);box-shadow:inset 0 1px 0 rgb(var(--gl-line)/.14),0 10px 30px rgba(0,0,0,.35)}
+  .timer .in{padding:6px 8px 6px 20px}
+  .timer .t{font-size:26px}
+  .timer .btn{height:36px;border-radius:9999px;padding:0 12px}
+  main{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+  body[data-view=home] main{padding-bottom:calc(160px + env(safe-area-inset-bottom))}
+
+  /* 토스트 · 툴팁 */
+  .saved{background:hsl(var(--glass)/.8);color:hsl(var(--foreground));backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgb(var(--gl-line)/.12);box-shadow:inset 0 1px 0 rgb(var(--gl-line)/.14),0 10px 30px rgba(0,0,0,.35)}
+  .tip{border-radius:14px}
+
+  /* 설정: 아이콘 배지 그룹 리스트 */
+  .glist{padding:2px 0}
+  .grow{display:flex;align-items:center;gap:12px;min-height:54px;padding:0 16px;width:100%;border:0;background:none;color:hsl(var(--foreground));font:inherit;text-align:left;cursor:pointer;position:relative}
+  .grow+.grow:before{content:"";position:absolute;top:0;left:56px;right:0;border-top:.5px solid hsl(var(--border))}
+  .grow .gl{flex:1;font-size:16px;font-weight:600}
+  .grow .gv{display:flex;align-items:center;gap:6px;color:hsl(var(--muted-foreground));font-size:15px;font-weight:500}
+  .grow .gv svg{width:15px;height:15px}
+  .grow.danger .gl{color:hsl(var(--destructive))}
+  .ic{flex:0 0 30px;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:hsl(var(--ic));color:#fff;box-shadow:inset 0 1px 0 rgb(255 255 255/.3)}
+  .ic svg{width:16px;height:16px}
+  .grow .unit{display:flex;align-items:baseline;gap:4px}
+  .grow .unit input[type=number]{width:84px;height:40px;padding:0;border:0;background:transparent;text-align:right;font-size:20px;font-weight:800;color:hsl(var(--foreground))}
+  .grow .unit input[type=number]:focus{color:hsl(var(--primary));background:transparent}
+  .grow .unit em{font-style:normal;font-size:14px;color:hsl(var(--muted-foreground))}
+  .grow input[type=date]{height:36px;border:0;border-radius:9999px;padding:0 12px;background:rgb(var(--gl-line)/var(--gl-in));color:hsl(var(--foreground));font:inherit;font-size:14px;font-weight:700;color-scheme:dark}
+  html[data-theme=light] .grow input[type=date]{color-scheme:light;background:hsl(232 25% 20%/.06)}
+  .card.glist{padding:4px 0}
+  .card.pad{padding:16px}
+  /* iOS 토글 */
+  .sw{flex:0 0 51px;width:51px;height:31px;border:0;border-radius:9999px;background:rgb(var(--gl-line)/.18);position:relative;cursor:pointer;transition:background .2s}
+  html[data-theme=light] .sw{background:hsl(232 25% 20%/.14)}
+  .sw:after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.25);transition:transform .2s}
+  .sw.on{background:hsl(var(--primary))}
+  .sw.on:after{transform:translateX(20px)}
+  .prof{border-radius:26px}
+
+  /* ================= 타이포그래피: 깔끔하고 정제된 위계 ================= */
+  body{font-size:15px;line-height:1.5;letter-spacing:-.011em;font-weight:400;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+  b,strong{font-weight:600}
+  .muted{font-size:13px;font-weight:400;letter-spacing:-.005em}
+  /* 헤더 */
+  .who b{font-size:17px;font-weight:600;letter-spacing:-.02em}
+  #weekBadge{font-size:12px;font-weight:500}
+  .who .avatar{width:38px;height:38px;font-size:15px;font-weight:600}
+  .wk svg{width:26px;height:26px}
+  .wk b{font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .wk small{font-size:11px;font-weight:500}
+  /* 탭 */
+  .tab{font-size:14px;font-weight:500;letter-spacing:-.01em}
+  .tab.active{font-weight:600}
+  .tab em{font-size:10.5px;font-weight:600;letter-spacing:0}
+  /* 페이지 · 섹션 제목 */
+  .page-title h2{font-size:24px;font-weight:700;letter-spacing:-.03em}
+  .set-sec{font-size:13px;font-weight:500;letter-spacing:-.005em}
+  .card h3{font-size:16px;font-weight:600;letter-spacing:-.02em}
+  .card h3 .idx{font-weight:500}
+  /* 명언 */
+  .quote p{font-size:15px;font-weight:500;line-height:1.55;letter-spacing:-.02em;color:hsl(var(--foreground)/.92)}
+  .quote p:before{font-size:32px;top:-6px}
+  .quote span{font-size:12px;font-weight:400}
+  /* 운동 요약 */
+  .kicker{font-size:11.5px;font-weight:600;letter-spacing:.04em}
+  .dayhead h2{font-size:24px;font-weight:700;letter-spacing:-.03em;margin:8px 0 2px}
+  .dh-meta{font-size:13px;font-weight:400}
+  .dh-nums b{font-size:28px;font-weight:700;letter-spacing:-.03em}
+  .dh-nums span{font-size:13px;font-weight:400}
+  .dh-nums em{font-size:13px;font-weight:600}
+  .dl-note{font-size:12px;font-weight:500}
+  .datebtn{font-size:13px;font-weight:500}
+  /* 운동 카드 */
+  .exn{font-size:11.5px;font-weight:600}
+  .cur-badge{font-size:10.5px;font-weight:600}
+  .target b{font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .target span{font-size:11px;font-weight:400}
+  .note{font-size:13.5px;font-weight:400;line-height:1.6}
+  .note:before{font-size:9.5px;font-weight:700}
+  .last{font-size:12.5px;font-weight:400}
+  .last b{font-weight:500}
+  .last .hint{font-size:11.5px;font-weight:600}
+  th{font-size:11px;font-weight:500}
+  .sn{font-size:12px;font-weight:600}
+  input[type=number]{font-size:17px;font-weight:600;letter-spacing:-.01em}
+  summary{font-size:13px;font-weight:500}
+  .frow{font-size:14px;font-weight:400;line-height:1.65}
+  .frow b{font-size:11px;font-weight:600}
+  .videos a{font-size:12.5px;font-weight:500}
+  /* 버튼 */
+  .btn{font-size:14px;font-weight:600;letter-spacing:-.01em}
+  .btn.small{font-size:13px}
+  .btn.big{font-size:16px;font-weight:600}
+  .btn.primary,.btn.ok{font-weight:600}
+  .seg button{font-size:13px;font-weight:500}
+  .seg button.on{font-weight:600}
+  .badge{font-size:11.5px;font-weight:500}
+  .badge.sec b{font-weight:600}
+  /* 하단 바 · 타이머 */
+  .bnav button{font-size:10.5px;font-weight:500;letter-spacing:0}
+  .timer .t{font-size:24px;font-weight:600;letter-spacing:-.02em}
+  .timer .btn{font-size:12.5px;font-weight:500}
+  .saved{font-size:13px;font-weight:500}
+  /* 데이터 */
+  .k2{font-size:11.5px;font-weight:600;letter-spacing:.02em}
+  .hero{margin:4px 0 14px}
+  .hero b{font-size:42px;font-weight:700;letter-spacing:-.04em}
+  .hero span{font-size:15px;font-weight:500}
+  .macros span{font-size:12px;font-weight:500}
+  .macros b{font-size:19px;font-weight:600;letter-spacing:-.02em}
+  .macros em{font-size:11.5px;font-weight:400}
+  .calc{font-size:12px;font-weight:400}
+  .advice{font-size:13px;font-weight:500}
+  .tile span{font-size:12px;font-weight:500}
+  .tile b{font-size:20px;font-weight:600;letter-spacing:-.02em}
+  .tile b small{font-size:11.5px;font-weight:500}
+  .delta{font-size:11.5px;font-weight:600}
+  .chart .axis{font-size:10px;font-weight:500}
+  .chart .lbl{font-size:11px;font-weight:600}
+  .tip{font-size:11.5px;font-weight:500}
+  .tip b{font-size:13.5px;font-weight:700}
+  .prrow{font-size:14px;font-weight:500}
+  .prrow b{font-weight:600}
+  .prrow small{font-size:11.5px;font-weight:400}
+  .blist .row{font-size:13px;font-weight:400}
+  .blist .row.h{font-size:11.5px;font-weight:500}
+  .irow>span:first-child{font-size:15px;font-weight:500}
+  .iv input[type=number]{font-size:20px;font-weight:600}
+  .iv em,.field .unit em{font-size:14px;font-weight:400}
+  .latest{font-size:12.5px}
+  /* 달력 */
+  .calhead h2{font-size:20px;font-weight:600;letter-spacing:-.02em}
+  .cwd{font-size:12px;font-weight:500}
+  .cday .dot{font-size:14px;font-weight:400}
+  .cday.done .dot{font-size:13.5px;font-weight:600}
+  .cday.today:not(.done) .dot{font-weight:600}
+  .tlabel{font-size:10px;font-weight:600}
+  .legend{font-size:12.5px;font-weight:500}
+  .cdate{font-size:13px;font-weight:600}
+  .cname{font-size:15px;font-weight:600}
+  .cmeta{font-size:12.5px;font-weight:400}
+  .dtop h3{font-size:18px!important;font-weight:600}
+  .stats b{font-size:18px;font-weight:600}
+  .stats span{font-size:11px;font-weight:400}
+  .dexh{font-size:14px;font-weight:600}
+  .chip{font-size:12.5px;font-weight:500}
+  /* 설정 */
+  .name-in{font-size:19px;font-weight:600;letter-spacing:-.02em}
+  .avatar.big{font-size:20px;font-weight:600}
+  .grow .gl{font-size:15.5px;font-weight:500}
+  .grow .gv{font-size:14.5px;font-weight:400}
+  .grow .unit input[type=number]{font-size:17px;font-weight:600}
+  .seg-desc{font-size:12.5px;font-weight:400}
+  .kv{font-size:14px}
 </style>
 </head>
 <body>
@@ -1216,35 +1446,55 @@ function setProfile(k,v,re){store.profile[k]=['age','height'].includes(k)?(v==='
 function setTheme(t){store.theme=t;save();applyTheme();render();}
 function resetAll(){if(!confirm('모든 운동·인바디 기록을 삭제할까요?'))return;if(!confirm('되돌릴 수 없어요. 정말 삭제할까요?'))return;localStorage.removeItem(KEY);location.reload();}
 function renderSettings(){
-  const pr=store.profile,seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button class="${pr[k]===v?'on':''}" onclick="setProfile('${k}','${v}',1)">${l}</button>`).join('')}</div>`;
-  const w=weekNo(today());
+  const pr=store.profile,w=weekNo(today());
+  const I=(ic,d)=>`<i class="ic" style="--ic:${ic}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${d}</svg></i>`;
+  const ico={
+    user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    ruler:'<path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2M11.5 9.5l2-2M8.5 6.5l2-2M17.5 15.5l2-2"/>',
+    users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+    cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    flag:'<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/>',
+    moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+    book:'<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
+    down:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',
+    up:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/>',
+    trash:'<path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>'};
+  const C={blue:'221 90% 60%',cyan:'188 80% 45%',violet:'270 70% 62%',green:'138 80% 38%',orange:'25 92% 52%',gray:'232 8% 48%',pink:'338 80% 58%',red:'3 90% 58%'};
+  const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button class="${pr[k]===v?'on':''}" onclick="setProfile('${k}','${v}',1)">${l}</button>`).join('')}</div>`;
+  const dark=(store.theme||'dark')==='dark';
   return `<div class="page-title"><h2>설정</h2></div>
   <div class="card prof"><div class="avatar big">${((pr.name||'?').trim()[0]||'?').toUpperCase()}</div><div><input class="name-in" value="${(pr.name||'').replace(/"/g,'&quot;')}" placeholder="닉네임" maxlength="20" oninput="setProfile('name',this.value)"><div class="muted" style="margin-top:6px">이 기기에 저장되는 내 프로필</div></div></div>
+
   <div class="set-sec">신체 정보</div>
-  <div class="card">
-    <div class="field"><span>나이</span><span class="unit"><input type="number" inputmode="numeric" value="${pr.age??''}" oninput="setProfile('age',this.value)"><em>세</em></span></div>
-    <div class="field"><span>키</span><span class="unit"><input type="number" inputmode="decimal" value="${pr.height??''}" oninput="setProfile('height',this.value)"><em>cm</em></span></div>
-    <div class="field"><span>성별</span><div class="seg sm">${[['m','남'],['f','여']].map(([v,l])=>`<button class="${pr.sex===v?'on':''}" onclick="setProfile('sex','${v}',1)">${l}</button>`).join('')}</div></div>
-    <div class="muted" style="margin-top:8px">체중·골격근량·체지방률은 데이터 탭의 인바디 기록을 써요.</div>
+  <div class="card glist">
+    <label class="grow">${I(C.blue,ico.user)}<span class="gl">나이</span><span class="unit"><input type="number" inputmode="numeric" value="${pr.age??''}" oninput="setProfile('age',this.value)"><em>세</em></span></label>
+    <label class="grow">${I(C.cyan,ico.ruler)}<span class="gl">키</span><span class="unit"><input type="number" inputmode="decimal" value="${pr.height??''}" oninput="setProfile('height',this.value)"><em>cm</em></span></label>
+    <div class="grow">${I(C.violet,ico.users)}<span class="gl">성별</span><div class="seg sm">${[['m','남'],['f','여']].map(([v,l])=>`<button class="${pr.sex===v?'on':''}" onclick="setProfile('sex','${v}',1)">${l}</button>`).join('')}</div></div>
   </div>
+  <div class="muted" style="margin:8px 16px 0">체중·골격근량·체지방률은 데이터 탭의 인바디 기록을 써요.</div>
+
   <div class="set-sec">목표 · 칼로리 계산 기준</div>
-  <div class="card">${seg('goal',Object.entries(GOALS).map(([k,g])=>[k,g.l]))}<div class="seg-desc">${(GOALS[pr.goal]||GOALS.bulk).d}</div>
+  <div class="card pad">${seg('goal',Object.entries(GOALS).map(([k,g])=>[k,g.l]))}<div class="seg-desc">${(GOALS[pr.goal]||GOALS.bulk).d}</div>
     <div style="height:14px"></div>${seg('activity',Object.entries(ACTS).map(([k,a])=>[k,'활동 '+a.l]))}<div class="seg-desc">${(ACTS[pr.activity]||ACTS.mid).d} · 계수 ${(ACTS[pr.activity]||ACTS.mid).f}</div></div>
+
   <div class="set-sec">프로그램</div>
-  <div class="card">
-    <div class="field"><span>시작일</span><input type="date" value="${store.start||''}" onchange="store.start=this.value||null;save();render()"></div>
-    <div class="field"><span>현재</span><span class="muted">${w&&w>0?`${w}주차 · 7주차마다 디로드`:'첫 세트 완료 시 시작'}</span></div>
-    <div class="field"><span>테마</span><div class="seg sm">${[['dark','다크'],['light','라이트']].map(([v,l])=>`<button class="${(store.theme||'dark')===v?'on':''}" onclick="setTheme('${v}')">${l}</button>`).join('')}</div></div>
+  <div class="card glist">
+    <div class="grow">${I(C.green,ico.cal)}<span class="gl">시작일</span><input type="date" value="${store.start||''}" onchange="store.start=this.value||null;save();render()"></div>
+    <div class="grow">${I(C.orange,ico.flag)}<span class="gl">현재</span><span class="gv">${w&&w>0?`${w}주차 · 7주차마다 디로드`:'첫 세트 완료 시 시작'}</span></div>
+    <div class="grow">${I(C.gray,ico.moon)}<span class="gl">다크 모드</span><button class="sw ${dark?'on':''}" onclick="setTheme('${dark?'light':'dark'}')" aria-label="다크 모드"></button></div>
   </div>
+
   <div class="set-sec">가이드</div>
-  <div class="card" style="padding:4px 16px"><button class="linkrow" onclick="setView('guide')">운동 원칙 · 연구 근거 · 황철순 채널${ICON_CHEV}</button></div>
+  <div class="card glist"><button class="grow" onclick="setView('guide')">${I(C.pink,ico.book)}<span class="gl">운동 원칙 · 연구 근거 · 황철순 채널</span><span class="gv">${ICON_CHEV}</span></button></div>
+
   <div class="set-sec">데이터 관리</div>
-  <div class="card">
-    <div class="rowbtns" style="margin-top:0"><button class="btn" onclick="exportJSON()">백업 내보내기</button><label class="btn">백업 불러오기<input type="file" accept="application/json" style="display:none" onchange="importJSON(this.files[0])"></label></div>
-    <div class="muted" style="margin-top:10px">기록은 이 기기 브라우저에만 저장돼요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 내보내기 해두세요.</div>
-    <div class="rowbtns"><button class="btn danger small" onclick="resetAll()">모든 기록 초기화</button></div>
+  <div class="card glist">
+    <button class="grow" onclick="exportJSON()">${I(C.blue,ico.down)}<span class="gl">백업 내보내기</span><span class="gv">${ICON_CHEV}</span></button>
+    <label class="grow">${I(C.cyan,ico.up)}<span class="gl">백업 불러오기</span><span class="gv">${ICON_CHEV}</span><input type="file" accept="application/json" style="display:none" onchange="importJSON(this.files[0])"></label>
+    <button class="grow danger" onclick="resetAll()">${I(C.red,ico.trash)}<span class="gl">모든 기록 초기화</span></button>
   </div>
-  <div class="muted center" style="margin:18px 0 4px">Bulkup Log</div>`;
+  <div class="muted" style="margin:8px 16px 0">기록은 이 기기 브라우저에만 저장돼요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 내보내기 해두세요.</div>
+  <div class="muted center" style="margin:22px 0 4px">Bulkup Log</div>`;
 }
 
 // ---------- 렌더 ----------
