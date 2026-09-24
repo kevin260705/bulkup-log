@@ -848,6 +848,15 @@
   .chart .pj{fill:none;stroke:hsl(var(--chart));stroke-width:2;stroke-dasharray:5 5;opacity:.75}
   .chart .pjpt{fill:hsl(var(--card));stroke:hsl(var(--chart));stroke-width:2}
   .chart .pjl{fill:hsl(var(--chart))}
+
+  .pcomp{margin:8px 0 4px}
+  .pbar{height:8px;border-radius:9999px;background:rgb(var(--gl-line)/.14);overflow:hidden}
+  html[data-theme=light] .pbar{background:hsl(232 25% 20%/.10)}
+  .pbar i{display:block;height:100%;border-radius:9999px;background:hsl(var(--primary))}
+  .pleg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:12.5px;font-weight:500}
+  .pleg b{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:hsl(var(--primary));vertical-align:1px}
+  .pleg b.f{background:rgb(var(--gl-line)/.35)}
+  html[data-theme=light] .pleg b.f{background:hsl(232 25% 20%/.25)}
 </style>
 </head>
 <body>
@@ -1438,8 +1447,8 @@ function setView(v){
 }
 
 // ---------- 영양 계산 ----------
-const GOALS={bulk:{l:'벌크업',k:400,p:2.0,r:[0.25,0.5],d:'유지 +400kcal · 주 +0.25~0.5kg 증가 목표'},
-  lean:{l:'린매스업',k:250,p:2.0,r:[0.1,0.25],d:'유지 +250kcal · 주 +0.1~0.25kg, 지방 증가 최소화'},
+const GOALS={bulk:{l:'벌크업',k:300,p:2.0,r:[0.15,0.3],d:'유지 +300kcal · 주 +0.15~0.3kg (월 체중의 1~1.5%)'},
+  lean:{l:'린매스업',k:150,p:2.0,r:[0.05,0.15],d:'유지 +150kcal · 주 +0.05~0.15kg, 지방 증가 최소화'},
   keep:{l:'유지',k:0,p:1.8,r:[-0.1,0.1],d:'유지 칼로리 · 체중 유지하며 근력 향상'},
   cut:{l:'감량',k:-400,p:2.2,r:[-0.75,-0.25],d:'유지 -400kcal · 주 0.25~0.75kg 감량, 고단백으로 근손실 방지'}};
 const ACTS={low:{l:'적음',f:1.375,d:'주 1~3회 운동, 좌식 생활'},mid:{l:'보통',f:1.55,d:'주 3~5회 운동 (지금 루틴 기준)'},high:{l:'많음',f:1.725,d:'주 6~7회 운동 또는 육체노동'}};
@@ -1613,10 +1622,14 @@ function renderProj(){
       <div><span>골격근량</span><b>${smmTxt}</b><em>+${r(pj.lLo*SMM_SHARE,pj.lHi*SMM_SHARE)}kg</em></div>
       <div><span>체지방률</span><b>${bfTxt}</b><em>${pj.bf&&pj.bf0!=null?`지금 ${fmtN(pj.bf0,1)}%`:'인바디 체지방 필요'}</em></div>
     </div>
+    ${pj.dW>0.05?`<div class="pcomp"><div class="pbar"><i style="width:${Math.round(Math.min(pj.dW,(pj.lLo+pj.lHi)/2)/pj.dW*100)}%"></i></div>
+      <div class="pleg"><span><b></b>제지방(근육·수분) ${r(pj.lLo,pj.lHi)}kg</span><span><b class="f"></b>지방 등 ${r(Math.max(0,pj.dW-pj.lHi),Math.max(0,pj.dW-pj.lLo))}kg</span></div>
+      <div class="muted" style="margin-top:4px">늘어나는 ${fmtN(pj.dW,1)}kg의 구성 · 골격근량은 제지방의 약 ${SMM_SHARE*100}%</div></div>`:''}
     <details class="tbl"><summary>계산 근거</summary><div class="pcalc">
       <p><b>체중</b> ${wSrc}</p>
       <p><b>근육</b> 경력 6개월+ 기준 월 체중의 ${(pj.lo*100).toFixed(1)}~${(pj.hi*100).toFixed(1)}% 제지방 증가 × 운동 이행률 (${adTxt})</p>
       <p><b>골격근량</b> 제지방 증가분 × ${SMM_SHARE*100}% (인바디 골격근량 비율)</p>
+      <p><b>참고</b> 근육이 붙는 속도는 한계가 있어서, 칼로리를 더 먹으면 초과분은 지방으로 가요. 현실적인 체중 증가 속도: 초보 월 1~1.5%, 중급 0.5~1%</p>
       <p><b>체지방률</b> (현재 지방량 + 늘어난 체중 − 근육 증가분) ÷ 예상 체중</p>
       <p class="muted">추정치예요. 수면·단백질 섭취·유전에 따라 달라져요. 2주마다 인바디를 입력하면 실제 추세로 자동 보정돼요.</p>
     </div></details>
