@@ -907,11 +907,11 @@ const FORM = {
  do:'팔꿈치 고정, 바를 이마 위~머리 뒤로 3초에 내림. 팔꿈치가 벌어지지 않게 안으로 모으는 힘 유지. 올릴 때 완전히 펴기 직전까지.',
  no:'팔꿈치가 벌어짐(팔꿈치 통증 원인 1위) · 팔꿈치가 앞뒤로 흔들림 · 너무 무거운 무게',
  hcs:'팔꿈치 통증 없이 팔 키우려면 이 종목은 무게보다 궤적. 이마가 아닌 머리 뒤로 내려서 장두 스트레치.'},
-'턱걸이 (가중)':{
- set:'어깨너비 1.2배 오버그립. 매달린 상태에서 견갑골을 아래로 당겨(어깨 내리기) 시작. 다리는 살짝 뒤로 모으고 코어 긴장.',
- do:'가슴을 바로 가져간다는 느낌으로 팔꿈치를 아래·뒤로. 턱이 바 위로 올라올 때까지. 내릴 때 2~3초, 완전히 팔 펴고 견갑골 풀리는 지점까지(광배 스트레치).',
- no:'반동 키핑 · 턱만 내밀어 올림 · 절반 가동범위 · 어깨가 귀 옆까지 올라간 채 시작',
- hcs:'10개 되면 딥벨트에 5kg. 가중 후 6회 못 하면 마지막 세트는 맨몸으로 실패까지.'},
+'어시스트 풀업':{
+ set:'보조 무게를 먼저 맞추고(기본 70lb) 무릎 패드에 한쪽씩 무릎을 올림. 그립은 어깨너비 1.2배 오버그립, 어깨가 불편하면 중립(평행) 그립. 매달린 상태에서 견갑골을 아래로 당겨 어깨를 귀에서 멀리.',
+ do:'가슴을 손잡이 쪽으로 가져간다는 느낌으로 팔꿈치를 아래·뒤로. 턱이 손잡이 위로 올라올 때까지. 내릴 때 2~3초 천천히, 팔을 완전히 펴서 광배가 늘어나는 지점까지.',
+ no:'패드 반동으로 튕겨 올라감 · 내려올 때 툭 떨어짐(어깨·팔꿈치 부상 원인) · 절반 가동범위 · 어깨가 으쓱 올라간 채 당김',
+ hcs:'맨몸으로 억지로 하다 다치느니 보조로 가동범위와 자극을 챙기는 게 먼저. 전 세트 12회가 되면 보조를 5~10lb씩 줄여가고, 최종 목표는 보조 0lb(맨몸).'},
 '바벨 로우 / 체스트서포트 로우':{
  set:'바벨: 무릎 살짝 굽히고 상체 45° 숙임, 등 중립. 체스트서포트: 가슴 패드에 대고 발 고정. 그립은 어깨너비.',
  do:'팔꿈치를 뒤로 당겨 바를 배꼽~아랫배 쪽으로. 팔꿈치 각도가 넓으면(60°↑) 상부 등·후면삼각근, 몸에 붙이면(30°) 광배. 위에서 1초 견갑 조이기. 내릴 때 2초, 견갑골 완전히 풀기.',
@@ -1017,7 +1017,7 @@ const QUOTES=[{"t": "마지막 서너 번의 반복이 근육을 자라게 한�
 let qIdx=Math.floor(Math.random()*QUOTES.length);
 function nextQuote(){qIdx=(qIdx+1)%QUOTES.length;const el=document.getElementById('quote');if(el)el.outerHTML=renderQuote();}
 function renderQuote(){const q=QUOTES[qIdx];return `<button id="quote" class="quote" onclick="nextQuote()" aria-label="다른 명언"><p>${q.t}</p>${q.a?`<span>${q.a}</span>`:''}</button>`;}
-const PROGRAM = [
+const ALLDAYS = [
  {id:'mon',short:'가슴·삼두',name:'가슴 · 삼두',ex:[
   {n:'인클라인 덤벨프레스',s:3,r:[8,12],rir:'1~2',rest:120,note:'첫 세트 가볍게 15회로 자극 잡고 올림 (황철순식 정피라미드)',v:['chest1','chest2']},
   {n:'플랫 바벨/머신 프레스',s:3,r:[6,10],rir:'1~2',rest:120,note:'마지막 세트 파트너 강제반복 2~3회 or 드롭세트',v:['chest1','chest3']},
@@ -1026,7 +1026,7 @@ const PROGRAM = [
   {n:'라잉 트라이셉스 익스텐션',s:2,r:[10,12],rir:'1',rest:90,note:'팔꿈치 고정, 내릴 때 3초',v:['tri2','tri1']},
  ]},
  {id:'tue',short:'등·이두',name:'등 · 이두',ex:[
-  {n:'턱걸이 (가중)',s:3,r:[6,10],rir:'1~2',rest:120,note:'10개 가능 → 5kg 가중부터. 무게 칸에 추가중량 입력',v:['back1','back3']},
+  {n:'어시스트 풀업',s:3,r:[8,12],rir:'1~2',rest:120,assist:true,def:{w:70,r:10},note:'무게 칸 = 보조 무게(lb). 70lb × 10회 기준, 전 세트 12회 되면 보조를 5~10lb 줄이기',v:['back1','back3']},
   {n:'바벨 로우 / 체스트서포트 로우',s:3,r:[8,10],rir:'1~2',rest:120,note:'팔꿈치 방향으로 광배/상부 조절 (EP.4)',v:['back2','back1']},
   {n:'랫풀다운 (와이드)',s:3,r:[10,12],rir:'1',rest:90,note:'상단 스트레치 충분히 (EP.8). 마지막 세트 드롭',v:['back3','back4']},
   {n:'인클라인 덤벨컬',s:3,r:[10,12],rir:'0~1',rest:75,note:'이두 신장 위치. 반동 금지',v:['bi1']},
@@ -1054,7 +1054,31 @@ const PROGRAM = [
   {n:'사이드 레터럴 (머신/덤벨)',s:2,r:[15,20],rir:'0',rest:60,note:'',v:['sh2']},
   {n:'바벨컬 + 푸시다운 슈퍼세트',s:2,r:[12,12],rir:'0',rest:75,note:'무게는 바벨컬 기준 입력',v:['bi1','tri1','qa']},
  ]},
+ // 주 3회: 상체를 주 2회 유지하도록 가슴·등·어깨·팔을 두 날에 나눔 (각 19세트)
+ {id:'ua',short:'상체 A',name:'상체 A',ex:[
+  {n:'인클라인 덤벨프레스',s:3,r:[8,12],rir:'1~2',rest:120,note:'첫 세트 가볍게 15회로 자극 잡고 올림 (황철순식 정피라미드)',v:['chest1','chest2']},
+  {n:'어시스트 풀업',s:3,r:[8,12],rir:'1~2',rest:120,assist:true,def:{w:70,r:10},note:'무게 칸 = 보조 무게(lb). 70lb × 10회 기준, 전 세트 12회 되면 보조를 5~10lb 줄이기',v:['back1','back3']},
+  {n:'플랫 바벨/머신 프레스',s:3,r:[6,10],rir:'1~2',rest:120,note:'마지막 세트 파트너 강제반복 2~3회 or 드롭세트',v:['chest1','chest3']},
+  {n:'바벨 로우 / 체스트서포트 로우',s:3,r:[8,10],rir:'1~2',rest:120,note:'팔꿈치 방향으로 광배/상부 조절 (EP.4)',v:['back2','back1']},
+  {n:'덤벨 사이드 레터럴',s:3,r:[12,15],rir:'0',rest:70,note:'가볍게 자극 먼저, 마지막 세트 드롭 2단 (황금비율)',v:['sh2','sh1']},
+  {n:'오버헤드 케이블 익스텐션',s:2,r:[12,15],rir:'0~1',rest:75,note:'장두 — 황철순 EP.7 포인트',v:['tri1']},
+  {n:'인클라인 덤벨컬',s:2,r:[10,12],rir:'0~1',rest:75,note:'이두 신장 위치. 반동 금지',v:['bi1']},
+ ]},
+ {id:'ub',short:'상체 B',name:'상체 B',ex:[
+  {n:'덤벨 숄더프레스',s:3,r:[8,10],rir:'1~2',rest:120,note:'',v:['sh1','sh4']},
+  {n:'랫풀다운 (와이드)',s:3,r:[10,12],rir:'1',rest:90,note:'상단 스트레치 충분히 (EP.8)',v:['back3','back4']},
+  {n:'플랫 덤벨프레스',s:3,r:[10,12],rir:'1',rest:120,note:'',v:['chest1']},
+  {n:'체스트서포트 로우 / 티바 로우',s:3,r:[10,10],rir:'1',rest:120,note:'',v:['back2']},
+  {n:'펙덱 / 인클라인 케이블 플라이',s:2,r:[15,15],rir:'0',rest:75,note:'',v:['chest3']},
+  {n:'사이드 레터럴 (머신/덤벨)',s:3,r:[15,20],rir:'0',rest:60,note:'',v:['sh2']},
+  {n:'바벨컬 (EZ바)',s:2,r:[8,10],rir:'1',rest:90,note:'첫 세트 가볍게 15회 자극 → 중량',v:['bi1']},
+ ]},
 ];
+// 주 횟수 → 어떤 날들을 어떤 순서로 (표 하나로 관리)
+const PLANS={3:['ua','fri','ub'],4:['ua','thu','fri','ub'],5:['mon','tue','thu','fri','sat']};
+const PLAN_DESC={3:'상체 A / 하체 / 상체 B · 상체 주 2회, 1회 약 75분',4:'상체 A / 어깨·팔 / 하체 / 상체 B · 가슴·등 주 2회 유지',5:'가슴·삼두 / 등·이두 / 어깨·팔 / 하체 / 상체 · 상체 볼륨 최대'};
+let PROGRAM=[];
+function applyPlan(){const f=PLANS[store.profile.freq]?store.profile.freq:5;PROGRAM=PLANS[f].map(id=>ALLDAYS.find(d=>d.id===id));}
 
 // ---------- 저장소 ----------
 const KEY='wl_v1';
@@ -1062,7 +1086,8 @@ const store = JSON.parse(localStorage.getItem(KEY)||'{}');
 store.logs = store.logs||{};     // {date: {day, ex:{name:{sets:[{w,r,d}],note}}}}
 store.bw = store.bw||[];         // [{date,kg}]
 store.start = store.start||null;
-store.profile = Object.assign({name:'kevin',age:33,height:182,sex:'m',weight:73,goal:'bulk',activity:'mid'},store.profile||{});
+store.profile = Object.assign({name:'kevin',age:33,height:182,sex:'m',weight:73,goal:'bulk',activity:'mid',freq:5},store.profile||{});
+applyPlan();
 store.body = store.body||[];     // 인바디 [{date,w,smm,bf,bmr}]
 if(!store.bodySeeded){           // 처음 알려준 스펙 + 기존 체중 기록 이관
   if(!store.body.length) store.body.push({date:'2026-09-23',w:73,smm:34});
@@ -1086,19 +1111,20 @@ function isDeload(iso){const w=weekNo(iso);return !!w&&w>0&&w%7===0;}
 function weekSessions(){const w=weekNo(today());if(!w||w<1)return 0;const s0=dnum(store.start)+(w-1)*7;return Object.keys(store.logs).filter(d=>{const n=dnum(d);return n>=s0&&n<s0+7&&isDone(store.logs[d]);}).length;}
 function renderWeek(){
   const el=document.getElementById('weekBadge'),wc=document.getElementById('weekCount');if(!el)return;const w=weekNo(today());
-  if(!w||w<1){el.textContent='첫 세트 완료 시 1주차 시작';el.className='';if(wc)wc.textContent='0/5';return;}
+  if(!w||w<1){el.textContent='첫 세트 완료 시 1주차 시작';el.className='';if(wc)wc.textContent='0/'+PROGRAM.length;return;}
   const dl=w%7===0;
   el.textContent=`${w}주차${dl?' · 디로드 주':''}`;el.className=dl?'deload':'';
-  if(wc)wc.textContent=`${weekSessions()}/5`;
+  if(wc)wc.textContent=`${weekSessions()}/${PROGRAM.length}`;
 }
 // 요일이 아니라 순서로 진행: 마지막으로 완료한 DAY 다음 순서를 추천
-const ORDER=['mon','tue','thu','fri','sat'];
+
 function suggestDay(){
   const t=today();
   if(store.logs[t]&&isDone(store.logs[t])) return store.logs[t].day;
   const past=Object.keys(store.logs).filter(d=>d<t&&isDone(store.logs[d])).sort();
-  if(!past.length) return 'mon';
-  return ORDER[(ORDER.indexOf(store.logs[past[past.length-1]].day)+1)%ORDER.length];
+  if(!past.length) return PROGRAM[0].id;
+  const O=PROGRAM.map(d=>d.id);
+  return O[(O.indexOf(store.logs[past[past.length-1]].day)+1)%O.length];
 }
 
 // ---------- 지난 기록 찾기 ----------
@@ -1114,8 +1140,8 @@ function progressionHint(ex, last){
   if(!done.length) return '';
   const allTop=done.length>=ex.s && done.every(s=>s.r>=ex.r[1]);
   const anyBelow=done.some(s=>s.r<ex.r[0]);
-  if(allTop) return `<span class="hint">↑ 전 세트 상한 달성 → 오늘 +2.5kg (덤벨 +2kg)</span>`;
-  if(anyBelow) return `<span class="hint warn">↓ 하한 미달 세트 있음 → 같은 무게 유지 or -5%</span>`;
+  if(allTop) return ex.assist?`<span class="hint">↑ 전 세트 상한 달성 → 오늘 보조 -5~10lb</span>`:`<span class="hint">↑ 전 세트 상한 달성 → 오늘 +2.5kg (덤벨 +2kg)</span>`;
+  if(anyBelow) return ex.assist?`<span class="hint warn">↓ 하한 미달 세트 있음 → 보조 유지 or +5lb</span>`:`<span class="hint warn">↓ 하한 미달 세트 있음 → 같은 무게 유지 or -5%</span>`;
   return `<span class="hint keep">→ 같은 무게로 반복수 늘리기</span>`;
 }
 
@@ -1137,6 +1163,8 @@ function getLog(dayId){
   return store.logs[curDate];
 }
 function effDay(day,iso){if(!isDeload(iso))return day;return Object.assign({},day,{ex:day.ex.map(e=>Object.assign({},e,{s:Math.max(1,Math.ceil(e.s/2)),rir:'3~4'}))});}
+const ASSIST=new Set();ALLDAYS.forEach(d=>d.ex.forEach(e=>{if(e.assist)ASSIST.add(e.n);}));
+function exDef(name){for(const d of ALLDAYS)for(const e of d.ex)if(e.n===name)return e;return null;}
 function carrySet(last,k){if(!last)return {};const v=last.sets.filter(x=>x&&(x.w!=null||x.r!=null));return last.sets[k]&&(last.sets[k].w!=null||last.sets[k].r!=null)?last.sets[k]:(v[v.length-1]||{});}
 function renderDay(day){
   day=effDay(day,curDate);const dl=isDeload(curDate);
@@ -1153,7 +1181,7 @@ function renderDay(day){
     for(let k=0;k<ex.s;k++){
       const s=e.sets[k]||{};
       if(s.d) doneSets++;
-      const ph=carrySet(last,k);
+      const ph0=carrySet(last,k),ph=(ph0.w!=null||ph0.r!=null)?ph0:(ex.def||{});
       rows.push(`<tr class="${s.d?'row-done':''}">
         <td><span class="sn">${k+1}</span></td>
         <td><input type="number" class="ghost ${s.w==null&&ph.w!=null?'carry':''}" inputmode="decimal" step="0.5" enterkeyhint="next" onkeydown="nextField(event,this)" onfocus="this.select()" value="${s.w??ph.w??''}" ${s.w==null&&ph.w!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'w',this.value)"></td>
@@ -1167,7 +1195,7 @@ function renderDay(day){
       ${ex.note?`<div class="note">${ex.note}</div>`:''}
       ${renderForm(ex.n, isCurrent)}
       <div class="last">지난 기록${last?` (${last.date.slice(5)}): <b>${fmtSets(last.sets)}</b>`:': 없음'} ${progressionHint(ex,last)}</div>
-      <table><tr><th>세트</th><th>kg</th><th>회</th><th>완료</th></tr>${rows.join('')}</table>
+      <table><tr><th>세트</th><th>${ex.assist?'보조 lb':'kg'}</th><th>회</th><th>완료</th></tr>${rows.join('')}</table>
       <div class="videos">${ex.v.map(k=>`<a href="${V[k].u}" target="_blank" rel="noopener">${V[k].t}</a>`).join('')}</div>
       <details><summary>메모</summary><textarea placeholder="느낌, 통증, 다음에 바꿀 것..." oninput="setNote('${day.id}','${esc(ex.n)}',this.value)">${e.note||''}</textarea></details>
     </div>`;
@@ -1178,7 +1206,7 @@ function renderDay(day){
   const isToday=curDate===today(), isNext=isToday&&suggestDay()===day.id;
   const chevDown='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
   return `${renderQuote()}<section class="dayhead" style="--c:${c}">
-      <div class="dh-top"><span class="kicker"><i></i>DAY ${idx+1}${isNext?' · 오늘 추천':''}</span>
+      <div class="dh-top"><span class="kicker"><i></i>${idx>=0?'DAY '+(idx+1):'지난 루틴'}${isNext?' · 오늘 추천':''}</span>
         <label class="datebtn">${isToday?'오늘':dayLabel(curDate)}${chevDown}<input type="date" value="${curDate}" onchange="curDate=this.value||today();render()"></label></div>
       <h2>${day.name}</h2>
       <div class="dh-meta">${day.ex.length}종목 · ${totalSets}세트 · 약 ${mins}분${day.opt?' · '+day.opt:''}</div>
@@ -1211,7 +1239,7 @@ function setVal(dayId,exName,k,f,v){
   const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};
   e.sets[k]=e.sets[k]||{};
   if(f==='d') e.sets[k].d=v; else e.sets[k][f]=v===''?null:Number(v);
-  if(f==='d'&&v){const ph=carrySet(lastLog(dayId,exName),k);if(e.sets[k].w==null&&ph.w!=null)e.sets[k].w=ph.w;if(e.sets[k].r==null&&ph.r!=null)e.sets[k].r=ph.r;}
+  if(f==='d'&&v){const c0=carrySet(lastLog(dayId,exName),k),dx=exDef(exName),ph=(c0.w!=null||c0.r!=null)?c0:((dx&&dx.def)||{});if(e.sets[k].w==null&&ph.w!=null)e.sets[k].w=ph.w;if(e.sets[k].r==null&&ph.r!=null)e.sets[k].r=ph.r;}
   if(f==='d'&&v&&!log.at){const n=new Date();log.at=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
   if(!store.start) store.start=curDate;
   save();flashSaved();
@@ -1221,7 +1249,7 @@ function setNote(dayId,exName,v){const log=getLog(dayId);const e=log.ex[exName]=
 function finishDay(dayId){
   const log=getLog(dayId);
   // 빈 칸은 placeholder(지난 기록) 값으로 채움
-  const day=PROGRAM.find(d=>d.id===dayId);
+  const day=ALLDAYS.find(d=>d.id===dayId);
   day.ex.forEach(ex=>{
     const e=log.ex[ex.n]=log.ex[ex.n]||{sets:[],note:''};
     const last=lastLog(dayId,ex.n);
@@ -1237,7 +1265,7 @@ function finishDay(dayId){
 }
 
 // ---------- 기록 화면 ----------
-function volume(log){let v=0;Object.values(log.ex).forEach(e=>e.sets.forEach(s=>{if(s.w&&s.r)v+=s.w*s.r;}));return v;}
+function volume(log){let v=0;Object.entries(log.ex).forEach(([n,e])=>{if(ASSIST.has(n))return;e.sets.forEach(s=>{if(s&&s.w&&s.r)v+=s.w*s.r;});});return v;}
 function renderHist(){
   const dates=Object.keys(store.logs).sort().reverse();
   const bw=store.bw.slice(-8).map(b=>`<span class="badge sec">${b.date.slice(5)} ${b.kg}kg</span>`).join(' ');
@@ -1253,7 +1281,7 @@ function renderHist(){
     <div class="muted" style="margin-top:6px">목표: 주 0.25~0.5kg 증가. 더 빠르면 지방 비율↑ → 칼로리 -200.</div></div>
   <div class="card"><h3>종목별 최고 (추정 1RM 순)</h3>${prList||'<span class="muted">아직 없음</span>'}</div>
   <div class="card"><h3>운동 일지 <span class="badge">${dates.length}회</span></h3>
-    ${dates.length?dates.map(d=>{const l=store.logs[d];const day=PROGRAM.find(p=>p.id===l.day);return `<details class="hist"><summary><span class="d">${d}</span> <span class="v">${day?day.short:l.day} · 볼륨 ${Math.round(volume(l)).toLocaleString()}kg</span></summary>
+    ${dates.length?dates.map(d=>{const l=store.logs[d];const day=ALLDAYS.find(p=>p.id===l.day);return `<details class="hist"><summary><span class="d">${d}</span> <span class="v">${day?day.short:l.day} · 볼륨 ${Math.round(volume(l)).toLocaleString()}kg</span></summary>
       ${Object.entries(l.ex).map(([n,e])=>`<div class="ex">• ${n}: ${fmtSets(e.sets)}${e.note?` <i class="muted">— ${e.note}</i>`:''}</div>`).join('')}
       <div class="rowbtns"><button class="btn small" onclick="curDate='${d}';curTab='${l.day}';render()">열기</button></div></details>`;}).join(''):'<span class="muted">기록이 없습니다.</span>'}
   </div>
@@ -1326,14 +1354,14 @@ function tick(){
 function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.2;o.start();setTimeout(()=>{o.stop();c.close();},350);}catch(e){}}
 
 // ---------- 달력 ----------
-const DAY_COLOR={mon:'var(--primary)',tue:'var(--primary)',thu:'var(--primary)',fri:'var(--primary)',sat:'var(--primary)'};
+const DAY_COLOR={mon:'var(--primary)',tue:'var(--primary)',thu:'var(--primary)',fri:'var(--primary)',sat:'var(--primary)',ua:'var(--primary)',ub:'var(--primary)'};
 const WD=['일','월','화','수','목','금','토'];
 const ICON_CAL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
 const ICON_HOME='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>';
 let view='home',calY=new Date().getFullYear(),calM=new Date().getMonth(),selDate=null;
 function isDone(l){return !!l&&Object.values(l.ex).some(e=>e.sets.some(s=>s&&s.d));}
 function doneSets(l){let n=0;Object.values(l.ex).forEach(e=>e.sets.forEach(s=>{if(s&&s.d)n++;}));return n;}
-function dayTitle(id){const p=PROGRAM.find(x=>x.id===id);return p?p.name:id;}
+function dayTitle(id){const p=ALLDAYS.find(x=>x.id===id);return p?p.name:id;}
 function dayLabel(iso){const d=new Date(iso+'T00:00:00');return `${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;}
 function toggleView(){view=view==='home'?'cal':'home';if(view==='cal'){const t=new Date();calY=t.getFullYear();calM=t.getMonth();selDate=null;}render();window.scrollTo(0,0);}
 function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}selDate=null;render();}
@@ -1365,12 +1393,12 @@ function renderCalList(list){
 function renderCalDetail(iso){
   const l=store.logs[iso];
   if(!isDone(l)) return `<div class="card"><h3>${dayLabel(iso)}</h3><div class="muted">이 날은 운동 기록이 없어요.</div><div class="rowbtns">${PROGRAM.map(p=>`<button class="btn small" onclick="openDay('${iso}','${p.id}')"><span class="cdot" style="--c:${DAY_COLOR[p.id]};margin-right:0"></span>${dayTitle(p.id)} 기록</button>`).join('')}</div></div>`;
-  const p=PROGRAM.find(x=>x.id===l.day),c=DAY_COLOR[l.day];
+  const p=ALLDAYS.find(x=>x.id===l.day),c=DAY_COLOR[l.day]||'var(--primary)';
   const total=p?p.ex.reduce((a,e)=>a+e.s,0):0;
   const order=(p?p.ex.map(e=>e.n):[]).concat(Object.keys(l.ex).filter(n=>!p||!p.ex.some(e=>e.n===n)));
   const used=order.filter(n=>l.ex[n]&&l.ex[n].sets.some(s=>s&&(s.d||s.w!=null||s.r!=null)));
-  const rows=used.map(n=>{const e=l.ex[n],sets=e.sets.filter(s=>s&&(s.d||s.w!=null||s.r!=null)),v=sets.reduce((a,s)=>a+(s.w&&s.r?s.w*s.r:0),0);
-    return `<div class="dex"><div class="dexh"><span>${n}</span><span class="muted">${sets.length}세트${v?' · '+Math.round(v).toLocaleString()+'kg':''}</span></div><div class="chips">${sets.map(s=>`<span class="chip ${s.d?'':'undone'}">${s.w??'-'}kg × ${s.r??'-'}</span>`).join('')}</div>${e.note?`<div class="muted" style="margin-top:6px">메모 · ${e.note}</div>`:''}</div>`;}).join('');
+  const rows=used.map(n=>{const e=l.ex[n],sets=e.sets.filter(s=>s&&(s.d||s.w!=null||s.r!=null)),as=ASSIST.has(n),v=as?0:sets.reduce((a,s)=>a+(s.w&&s.r?s.w*s.r:0),0);
+    return `<div class="dex"><div class="dexh"><span>${n}</span><span class="muted">${sets.length}세트${v?' · '+Math.round(v).toLocaleString()+'kg':''}</span></div><div class="chips">${sets.map(s=>`<span class="chip ${s.d?'':'undone'}">${as?'보조 ':''}${s.w??'-'}${as?'lb':'kg'} × ${s.r??'-'}</span>`).join('')}</div>${e.note?`<div class="muted" style="margin-top:6px">메모 · ${e.note}</div>`:''}</div>`;}).join('');
   return `<div class="card dcard" style="--c:${c}"><div class="dtop"><div><div class="muted">${dayLabel(iso)}${l.at?' · '+l.at+' 시작':''}</div><h3 style="margin:4px 0 0"><span><span class="cdot" style="--c:${c}"></span>${dayTitle(l.day)}</span></h3></div><button class="btn small" onclick="openDay('${iso}','${l.day}')">수정</button></div>
   <div class="stats"><div><b>${doneSets(l)}${total?'<span style="font-size:13px;color:hsl(var(--muted-foreground))">/'+total+'</span>':''}</b><span>완료 세트</span></div><div><b>${Math.round(volume(l)).toLocaleString()}</b><span>볼륨 (kg)</span></div><div><b>${used.length}</b><span>종목</span></div></div>${rows}</div>`;
 }
@@ -1538,7 +1566,7 @@ function renderData(){
       ${pts.length?lineChart(k,pts,unit,1):'<div class="empty">인바디를 입력하면 그래프가 그려져요</div>'}
       ${pts.length?`<details class="tbl"><summary>표로 보기</summary><table>${pts.slice().reverse().map(p=>`<tr><td>${dayLabel(p.d)}</td><td style="text-align:right">${fmtN(p.v,1)}${unit}</td></tr>`).join('')}</table></details>`:''}</div>`;};
   const prs={};
-  Object.keys(store.logs).forEach(d=>Object.entries(store.logs[d].ex).forEach(([nm,e])=>e.sets.forEach(x=>{if(x&&x.d&&x.w&&x.r){const e1=x.w*(1+x.r/30);if(!prs[nm]||e1>prs[nm].e1)prs[nm]={e1,w:x.w,r:x.r,d};}})));
+  Object.keys(store.logs).forEach(d=>Object.entries(store.logs[d].ex).forEach(([nm,e])=>e.sets.forEach(x=>{if(x&&x.d&&x.w&&x.r&&!ASSIST.has(nm)){const e1=x.w*(1+x.r/30);if(!prs[nm]||e1>prs[nm].e1)prs[nm]={e1,w:x.w,r:x.r,d};}})));
   const prList=Object.entries(prs).sort((a,b)=>b[1].e1-a[1].e1).slice(0,10).map(([nm,x])=>`<div class="prrow"><span>${nm}<small>${dayLabel(x.d)}</small></span><b>${x.w}kg × ${x.r}<small>추정 1RM ${Math.round(x.e1)}kg</small></b></div>`).join('');
   const pct=v=>Math.round(v/n.kcal*100);
   return `<div class="page-title"><h2>데이터</h2><button class="btn tint small" onclick="toggleBodyForm()">${bodyFormOpen?'입력 닫기':'+ 인바디 입력'}</button></div>
@@ -1559,7 +1587,7 @@ function renderData(){
 }
 
 // ---------- 설정 (마이페이지) ----------
-function setProfile(k,v,re){store.profile[k]=['age','height'].includes(k)?(v===''?null:Number(v)):v;save();if(re)render();else{flashSaved();renderNav();}}
+function setProfile(k,v,re){store.profile[k]=['age','height','freq'].includes(k)?(v===''?null:Number(v)):v;if(k==='freq'){applyPlan();if(!PROGRAM.some(d=>d.id===curTab))curTab=null;}save();if(re)render();else{flashSaved();renderNav();}}
 function setTheme(t){store.theme=t;save();applyTheme();render();}
 function resetAll(){if(!confirm('모든 운동·인바디 기록을 삭제할까요?'))return;if(!confirm('되돌릴 수 없어요. 정말 삭제할까요?'))return;localStorage.removeItem(KEY);location.reload();}
 function renderSettings(){
@@ -1596,11 +1624,13 @@ function renderSettings(){
 
   <div class="set-sec">프로그램</div>
   <div class="card glist">
+    <div class="grow">${I(C.green,ico.flag)}<span class="gl">주 운동 횟수</span><div class="seg sm" style="width:168px">${[3,4,5].map(n=>`<button class="${(pr.freq||5)===n?'on':''}" onclick="setProfile('freq','${n}',1)">${n}회</button>`).join('')}</div></div>
     <div class="grow">${I(C.green,ico.cal)}<span class="gl">시작일</span><input type="date" value="${store.start||''}" onchange="store.start=this.value||null;save();render()"></div>
     <div class="grow">${I(C.orange,ico.flag)}<span class="gl">현재</span><span class="gv">${w&&w>0?`${w}주차 · 7주차마다 디로드`:'첫 세트 완료 시 시작'}</span></div>
     <div class="grow">${I(C.gray,ico.moon)}<span class="gl">다크 모드</span><button class="sw ${dark?'on':''}" onclick="setTheme('${dark?'light':'dark'}')" aria-label="다크 모드"></button></div>
   </div>
 
+  <div class="muted" style="margin:8px 16px 0">주 ${pr.freq||5}회 · ${PLAN_DESC[pr.freq||5]}</div>
   <div class="set-sec">가이드</div>
   <div class="card glist"><button class="grow" onclick="setView('guide')">${I(C.pink,ico.book)}<span class="gl">운동 원칙 · 연구 근거 · 황철순 채널</span><span class="gv">${ICON_CHEV}</span></button></div>
 
@@ -1618,7 +1648,7 @@ function renderSettings(){
 let lastKey='';
 function persistUI(){store.ui=Object.assign(store.ui||{},{tab:curTab,date:curDate,view,t:Date.now()});persist();}
 function render(){
-  if(!curTab||!PROGRAM.some(p=>p.id===curTab)) curTab=suggestDay();
+  if(!curTab||!ALLDAYS.some(p=>p.id===curTab)) curTab=suggestDay();
   persistUI();
   document.body.dataset.view=view;
   renderNav();renderWeek();
@@ -1627,7 +1657,7 @@ function render(){
   else if(view==='data'){m.innerHTML=renderData();bindCharts();}
   else if(view==='set') m.innerHTML=renderSettings();
   else if(view==='guide') m.innerHTML=`<button class="btn ghost small back" onclick="setView('set')">‹ 설정</button>`+renderInfo();
-  else{renderTabs();m.innerHTML=renderDay(PROGRAM.find(d=>d.id===curTab));centerTab();}
+  else{renderTabs();m.innerHTML=renderDay(ALLDAYS.find(d=>d.id===curTab));centerTab();}
   const key=view+'|'+curTab+'|'+curDate;
   if(key!==lastKey){window.scrollTo(0,0);lastKey=key;}
 }
