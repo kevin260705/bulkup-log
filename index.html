@@ -733,6 +733,53 @@
   .grow .unit input[type=number]{font-size:17px;font-weight:600}
   .seg-desc{font-size:12.5px;font-weight:400}
   .kv{font-size:14px}
+
+  /* ================= 무채색 + 포인트 그린 하나 (레퍼런스 컬러 규칙) ================= */
+  /* 배경 광원: 보라·청록 제거, 아주 옅은 그린만 */
+  body:before{background:radial-gradient(60% 30% at 20% 0%,hsl(var(--primary)/.06),transparent 70%),hsl(var(--background))}
+  /* 부위 탭 점 제거 */
+  .tab i{display:none}
+  /* 설정 아이콘: 유리 회색 원 + 흰 아이콘 */
+  .ic{background:rgb(var(--gl-line)/.10)!important;color:hsl(var(--foreground));box-shadow:inset 0 1px 0 rgb(var(--gl-line)/.12)}
+  html[data-theme=light] .ic{background:hsl(232 25% 20%/.07)!important}
+  .ic[style*="--ic:r"]{color:hsl(var(--destructive))}
+  /* 자세 설명 라벨: 회색, 황철순만 포인트 */
+  .frow b,.frow.bad b{color:hsl(var(--muted-foreground))}
+  .frow.hcs b{color:hsl(var(--primary))}
+  /* 경고 주황 → 무채색 */
+  .last .hint.warn{color:hsl(var(--foreground));background:rgb(var(--gl-line)/var(--gl-in))}
+  .advice.warn{color:hsl(var(--foreground));background:rgb(var(--gl-line)/var(--gl-in))}
+  .delta.bad{color:hsl(var(--muted-foreground))}
+  .dl-note{color:hsl(var(--foreground));background:rgb(var(--gl-line)/var(--gl-in))}
+  #weekBadge.deload{color:hsl(var(--muted-foreground))}
+  .badge.deload{color:hsl(var(--foreground));background:rgb(var(--gl-line)/var(--gl-in))}
+  /* 유튜브 빨강 → 무채색 재생 아이콘 */
+  .videos a:before{background:hsl(var(--foreground)) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 12'%3E%3Cpath d='M6.5 3.5v5l4-2.5z' fill='black'/%3E%3C/svg%3E") center/100% no-repeat;border-radius:4px}
+  html[data-theme=light] .videos a:before{background:hsl(var(--foreground)) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 12'%3E%3Cpath d='M6.5 3.5v5l4-2.5z' fill='white'/%3E%3C/svg%3E") center/100% no-repeat}
+  /* TIP 칩: 무채색 */
+  .note:before{background:rgb(var(--gl-line)/.12);color:hsl(var(--foreground))}
+  /* 운동 요약·카드 강조는 그린 하나로 */
+  .kicker{color:hsl(var(--primary))}
+  .dh-nums em{color:hsl(var(--primary))}
+  /* 달력 범례 '오늘' */
+  .lg-today{background:transparent!important;box-shadow:inset 0 0 0 2px hsl(var(--primary))}
+  .cday.done .dot{color:hsl(var(--primary-foreground))}
+  /* 출처 링크 */
+  .research a{color:hsl(var(--foreground));text-decoration:underline;text-decoration-color:hsl(var(--muted-foreground));text-underline-offset:3px}
+
+  /* 타이머 캡슐: 좁은 화면에서도 멈춤 버튼이 안쪽에 들어오게 */
+  .timer .in{gap:6px;padding:6px 6px 6px 18px;min-width:0}
+  .timer .t{flex:0 1 auto;min-width:0}
+  .timer .btn{flex:0 1 auto;min-width:0}
+  .timer .sp{flex:1 1 0;min-width:0}
+  .timer .btn[aria-label="정지"]{flex:0 0 38px;width:38px;height:38px;padding:0;border-radius:50%;background:rgb(var(--gl-line)/.10);box-shadow:inset 0 1px 0 rgb(var(--gl-line)/.12)}
+  html[data-theme=light] .timer .btn[aria-label="정지"]{background:hsl(232 25% 20%/.07)}
+  .timer .btn[aria-label="정지"] svg{width:11px;height:11px}
+  @media (max-width:420px){
+    .timer .in{gap:4px;padding-left:14px}
+    .timer .t{font-size:21px}
+    .timer .btn{padding:0 9px;font-size:12px}
+  }
 </style>
 </head>
 <body>
@@ -1209,7 +1256,7 @@ function tick(){
 function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.2;o.start();setTimeout(()=>{o.stop();c.close();},350);}catch(e){}}
 
 // ---------- 달력 ----------
-const DAY_COLOR={mon:'221 90% 63%',tue:'170 80% 35%',thu:'25 92% 48%',fri:'270 80% 68%',sat:'338 85% 62%'};
+const DAY_COLOR={mon:'var(--primary)',tue:'var(--primary)',thu:'var(--primary)',fri:'var(--primary)',sat:'var(--primary)'};
 const WD=['일','월','화','수','목','금','토'];
 const ICON_CAL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
 const ICON_HOME='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>';
@@ -1233,7 +1280,7 @@ function renderCal(){
     cells+=`<button class="cday ${done?'done':''} ${iso===selDate?'sel':''} ${iso===tISO?'today':''}" onclick="selectDay('${iso}')" aria-label="${dayLabel(iso)}">${iso===tISO?'<span class="tlabel">Today</span>':''}<span class="dot"${done?` style="--c:${DAY_COLOR[l.day]||'var(--primary)'}"`:''}>${d}</span></button>`;
   }
   const vol=monthLogs.reduce((a,d)=>a+volume(store.logs[d]),0);
-  const legend=PROGRAM.map(p=>`<span class="lg"><i style="--c:${DAY_COLOR[p.id]}"></i>${dayTitle(p.id)}</span>`).join('');
+  const legend='<span class="lg"><i style="--c:var(--primary)"></i>운동 완료</span><span class="lg"><i class="lg-today"></i>오늘</span>';
   const chev=(d)=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
   return `<div class="calhead"><button class="btn ghost icon" onclick="calMove(-1)" aria-label="이전 달">${chev('m15 18-6-6 6-6')}</button><h2>${calY}년 ${String(calM+1).padStart(2,'0')}월</h2><button class="btn ghost icon" onclick="calMove(1)" aria-label="다음 달">${chev('m9 18 6-6-6-6')}</button></div>
   <div class="card cal"><div class="cgrid">${cells}</div></div>
@@ -1459,7 +1506,7 @@ function renderSettings(){
     down:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',
     up:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/>',
     trash:'<path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>'};
-  const C={blue:'221 90% 60%',cyan:'188 80% 45%',violet:'270 70% 62%',green:'138 80% 38%',orange:'25 92% 52%',gray:'232 8% 48%',pink:'338 80% 58%',red:'3 90% 58%'};
+  const C={blue:'n',cyan:'n',violet:'n',green:'n',orange:'n',gray:'n',pink:'n',red:'r'};
   const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button class="${pr[k]===v?'on':''}" onclick="setProfile('${k}','${v}',1)">${l}</button>`).join('')}</div>`;
   const dark=(store.theme||'dark')==='dark';
   return `<div class="page-title"><h2>설정</h2></div>
