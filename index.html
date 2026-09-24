@@ -9,7 +9,7 @@
 <meta property="og:title" content="Bulkup Log">
 <meta property="og:description" content="상체 벌크업 5분할 루틴 기록장">
 <meta property="og:image" content="https://d2ol7oe51mr4n9.cloudfront.net/user_39Bv7Twf1ididBYxsmBgq7k5JAA/d42221b3-8043-477c-a727-9200cc626abb.png">
-<meta name="theme-color" content="#090a0c">
+<meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,29 +20,29 @@
 <style>
   /* ---- tokens: 다크 기본 (버핏그라운드 톤) ---- */
   :root{
-    --background:228 14% 4%;--foreground:0 0% 98%;
-    --card:228 12% 9%;--card-foreground:0 0% 98%;
-    --elev:228 11% 14%;--elev2:228 10% 19%;
-    --primary:142 90% 45%;--primary-foreground:150 70% 6%;
-    --secondary:228 11% 14%;--secondary-foreground:0 0% 96%;
-    --muted:228 11% 14%;--muted-foreground:228 9% 62%;
-    --accent:228 10% 19%;--accent-foreground:0 0% 98%;
-    --destructive:0 84% 63%;--destructive-foreground:0 0% 98%;
-    --border:228 10% 17%;--input:228 10% 24%;--ring:142 90% 45%;
-    --success:142 90% 45%;--warning:38 95% 56%;--info:213 94% 66%;
+    --background:0 0% 0%;--foreground:0 0% 100%;
+    --card:240 3% 11%;--card-foreground:0 0% 100%;
+    --elev:240 2% 18%;--elev2:240 2% 24%;--seg-on:240 2% 39%;--bar:240 4% 9%;
+    --primary:135 64% 50%;--primary-foreground:140 60% 7%;
+    --secondary:240 2% 18%;--secondary-foreground:0 0% 100%;
+    --muted:240 2% 18%;--muted-foreground:240 5% 61%;
+    --accent:240 2% 24%;--accent-foreground:0 0% 100%;
+    --destructive:3 100% 61%;--destructive-foreground:0 0% 100%;
+    --border:240 3% 22%;--input:240 2% 30%;--ring:135 64% 50%;
+    --success:135 64% 50%;--warning:36 100% 52%;--info:211 100% 60%;
     --radius:14px;
   }
   html[data-theme=light]{
-    --background:228 20% 97%;--foreground:228 25% 8%;
-    --card:0 0% 100%;--card-foreground:228 25% 8%;
-    --elev:228 20% 95%;--elev2:228 16% 90%;
-    --primary:142 72% 36%;--primary-foreground:0 0% 100%;
-    --secondary:228 20% 95%;--secondary-foreground:228 25% 12%;
-    --muted:228 20% 95%;--muted-foreground:228 8% 44%;
-    --accent:228 16% 91%;--accent-foreground:228 25% 8%;
-    --destructive:0 72% 50%;
-    --border:228 14% 89%;--input:228 12% 82%;--ring:142 72% 36%;
-    --success:142 72% 34%;--warning:32 95% 42%;--info:221 83% 50%;
+    --background:240 24% 96%;--foreground:0 0% 0%;
+    --card:0 0% 100%;--card-foreground:0 0% 0%;
+    --elev:240 24% 96%;--elev2:240 11% 91%;--seg-on:0 0% 100%;--bar:0 0% 98%;
+    --primary:135 59% 36%;--primary-foreground:0 0% 100%;
+    --secondary:240 24% 96%;--secondary-foreground:0 0% 0%;
+    --muted:240 24% 96%;--muted-foreground:240 2% 54%;
+    --accent:240 11% 91%;--accent-foreground:0 0% 0%;
+    --destructive:3 100% 50%;
+    --border:240 6% 83%;--input:240 6% 78%;--ring:135 59% 36%;
+    --success:135 59% 36%;--warning:32 100% 44%;--info:211 100% 45%;
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
@@ -77,7 +77,8 @@
   .tab em{font-style:normal;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:9999px;background:hsl(var(--primary));color:hsl(var(--primary-foreground))}
   .tsep{flex:0 0 1px;margin:8px 2px;background:hsl(var(--border))}
 
-  main{padding:8px 16px 110px;max-width:720px;margin:0 auto}
+  main{padding:8px 16px calc(96px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
+  body[data-view=home] main{padding-bottom:calc(170px + env(safe-area-inset-bottom))}
 
   /* ---- day head ---- */
   .dayhead{position:relative;overflow:hidden;background:hsl(var(--card));border-radius:20px;padding:18px 18px 16px;margin:4px 0 14px}
@@ -213,7 +214,7 @@
   .research a{color:hsl(var(--info));text-decoration:none}
 
   /* ---- timer ---- */
-  .timer{position:fixed;bottom:0;left:0;right:0;z-index:20;background:hsl(var(--card)/.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid hsl(var(--border));padding-bottom:env(safe-area-inset-bottom)}
+  .timer{position:fixed;bottom:calc(65px + env(safe-area-inset-bottom));left:0;right:0;z-index:20;background:hsl(var(--card)/.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid hsl(var(--border))}
   .timer .in{max-width:720px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:6px}
   .timer .t{font-size:30px;font-weight:800;letter-spacing:-.03em;min-width:84px;font-variant-numeric:tabular-nums;color:hsl(var(--muted-foreground))}
   .timer.running .t{color:hsl(var(--foreground))}
@@ -234,9 +235,107 @@
   .saved.on{transform:translate(-50%,calc(env(safe-area-inset-top) + 0px))}
   .saved:before{content:"";width:14px;height:14px;border-radius:50%;background:hsl(var(--primary)) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M4 7.2l2 2 4-4.4' fill='none' stroke='%23052' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat}
 
+  /* ---- 하단 내비 ---- */
+  .bnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:space-around;background:hsl(var(--background)/.95);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid hsl(var(--border));padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+  .bnav button{flex:1;max-width:140px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:none;border-radius:12px;color:hsl(var(--muted-foreground));font-size:11.5px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .bnav svg{width:22px;height:22px}
+  .bnav button.on{color:hsl(var(--foreground))}
+  .bnav button.on svg{color:hsl(var(--primary))}
+  .bnav button:active{background:hsl(var(--elev))}
+  .avatar{width:36px;height:36px;border-radius:50%;border:0;background:hsl(var(--elev));color:hsl(var(--foreground));font-size:15px;font-weight:800;cursor:pointer;flex:0 0 auto}
+  .avatar.big{width:56px;height:56px;font-size:22px;background:hsl(var(--primary));color:hsl(var(--primary-foreground));cursor:default}
+
+  /* ---- 공통 페이지 ---- */
+  .page-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0 14px}
+  .page-title h2{margin:0;font-size:26px;font-weight:800;letter-spacing:-.03em}
+  .set-sec{font-size:12px;font-weight:800;letter-spacing:.03em;color:hsl(var(--muted-foreground));margin:20px 4px 8px}
+  .empty{padding:26px 0;text-align:center;color:hsl(var(--muted-foreground));font-size:13px}
+  .center{text-align:center}
+  .back{margin:4px 0 0 -8px}
+
+  /* ---- 데이터: 영양 ---- */
+  .nutri{position:relative;overflow:hidden}
+  .nutri:before{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 100% 0%,hsl(var(--primary)/.16),transparent 60%);pointer-events:none}
+  .nutri>*{position:relative}
+  .k2{font-size:12px;font-weight:800;letter-spacing:.03em;color:hsl(var(--primary))}
+  .hero{display:flex;align-items:baseline;gap:6px;margin:6px 0 14px}
+  .hero b{font-size:46px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+  .hero span{font-size:16px;font-weight:700;color:hsl(var(--muted-foreground))}
+  .macros{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .macros div{background:hsl(var(--elev));border-radius:14px;padding:12px}
+  .macros span{font-size:12px;font-weight:700;color:hsl(var(--muted-foreground))}
+  .macros b{display:block;font-size:22px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:2px}
+  .macros em{font-style:normal;font-size:12px;font-weight:600;color:hsl(var(--muted-foreground))}
+  .calc{margin-top:12px;line-height:1.65;font-size:12.5px}
+  .advice{margin-top:10px;padding:10px 12px;border-radius:12px;font-size:13.5px;font-weight:600;line-height:1.5;background:hsl(var(--elev));color:hsl(var(--foreground)/.9)}
+  .advice.ok{background:hsl(var(--primary)/.12);color:hsl(var(--primary))}
+  .advice.warn{background:hsl(var(--warning)/.13);color:hsl(var(--warning))}
+
+  /* ---- 데이터: 타일 / 차트 ---- */
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+  .tile{background:hsl(var(--card));border-radius:16px;padding:14px 12px}
+  .tile span{font-size:12px;font-weight:700;color:hsl(var(--muted-foreground))}
+  .tile b{display:block;font-size:22px;font-weight:800;letter-spacing:-.02em;margin:2px 0 1px;font-variant-numeric:tabular-nums}
+  .tile b small{font-size:12px;font-weight:700;color:hsl(var(--muted-foreground));margin-left:2px}
+  .delta{font-size:12px;font-weight:700;color:hsl(var(--muted-foreground));font-variant-numeric:tabular-nums}
+  .delta.good{color:hsl(var(--primary))}
+  .delta.bad{color:hsl(var(--warning))}
+  .ch-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+  .chart{position:relative;margin:4px -4px 0}
+  .chart svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y;-webkit-tap-highlight-color:transparent}
+  .chart .grid{stroke:hsl(var(--border));stroke-width:1}
+  .chart .axis{fill:hsl(var(--muted-foreground));font-size:10px;font-weight:600;font-variant-numeric:tabular-nums}
+  .chart .ln{fill:none;stroke:hsl(var(--primary));stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+  .chart .pt{fill:hsl(var(--primary));stroke:hsl(var(--card));stroke-width:2}
+  .chart .lbl{fill:hsl(var(--foreground));font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+  .chart .bar{fill:hsl(var(--primary))}
+  .chart .cross line{stroke:hsl(var(--muted-foreground));stroke-width:1;stroke-dasharray:3 3}
+  .chart .cross circle{fill:hsl(var(--primary));stroke:hsl(var(--card));stroke-width:3}
+  .tip{position:absolute;z-index:5;transform:translate(-50%,calc(-100% - 14px));background:hsl(var(--foreground));color:hsl(var(--background));padding:6px 10px;border-radius:10px;font-size:11.5px;font-weight:600;line-height:1.35;text-align:center;white-space:nowrap;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+  .tip b{display:block;font-size:14px;font-weight:800}
+  .tbl summary{font-size:12.5px;height:30px}
+  .tbl table{border-spacing:0;margin-top:2px}
+  .tbl td{padding:8px 6px;border-bottom:1px solid hsl(var(--border));font-size:13px;text-align:left;font-variant-numeric:tabular-nums}
+  .tbl tr:last-child td{border-bottom:none}
+
+  /* ---- 데이터: 인바디 입력 / 목록 ---- */
+  .bform{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .bform label{display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700;color:hsl(var(--muted-foreground))}
+  .bform input[type=date],.field input[type=date]{height:46px;border-radius:12px;border:1.5px solid transparent;background:hsl(var(--elev));color:hsl(var(--foreground));font:inherit;font-size:15px;font-weight:700;padding:0 10px;color-scheme:dark;min-width:0}
+  html[data-theme=light] .bform input[type=date],html[data-theme=light] .field input[type=date]{color-scheme:light}
+  .bform input:focus{outline:none;border-color:hsl(var(--primary))}
+  .blist .row{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 30px;gap:6px;align-items:center;padding:10px 0;border-bottom:1px solid hsl(var(--border));font-size:13px;font-variant-numeric:tabular-nums}
+  .blist .row:last-child{border-bottom:none}
+  .blist .row.h{font-size:11.5px;font-weight:700;color:hsl(var(--muted-foreground));padding:6px 0}
+  .x{width:30px;height:30px;border:0;border-radius:8px;background:none;color:hsl(var(--muted-foreground));cursor:pointer;font-size:13px}
+  .x:hover{background:hsl(var(--elev));color:hsl(var(--destructive))}
+  .prrow{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 0;border-bottom:1px solid hsl(var(--border));font-size:13.5px}
+  .prrow:last-child{border-bottom:none}
+  .prrow b{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+  .prrow small{display:block;font-size:11.5px;font-weight:600;color:hsl(var(--muted-foreground))}
+
+  /* ---- 설정 ---- */
+  .prof{display:flex;align-items:center;gap:14px}
+  .prof>div:not(.avatar){flex:1;min-width:0}
+  .prof .avatar{flex:0 0 56px;display:flex;align-items:center;justify-content:center}
+  .name-in{width:100%;height:40px;border:0;border-bottom:1.5px solid hsl(var(--border));background:transparent;color:hsl(var(--foreground));font:inherit;font-size:20px;font-weight:800;padding:0}
+  .name-in:focus{outline:none;border-bottom-color:hsl(var(--primary))}
+  .field{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid hsl(var(--border))}
+  .field:last-child{border-bottom:none}
+  .field>span{font-size:14.5px;font-weight:600}
+  .field .unit{display:flex;align-items:center;gap:6px;color:hsl(var(--muted-foreground));font-size:13px;font-weight:600}
+  .field input[type=number]{width:96px;height:40px;font-size:16px}
+  .field input[type=date]{height:40px}
+  .seg{display:flex;gap:4px;background:hsl(var(--elev));padding:4px;border-radius:12px}
+  .seg button{flex:1;height:36px;padding:0 6px;border:0;border-radius:9px;background:transparent;color:hsl(var(--muted-foreground));font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .seg button.on{background:hsl(var(--primary));color:hsl(var(--primary-foreground))}
+  .seg.sm{width:140px}
+  .seg-desc{margin:8px 2px 2px;font-size:12.5px;color:hsl(var(--muted-foreground))}
+  .linkrow{display:flex;justify-content:space-between;align-items:center;width:100%;padding:12px 0;border:0;background:none;color:hsl(var(--foreground));font-size:14.5px;font-weight:600;cursor:pointer;text-align:left}
+  .linkrow svg{width:16px;height:16px;color:hsl(var(--muted-foreground))}
+
   /* ---- 달력 ---- */
-  body.cal-view .tabs-wrap,body.cal-view .timer{display:none}
-  body.cal-view main{padding-bottom:40px}
+  body:not([data-view=home]) .tabs-wrap,body:not([data-view=home]) .timer{display:none}
   .calhead{display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 0 12px}
   .calhead h2{margin:0;font-size:24px;font-weight:800;letter-spacing:-.03em;min-width:160px;text-align:center;font-variant-numeric:tabular-nums}
   .card.cal{padding:12px 6px 14px}
@@ -277,6 +376,62 @@
   .chips{display:flex;flex-wrap:wrap;gap:6px}
   .chip{font-size:13px;font-weight:600;padding:4px 10px;border-radius:9999px;background:hsl(var(--elev));font-variant-numeric:tabular-nums}
   .chip.undone{opacity:.45}
+
+  /* ================= Apple UI 톤 ================= */
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo","Pretendard Variable",Pretendard,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;font-size:16px;letter-spacing:-.015em}
+  header{background:hsl(var(--background)/.75);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid hsl(var(--border)/.7)}
+  .logo{border-radius:10px;width:34px;height:34px}
+  header h1{font-weight:700;font-size:17px}
+  .page-title{margin:14px 2px 16px}
+  .page-title h2{font-size:32px;font-weight:700;letter-spacing:-.025em}
+  .dayhead h2,.calhead h2{font-weight:700;letter-spacing:-.025em}
+  .card,.tile,.citem{border-radius:14px}
+  html[data-theme=light] .card,html[data-theme=light] .dayhead,html[data-theme=light] .tile,html[data-theme=light] .citem{box-shadow:none}
+  .dayhead{border-radius:18px}
+  .set-sec{font-size:13px;font-weight:400;letter-spacing:0;margin:24px 16px 7px}
+  .field,.kv,.prrow,.blist .row,.frow,.hist,.dex,.tbl td{border-bottom-width:.5px}
+  .field>span{font-size:16px;font-weight:400}
+  .linkrow{font-size:16px;font-weight:400}
+  /* iOS 세그먼트 컨트롤 */
+  .seg{gap:0;padding:2px;border-radius:9px;background:hsl(var(--elev))}
+  .seg button{height:32px;border-radius:7px;font-size:13px;font-weight:600;color:hsl(var(--foreground))}
+  .seg button.on{background:hsl(var(--seg-on));color:hsl(var(--foreground));box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04)}
+  /* 버튼 */
+  .btn{border-radius:12px;font-weight:600}
+  .btn.tint{background:hsl(var(--primary)/.16);color:hsl(var(--primary))}
+  .btn.tint:hover{background:hsl(var(--primary)/.22)}
+  .btn.big{height:52px;border-radius:14px;font-size:17px;font-weight:600}
+  /* 탭 칩 */
+  .tab{height:34px;font-size:14px;font-weight:600;background:hsl(var(--card))}
+  /* 반투명 하단 바 */
+  .bnav{background:hsl(var(--bar)/.8);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid hsl(var(--border)/.9);padding-top:3px}
+  .bnav button{height:50px;gap:2px;font-size:10.5px;font-weight:600}
+  .bnav svg{width:25px;height:25px}
+  .bnav button.on,.bnav button.on svg{color:hsl(var(--primary))}
+  .bnav button:active{background:none;opacity:.6}
+  .timer{background:hsl(var(--bar)/.8);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid hsl(var(--border)/.9)}
+  .timer .t{font-weight:600;letter-spacing:-.02em}
+  /* 숫자 */
+  .hero b{font-weight:700;letter-spacing:-.035em}
+  .dh-nums b,.tile b,.macros b,.stats b{font-weight:700}
+  .macros div,.target span,.stats div{border-radius:12px}
+  .avatar{background:hsl(var(--elev2))}
+  input[type=number]{border-radius:10px}
+
+  /* iOS 입력 행 */
+  .irows{padding:0 16px}
+  .irow{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:56px;border-bottom:.5px solid hsl(var(--border));cursor:text}
+  .irow:last-child{border-bottom:none}
+  .irow>span:first-child{font-size:16px;color:hsl(var(--foreground))}
+  .irow>span:first-child small{display:block;font-size:12px;color:hsl(var(--muted-foreground))}
+  .iv{display:flex;align-items:baseline;gap:4px}
+  .iv input[type=number],.field .unit input[type=number]{width:110px;height:44px;padding:0;border:0;border-radius:0;background:transparent;text-align:right;font-size:22px;font-weight:700;letter-spacing:-.02em;color:hsl(var(--foreground))}
+  .iv input[type=number]:focus,.field .unit input[type=number]:focus{background:transparent;border:0;color:hsl(var(--primary))}
+  .iv input::placeholder,.field .unit input::placeholder{color:hsl(var(--muted-foreground)/.45);font-weight:600}
+  .iv em,.field .unit em{font-style:normal;font-size:15px;font-weight:500;color:hsl(var(--muted-foreground));min-width:30px}
+  .irow input[type=date]{height:40px;border:0;border-radius:10px;background:hsl(var(--elev));color:hsl(var(--foreground));font:inherit;font-size:15px;font-weight:600;padding:0 10px;color-scheme:dark}
+  html[data-theme=light] .irow input[type=date]{color-scheme:light}
+  .latest{display:flex;justify-content:space-between;align-items:center;margin:-4px 2px 12px;font-size:13px;color:hsl(var(--muted-foreground))}
 </style>
 </head>
 <body>
@@ -286,18 +441,13 @@
       <span class="logo"><svg viewBox="0 0 64 64"><rect x="10" y="28" width="44" height="8" rx="3" fill="currentColor"/><rect x="7" y="19" width="8" height="26" rx="2.5" fill="currentColor"/><rect x="49" y="19" width="8" height="26" rx="2.5" fill="currentColor"/></svg></span>
       <div><h1>Bulkup Log</h1><div class="meta"><span id="weekBadge"></span></div></div>
     </div>
-    <div class="hright">
-      <button class="btn small" id="viewBtn" onclick="toggleView()"></button>
-      <button class="tt" onclick="toggleTheme()" aria-label="테마 전환">
-        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-      </button>
-    </div>
+    <button class="avatar" id="avatar" onclick="setView('set')" aria-label="마이페이지"></button>
   </div>
 </header>
 <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
 <main id="main"></main>
 <div id="saved" class="saved">자동 저장됨</div>
+<nav class="bnav" id="bnav"></nav>
 
 <div class="timer"><div class="in">
   <div class="t" id="timerText">0:00</div>
@@ -514,10 +664,17 @@ const store = JSON.parse(localStorage.getItem(KEY)||'{}');
 store.logs = store.logs||{};     // {date: {day, ex:{name:{sets:[{w,r,d}],note}}}}
 store.bw = store.bw||[];         // [{date,kg}]
 store.start = store.start||null;
+store.profile = Object.assign({name:'kevin',age:33,height:182,sex:'m',weight:73,goal:'bulk',activity:'mid'},store.profile||{});
+store.body = store.body||[];     // 인바디 [{date,w,smm,bf,bmr}]
+if(!store.bodySeeded){           // 처음 알려준 스펙 + 기존 체중 기록 이관
+  if(!store.body.length) store.body.push({date:'2026-09-23',w:73,smm:34});
+  store.bw.forEach(b=>{if(!store.body.some(x=>x.date===b.date))store.body.push({date:b.date,w:b.kg});});
+  store.bodySeeded=true;
+}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
 function save(){persist();renderWeek();}
 let savedT=null;
-function flashSaved(){const el=document.getElementById('saved');if(!el)return;el.classList.add('on');clearTimeout(savedT);savedT=setTimeout(()=>el.classList.remove('on'),1100);}
+function flashSaved(msg){const el=document.getElementById('saved');if(!el)return;el.textContent=msg||'자동 저장됨';el.classList.add('on');clearTimeout(savedT);savedT=setTimeout(()=>el.classList.remove('on'),msg?1800:1100);}
 function localISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function today(){return localISO(new Date());}
 let curDate = today();
@@ -569,9 +726,7 @@ const TABS=[...PROGRAM.map(d=>({id:d.id,label:d.short})),{id:'hist',label:'기�
 function renderTabs(){
   const next=suggestDay();
   document.getElementById('tabs').innerHTML=
-    PROGRAM.map(p=>`<button class="tab ${p.id===curTab?'active':''}" style="--c:${DAY_COLOR[p.id]}" onclick="curTab='${p.id}';render()"><i></i>${p.short}${p.id===next&&p.id!==curTab?'<em>추천</em>':''}</button>`).join('')
-    +'<span class="tsep"></span>'
-    +[['hist','기록'],['info','가이드']].map(([id,l])=>`<button class="tab plain ${id===curTab?'active':''}" onclick="curTab='${id}';render()">${l}</button>`).join('');
+    PROGRAM.map(p=>`<button class="tab ${p.id===curTab?'active':''}" style="--c:${DAY_COLOR[p.id]}" onclick="curTab='${p.id}';render()"><i></i>${p.short}${p.id===next&&p.id!==curTab?'<em>추천</em>':''}</button>`).join('');
 }
 
 // ---------- 운동일 화면 ----------
@@ -669,9 +824,7 @@ function finishDay(dayId){
   });
   if(!store.start) store.start=curDate;
   save();
-  const kg=prompt('오늘 체중(kg)? 건너뛰려면 취소');
-  if(kg){store.bw=store.bw.filter(b=>b.date!==curDate);store.bw.push({date:curDate,kg:Number(kg)});store.bw.sort((a,b)=>a.date<b.date?-1:1);save();}
-  alert('저장 완료. 수고했어요.');
+  flashSaved('운동 기록 저장 완료 · 수고했어요');
   view='cal';{const d=new Date(curDate+'T00:00:00');calY=d.getFullYear();calM=d.getMonth();}selDate=curDate;render();window.scrollTo(0,0);
 }
 
@@ -707,7 +860,7 @@ function importJSON(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{c
 
 // ---------- 원칙·식단 화면 ----------
 function renderInfo(){
-  return `<div class="day-title"><h2>원칙 · 식단</h2></div>
+  return `<div class="page-title"><h2>운동 가이드</h2></div>
   <div class="card"><h3>진행 규칙</h3><ul>
     <li><b>이중 진행</b>: 반복 상한을 전 세트에서 채우면 다음에 +2.5kg (덤벨 +2kg). 앱이 자동으로 알려줌</li>
     <li><b>첫 2주는 무게 찾기</b>: 목표 RIR에 맞는 무게 기록</li>
@@ -716,13 +869,11 @@ function renderInfo(){
     <li><b>템포</b>: 내릴 때 2~3초, 올릴 때 폭발적. 반동 금지</li>
     <li><b>가벼운 고반복 → 중량</b>: 고립운동 첫 세트는 가볍게 15회로 자극부터 잡기</li>
   </ul></div>
-  <div class="card"><h3>식단 (73kg 마른 체형 벌크업)</h3>
-    <div class="kv"><span>칼로리</span><span>2,900~3,100 kcal (유지 +300~400)</span></div>
-    <div class="kv"><span>단백질</span><span>130~160g (1.8~2.2g/kg)</span></div>
+  <div class="card"><h3>식단</h3>
+    <div class="kv"><span>칼로리 · 탄단지</span><span>데이터 탭에서 인바디 기준 자동 계산</span></div>
     <div class="kv"><span>크레아틴</span><span>모노하이드레이트 5g 매일</span></div>
     <div class="kv"><span>운동 전</span><span>탄수 30~50g</span></div>
     <div class="kv"><span>운동 후 2h</span><span>단백질 30~40g</span></div>
-    <div class="kv"><span>체중 목표</span><span>주 +0.25~0.5kg</span></div>
   </div>
   <div class="card"><h3>연구 근거</h3><table class="research">
     <tr><th>변수</th><th>결론</th><th>반영</th></tr>
@@ -760,7 +911,7 @@ function tick(){
 function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.2;o.start();setTimeout(()=>{o.stop();c.close();},350);}catch(e){}}
 
 // ---------- 달력 ----------
-const DAY_COLOR={mon:'217 91% 60%',tue:'188 86% 45%',thu:'28 95% 55%',fri:'265 85% 66%',sat:'335 85% 62%'};
+const DAY_COLOR={mon:'221 90% 63%',tue:'170 80% 35%',thu:'25 92% 48%',fri:'270 80% 68%',sat:'338 85% 62%'};
 const WD=['일','월','화','수','목','금','토'];
 const ICON_CAL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
 const ICON_HOME='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>';
@@ -810,27 +961,244 @@ function renderCalDetail(iso){
 }
 
 // ---------- 렌더 ----------
+// ---------- 하단 내비 ----------
+const ICON_DUMB='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.66 21.49a2 2 0 1 1-2.83-2.83l-1.77 1.77a2 2 0 1 1-2.83-2.83l6.37-6.36a2 2 0 1 1 2.82 2.83l-1.76 1.76a2 2 0 1 1 2.83 2.83z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.4 12.77a2 2 0 1 1-2.83-2.83l1.77-1.77a2 2 0 1 1-2.83-2.83l2.83-2.83a2 2 0 1 1 2.83 2.83l1.77-1.77a2 2 0 1 1 2.83 2.83z"/></svg>';
+const ICON_CHART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>';
+const ICON_USER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>';
+const ICON_CHEV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+const NAV=[['home','운동',ICON_DUMB],['cal','달력',ICON_CAL],['data','데이터',ICON_CHART],['set','설정',ICON_USER]];
+function renderNav(){
+  const act=view==='guide'?'set':view;
+  document.getElementById('bnav').innerHTML=NAV.map(([v,l,i])=>`<button class="${v===act?'on':''}" onclick="setView('${v}')" aria-label="${l}">${i}<span>${l}</span></button>`).join('');
+  const av=document.getElementById('avatar');if(av)av.textContent=((store.profile.name||'?').trim()[0]||'?').toUpperCase();
+}
+function setView(v){
+  if(v==='cal'&&view!=='cal'){const t=new Date();calY=t.getFullYear();calM=t.getMonth();selDate=null;}
+  if(v==='home'&&view==='home'){curDate=today();curTab=suggestDay();}
+  view=v;render();window.scrollTo(0,0);
+}
+
+// ---------- 영양 계산 ----------
+const GOALS={bulk:{l:'벌크업',k:400,p:2.0,r:[0.25,0.5],d:'유지 +400kcal · 주 +0.25~0.5kg 증가 목표'},
+  lean:{l:'린매스업',k:250,p:2.0,r:[0.1,0.25],d:'유지 +250kcal · 주 +0.1~0.25kg, 지방 증가 최소화'},
+  keep:{l:'유지',k:0,p:1.8,r:[-0.1,0.1],d:'유지 칼로리 · 체중 유지하며 근력 향상'},
+  cut:{l:'감량',k:-400,p:2.2,r:[-0.75,-0.25],d:'유지 -400kcal · 주 0.25~0.75kg 감량, 고단백으로 근손실 방지'}};
+const ACTS={low:{l:'적음',f:1.375,d:'주 1~3회 운동, 좌식 생활'},mid:{l:'보통',f:1.55,d:'주 3~5회 운동 (지금 루틴 기준)'},high:{l:'많음',f:1.725,d:'주 6~7회 운동 또는 육체노동'}};
+function bodySorted(){return (store.body||[]).slice().sort((a,b)=>a.date<b.date?-1:1);}
+function latestOf(k){const b=bodySorted().filter(x=>x[k]!=null);return b[b.length-1]||null;}
+function nutrition(){
+  const pr=store.profile,wE=latestOf('w'),w=wE?wE.w:(pr.weight||70),bmrE=latestOf('bmr'),bfE=latestOf('bf');
+  let bmr,src;
+  if(bmrE){bmr=bmrE.bmr;src='인바디 기초대사량';}
+  else if(bfE){bmr=370+21.6*w*(1-bfE.bf/100);src='체지방률 기반 · Katch-McArdle';}
+  else{bmr=10*w+6.25*(pr.height||175)-5*(pr.age||30)+(pr.sex==='f'?-161:5);src='키·나이 기반 · Mifflin-St Jeor';}
+  const A=ACTS[pr.activity]||ACTS.mid,G=GOALS[pr.goal]||GOALS.bulk;
+  const tdee=bmr*A.f,kcal=Math.round((tdee+G.k)/10)*10;
+  const pg=Math.round(w*G.p),fg=Math.round(kcal*.25/9),cg=Math.max(0,Math.round((kcal-pg*4-fg*9)/4));
+  return {w,bmr:Math.round(bmr),src,tdee:Math.round(tdee),kcal,p:pg,f:fg,c:cg,A,G,bf:bfE?bfE.bf:null};
+}
+function weightTrend(){
+  const b=bodySorted().filter(x=>x.w!=null);if(b.length<2)return null;
+  const last=b[b.length-1],first=b.find(x=>dnum(x.date)>=dnum(last.date)-35)||b[0];
+  const days=dnum(last.date)-dnum(first.date);if(days<10)return null;
+  return {rate:(last.w-first.w)/(days/7),days};
+}
+function adviceHTML(n){
+  const t=weightTrend(),[lo,hi]=n.G.r;let a='';
+  if(!t) a='<div class="advice">체중을 2주 이상 기록하면 실제 증가 속도를 보고 칼로리 조정을 알려드려요.</div>';
+  else{const r=(t.rate>0?'+':'')+t.rate.toFixed(2);
+    if(t.rate<lo) a=`<div class="advice warn">최근 ${t.days}일 주 ${r}kg · 목표(${lo}~${hi})보다 느려요 → 하루 +150kcal 늘려보세요</div>`;
+    else if(t.rate>hi) a=`<div class="advice warn">최근 ${t.days}일 주 ${r}kg · 목표(${lo}~${hi})보다 빨라요 → 하루 -150kcal (지방 증가 방지)</div>`;
+    else a=`<div class="advice ok">최근 ${t.days}일 주 ${r}kg · 목표 속도 안이에요. 지금대로 유지하세요</div>`;}
+  if(n.bf!=null&&n.bf>=22&&store.profile.goal==='bulk') a+=`<div class="advice warn">체지방률 ${n.bf}% · 벌크업보다 린매스업이 유리할 수 있어요 (설정에서 변경)</div>`;
+  return a;
+}
+
+// ---------- 인바디 입력 (입력 즉시 임시 저장) ----------
+let bodyFormOpen=!!store.bodyDraft;
+function toggleBodyForm(){bodyFormOpen=!bodyFormOpen;render();}
+function bodyDraft(k,v){store.bodyDraft=store.bodyDraft||{};store.bodyDraft[k]=v===''?null:(k==='date'?v:Number(v));persist();}
+function renderBodyForm(){
+  const d=store.bodyDraft||{},l=bodySorted().slice(-1)[0]||{};
+  const f=(k,lab,step)=>`<label>${lab}<input type="number" inputmode="decimal" step="${step}" value="${d[k]??''}" placeholder="${l[k]??''}" oninput="bodyDraft('${k}',this.value)"></label>`;
+  const row=(k,lab,unit,step,sub)=>`<label class="irow"><span>${lab}${sub?`<small>${sub}</small>`:''}</span><span class="iv"><input type="number" inputmode="decimal" step="${step}" value="${d[k]??''}" placeholder="${l[k]??'0'}" oninput="bodyDraft('${k}',this.value)"><em>${unit}</em></span></label>`;
+  return `<div class="set-sec" style="margin-top:4px">새 인바디 기록</div>
+  <div class="card irows">
+    <label class="irow"><span>측정일</span><input type="date" value="${d.date||today()}" onchange="bodyDraft('date',this.value)"></label>
+    ${row('w','체중','kg',0.1)}${row('smm','골격근량','kg',0.1)}${row('bf','체지방률','%',0.1)}${row('bmr','기초대사량','kcal',1,'선택 · 인바디 결과지에 있으면 입력')}
+  </div>
+  <div class="muted" style="margin:-4px 16px 10px">흐린 숫자는 지난 측정값이에요. 체중만 넣어도 저장돼요.</div>
+  <button class="btn primary big" onclick="saveBody()">저장</button>
+  <div style="height:14px"></div>`;
+}
+function saveBody(){
+  const d=Object.assign({date:today()},store.bodyDraft||{});
+  if(d.w==null&&d.smm==null&&d.bf==null){alert('체중을 입력해 주세요');return;}
+  const e={date:d.date||today()};['w','smm','bf','bmr'].forEach(k=>{if(d[k]!=null&&!isNaN(d[k]))e[k]=d[k];});
+  store.body=store.body.filter(x=>x.date!==e.date);store.body.push(e);store.bodyDraft=null;bodyFormOpen=false;
+  save();flashSaved('인바디 저장됨');render();
+}
+function delBody(date){if(!confirm(dayLabel(date)+' 측정 기록을 삭제할까요?'))return;store.body=store.body.filter(x=>x.date!==date);save();render();}
+
+// ---------- 차트 (단일 계열 · 1축 · 탭하면 툴팁) ----------
+const charts={};
+function fmtN(v,dec){return (+v).toFixed(dec).replace(/\.0+$/,'');}
+function md(iso){return (+iso.slice(5,7))+'/'+(+iso.slice(8));}
+function niceMax(m){const e=Math.pow(10,Math.floor(Math.log10(m)));const f=m/e;return (f<=1?1:f<=2?2:f<=5?5:10)*e;}
+function fmtK(v){return v>=1000?(v/1000).toFixed(v>=10000?0:1).replace(/\.0$/,'')+'k':String(Math.round(v));}
+function lineChart(id,pts,unit,dec){
+  const W=340,H=170,L=38,R=16,T=24,B=26;
+  const xs=pts.map(p=>dnum(p.d));let x0=Math.min(...xs),x1=Math.max(...xs);if(x0===x1){x0-=1;x1+=1;}
+  const vs=pts.map(p=>p.v);let lo=Math.min(...vs),hi=Math.max(...vs);const pad=Math.max((hi-lo)*.2,Math.abs(hi)*.01,.5);lo-=pad;hi+=pad;
+  const X=x=>L+(x-x0)/(x1-x0)*(W-L-R),Y=v=>T+(1-(v-lo)/(hi-lo))*(H-T-B);
+  const P=pts.map((p,i)=>({x:X(xs[i]),y:Y(p.v),d:p.d,v:p.v}));
+  const grid=[.1,.5,.9].map(t=>lo+(hi-lo)*t).map(v=>`<line class="grid" x1="${L}" x2="${W-R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text class="axis" x="${L-6}" y="${(Y(v)+3.5).toFixed(1)}" text-anchor="end">${fmtN(v,dec)}</text>`).join('');
+  const ends=P.length===1?[P[0]]:[P[0],P[P.length-1]];
+  const xl=ends.map((p,i)=>`<text class="axis" x="${p.x.toFixed(1)}" y="${H-7}" text-anchor="${ends.length===1?'middle':i?'end':'start'}">${md(p.d)}</text>`).join('');
+  const line=P.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join('');
+  const last=P[P.length-1];
+  charts[id]={P,unit,dec,W,H};
+  return `<div class="chart" data-id="${id}"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${id} 추이">
+    <defs><linearGradient id="g_${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:hsl(var(--primary));stop-opacity:.22"/><stop offset="1" style="stop-color:hsl(var(--primary));stop-opacity:0"/></linearGradient></defs>
+    ${grid}${xl}
+    ${P.length>1?`<path d="${line}L${last.x.toFixed(1)} ${H-B}L${P[0].x.toFixed(1)} ${H-B}Z" fill="url(#g_${id})"/><path class="ln" d="${line}"/>`:''}
+    ${P.map(p=>`<circle class="pt" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4"/>`).join('')}
+    <text class="lbl" x="${last.x.toFixed(1)}" y="${(last.y-11).toFixed(1)}" text-anchor="${P.length>1?'end':'middle'}">${fmtN(last.v,dec)}${unit}</text>
+    <g class="cross" style="display:none"><line x1="0" x2="0" y1="${T-8}" y2="${H-B}"/><circle cx="0" r="5"/></g>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="transparent"/>
+  </svg><div class="tip" hidden></div></div>`;
+}
+function barChart(id,bars){
+  const W=340,H=170,L=38,R=10,T=24,B=26,base=H-B;
+  const nice=niceMax(Math.max(...bars.map(b=>b.v),1)),slot=(W-L-R)/bars.length,bw=slot*.62;
+  const Y=v=>T+(1-v/nice)*(H-T-B);
+  const grid=[0,.5,1].map(t=>nice*t).map(v=>`<line class="grid" x1="${L}" x2="${W-R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text class="axis" x="${L-6}" y="${(Y(v)+3.5).toFixed(1)}" text-anchor="end">${fmtK(v)}</text>`).join('');
+  const P=bars.map((b,i)=>({x:L+slot*i+slot/2,y:b.v?Y(b.v):base,lab:b.lab,sub:b.sub,v:b.v,label:b.label}));
+  const rects=P.map(p=>{if(!p.v)return '';const x=p.x-bw/2,y=p.y,r=Math.min(4,bw/2,base-y);return `<path class="bar" d="M${x.toFixed(1)} ${base}V${(y+r).toFixed(1)}Q${x.toFixed(1)} ${y.toFixed(1)} ${(x+r).toFixed(1)} ${y.toFixed(1)}H${(x+bw-r).toFixed(1)}Q${(x+bw).toFixed(1)} ${y.toFixed(1)} ${(x+bw).toFixed(1)} ${(y+r).toFixed(1)}V${base}Z"/>`;}).join('');
+  const xl=P.map((p,i)=>i%2===bars.length%2?'':`<text class="axis" x="${p.x.toFixed(1)}" y="${H-7}" text-anchor="middle">${p.label}</text>`).join('');
+  const last=P[P.length-1];
+  charts[id]={P,unit:'',dec:0,W,H};
+  return `<div class="chart" data-id="${id}"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="주간 운동 볼륨">
+    ${grid}${rects}${xl}
+    ${last.v?`<text class="lbl" x="${last.x.toFixed(1)}" y="${(last.y-7).toFixed(1)}" text-anchor="middle">${fmtK(last.v)}</text>`:''}
+    <rect x="0" y="0" width="${W}" height="${H}" fill="transparent"/>
+  </svg><div class="tip" hidden></div></div>`;
+}
+let chartDocBound=false;
+function bindCharts(){
+  document.querySelectorAll('.chart').forEach(el=>{
+    const c=charts[el.dataset.id];if(!c)return;
+    const svg=el.querySelector('svg'),tip=el.querySelector('.tip'),cr=svg.querySelector('.cross');
+    const show=e=>{const r=svg.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*c.W;let b=c.P[0];for(const p of c.P)if(Math.abs(p.x-sx)<Math.abs(b.x-sx))b=p;
+      if(cr){cr.style.display='';cr.setAttribute('transform',`translate(${b.x} 0)`);cr.querySelector('circle').setAttribute('cy',b.y);}
+      tip.hidden=false;tip.innerHTML=`<b>${b.lab||fmtN(b.v,c.dec)+c.unit}</b>${b.sub||dayLabel(b.d)}`;
+      tip.style.left=Math.min(Math.max(b.x/c.W*r.width,60),r.width-60)+'px';tip.style.top=(b.y/c.H*r.height)+'px';};
+    svg.addEventListener('pointermove',show);svg.addEventListener('pointerdown',show);
+    svg.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){tip.hidden=true;if(cr)cr.style.display='none';}});
+  });
+  if(!chartDocBound){chartDocBound=true;document.addEventListener('pointerdown',e=>{if(!e.target.closest||!e.target.closest('.chart'))document.querySelectorAll('.chart').forEach(el=>{el.querySelector('.tip').hidden=true;const cr=el.querySelector('.cross');if(cr)cr.style.display='none';});});}
+}
+function weeklyVolume(n){
+  const t=dnum(today()),w0=t-((new Date().getDay()+6)%7),out=[];
+  for(let i=n-1;i>=0;i--){const s0=w0-7*i;let v=0,c=0;
+    Object.keys(store.logs).forEach(d=>{const x=dnum(d);if(x>=s0&&x<s0+7&&isDone(store.logs[d])){v+=volume(store.logs[d]);c++;}});
+    const sd=new Date(s0*864e5),label=(sd.getUTCMonth()+1)+'/'+sd.getUTCDate();
+    out.push({label,v,lab:Math.round(v).toLocaleString()+'kg',sub:`${label} 주 · ${c}회 운동${i===0?' (이번 주)':''}`});}
+  return out;
+}
+
+// ---------- 데이터 화면 ----------
+function tileHTML(k,label,unit,good){
+  const b=bodySorted().filter(x=>x[k]!=null);
+  if(!b.length) return `<div class="tile"><span>${label}</span><b>–</b><div class="delta">기록 없음</div></div>`;
+  const l=b[b.length-1],d=l[k]-b[0][k],dir=Math.abs(d)<0.05?0:Math.sign(d),cls=!dir||!good?'':(dir===good?'good':'bad');
+  return `<div class="tile"><span>${label}</span><b>${fmtN(l[k],1)}<small>${unit}</small></b><div class="delta ${cls}">${b.length<2?'첫 측정':(dir>0?'▲ ':dir<0?'▼ ':'– ')+fmtN(Math.abs(d),1)+unit}</div></div>`;
+}
+function renderData(){
+  const n=nutrition(),g=store.profile.goal,gw=g==='cut'?-1:g==='keep'?0:1,bs=bodySorted();
+  const series=k=>bs.filter(x=>x[k]!=null).map(x=>({d:x.date,v:x[k]}));
+  const chartCard=(k,title,unit)=>{const pts=series(k);
+    return `<div class="card"><div class="ch-head"><h3>${title}</h3><span class="muted">${pts.length?pts.length+'회 측정 · '+unit:''}</span></div>
+      ${pts.length?lineChart(k,pts,unit,1):'<div class="empty">인바디를 입력하면 그래프가 그려져요</div>'}
+      ${pts.length?`<details class="tbl"><summary>표로 보기</summary><table>${pts.slice().reverse().map(p=>`<tr><td>${dayLabel(p.d)}</td><td style="text-align:right">${fmtN(p.v,1)}${unit}</td></tr>`).join('')}</table></details>`:''}</div>`;};
+  const prs={};
+  Object.keys(store.logs).forEach(d=>Object.entries(store.logs[d].ex).forEach(([nm,e])=>e.sets.forEach(x=>{if(x&&x.d&&x.w&&x.r){const e1=x.w*(1+x.r/30);if(!prs[nm]||e1>prs[nm].e1)prs[nm]={e1,w:x.w,r:x.r,d};}})));
+  const prList=Object.entries(prs).sort((a,b)=>b[1].e1-a[1].e1).slice(0,10).map(([nm,x])=>`<div class="prrow"><span>${nm}<small>${dayLabel(x.d)}</small></span><b>${x.w}kg × ${x.r}<small>추정 1RM ${Math.round(x.e1)}kg</small></b></div>`).join('');
+  const pct=v=>Math.round(v/n.kcal*100);
+  return `<div class="page-title"><h2>데이터</h2><button class="btn tint small" onclick="toggleBodyForm()">${bodyFormOpen?'입력 닫기':'+ 인바디 입력'}</button></div>
+  ${bodyFormOpen?renderBodyForm():''}
+  ${!bodyFormOpen&&bs.length?`<div class="latest"><span>마지막 측정 ${dayLabel(bs[bs.length-1].date)}</span><span>${bs.length}회 기록</span></div>`:''}
+  <section class="card nutri"><div class="k2">하루 목표 섭취량 · ${n.G.l}</div>
+    <div class="hero"><b>${n.kcal.toLocaleString()}</b><span>kcal</span></div>
+    <div class="macros"><div><span>단백질</span><b>${n.p}g</b><em>${pct(n.p*4)}%</em></div><div><span>탄수화물</span><b>${n.c}g</b><em>${pct(n.c*4)}%</em></div><div><span>지방</span><b>${n.f}g</b><em>${pct(n.f*9)}%</em></div></div>
+    <div class="muted calc">기초대사량 ${n.bmr.toLocaleString()}kcal (${n.src}) × 활동량 ${n.A.f} = 유지 ${n.tdee.toLocaleString()}kcal, 목표 ${n.G.k>=0?'+':''}${n.G.k}kcal<br>단백질 체중 ${fmtN(n.w,1)}kg × ${n.G.p}g · 지방 25% · 나머지 탄수화물</div>
+    ${adviceHTML(n)}
+  </section>
+  <div class="set-sec">신체 변화 · 처음 측정 대비</div>
+  <div class="tiles">${tileHTML('w','체중','kg',gw)}${tileHTML('smm','골격근량','kg',1)}${tileHTML('bf','체지방률','%',-1)}</div>
+  ${chartCard('w','체중','kg')}${chartCard('smm','골격근량','kg')}${chartCard('bf','체지방률','%')}
+  <div class="card"><div class="ch-head"><h3>주간 운동 볼륨</h3><span class="muted">최근 8주 · kg</span></div>${barChart('vol',weeklyVolume(8))}</div>
+  <div class="card"><h3>종목별 최고 기록</h3>${prList||'<div class="empty">세트를 완료하면 기록이 쌓여요</div>'}</div>
+  ${bs.length?`<div class="card blist"><h3>측정 기록</h3><div class="row h"><span>날짜</span><span>체중</span><span>골격근</span><span>체지방</span><span></span></div>${bs.slice().reverse().map(b=>`<div class="row"><span>${dayLabel(b.date)}</span><span>${b.w!=null?fmtN(b.w,1)+'kg':'–'}</span><span>${b.smm!=null?fmtN(b.smm,1)+'kg':'–'}</span><span>${b.bf!=null?fmtN(b.bf,1)+'%':'–'}</span><button class="x" onclick="delBody('${b.date}')" aria-label="삭제">✕</button></div>`).join('')}</div>`:''}`;
+}
+
+// ---------- 설정 (마이페이지) ----------
+function setProfile(k,v,re){store.profile[k]=['age','height'].includes(k)?(v===''?null:Number(v)):v;save();if(re)render();else{flashSaved();renderNav();}}
+function setTheme(t){store.theme=t;save();applyTheme();render();}
+function resetAll(){if(!confirm('모든 운동·인바디 기록을 삭제할까요?'))return;if(!confirm('되돌릴 수 없어요. 정말 삭제할까요?'))return;localStorage.removeItem(KEY);location.reload();}
+function renderSettings(){
+  const pr=store.profile,seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button class="${pr[k]===v?'on':''}" onclick="setProfile('${k}','${v}',1)">${l}</button>`).join('')}</div>`;
+  const w=weekNo(today());
+  return `<div class="page-title"><h2>설정</h2></div>
+  <div class="card prof"><div class="avatar big">${((pr.name||'?').trim()[0]||'?').toUpperCase()}</div><div><input class="name-in" value="${(pr.name||'').replace(/"/g,'&quot;')}" placeholder="닉네임" maxlength="20" oninput="setProfile('name',this.value)"><div class="muted" style="margin-top:6px">이 기기에 저장되는 내 프로필</div></div></div>
+  <div class="set-sec">신체 정보</div>
+  <div class="card">
+    <div class="field"><span>나이</span><span class="unit"><input type="number" inputmode="numeric" value="${pr.age??''}" oninput="setProfile('age',this.value)"><em>세</em></span></div>
+    <div class="field"><span>키</span><span class="unit"><input type="number" inputmode="decimal" value="${pr.height??''}" oninput="setProfile('height',this.value)"><em>cm</em></span></div>
+    <div class="field"><span>성별</span><div class="seg sm">${[['m','남'],['f','여']].map(([v,l])=>`<button class="${pr.sex===v?'on':''}" onclick="setProfile('sex','${v}',1)">${l}</button>`).join('')}</div></div>
+    <div class="muted" style="margin-top:8px">체중·골격근량·체지방률은 데이터 탭의 인바디 기록을 써요.</div>
+  </div>
+  <div class="set-sec">목표 · 칼로리 계산 기준</div>
+  <div class="card">${seg('goal',Object.entries(GOALS).map(([k,g])=>[k,g.l]))}<div class="seg-desc">${(GOALS[pr.goal]||GOALS.bulk).d}</div>
+    <div style="height:14px"></div>${seg('activity',Object.entries(ACTS).map(([k,a])=>[k,'활동 '+a.l]))}<div class="seg-desc">${(ACTS[pr.activity]||ACTS.mid).d} · 계수 ${(ACTS[pr.activity]||ACTS.mid).f}</div></div>
+  <div class="set-sec">프로그램</div>
+  <div class="card">
+    <div class="field"><span>시작일</span><input type="date" value="${store.start||''}" onchange="store.start=this.value||null;save();render()"></div>
+    <div class="field"><span>현재</span><span class="muted">${w&&w>0?`${w}주차 · 7주차마다 디로드`:'첫 세트 완료 시 시작'}</span></div>
+    <div class="field"><span>테마</span><div class="seg sm">${[['dark','다크'],['light','라이트']].map(([v,l])=>`<button class="${(store.theme||'dark')===v?'on':''}" onclick="setTheme('${v}')">${l}</button>`).join('')}</div></div>
+  </div>
+  <div class="set-sec">가이드</div>
+  <div class="card" style="padding:4px 16px"><button class="linkrow" onclick="setView('guide')">운동 원칙 · 연구 근거 · 황철순 채널${ICON_CHEV}</button></div>
+  <div class="set-sec">데이터 관리</div>
+  <div class="card">
+    <div class="rowbtns" style="margin-top:0"><button class="btn" onclick="exportJSON()">백업 내보내기</button><label class="btn">백업 불러오기<input type="file" accept="application/json" style="display:none" onchange="importJSON(this.files[0])"></label></div>
+    <div class="muted" style="margin-top:10px">기록은 이 기기 브라우저에만 저장돼요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 내보내기 해두세요.</div>
+    <div class="rowbtns"><button class="btn danger small" onclick="resetAll()">모든 기록 초기화</button></div>
+  </div>
+  <div class="muted center" style="margin:18px 0 4px">Bulkup Log</div>`;
+}
+
+// ---------- 렌더 ----------
 let lastKey='';
 function persistUI(){store.ui=Object.assign(store.ui||{},{tab:curTab,date:curDate,view,t:Date.now()});persist();}
 function render(){
-  if(!curTab) curTab=suggestDay();
+  if(!curTab||!PROGRAM.some(p=>p.id===curTab)) curTab=suggestDay();
   persistUI();
-  document.body.classList.toggle('cal-view',view==='cal');
-  const vb=document.getElementById('viewBtn');if(vb)vb.innerHTML=view==='cal'?ICON_HOME+'루틴':ICON_CAL+'달력';
-  if(view==='cal'){renderWeek();document.getElementById('main').innerHTML=renderCal();return;}
-  if(!curTab) curTab=suggestDay();
-  renderTabs();renderWeek();
+  document.body.dataset.view=view;
+  renderNav();renderWeek();
   const m=document.getElementById('main');
-  if(curTab==='hist') m.innerHTML=renderHist();
-  else if(curTab==='info') m.innerHTML=renderInfo();
-  else m.innerHTML=renderDay(PROGRAM.find(d=>d.id===curTab));
+  if(view==='cal') m.innerHTML=renderCal();
+  else if(view==='data'){m.innerHTML=renderData();bindCharts();}
+  else if(view==='set') m.innerHTML=renderSettings();
+  else if(view==='guide') m.innerHTML=`<button class="btn ghost small back" onclick="setView('set')">‹ 설정</button>`+renderInfo();
+  else{renderTabs();m.innerHTML=renderDay(PROGRAM.find(d=>d.id===curTab));}
   const key=view+'|'+curTab+'|'+curDate;
   if(key!==lastKey){window.scrollTo(0,0);lastKey=key;}
 }
 // 앱 전환 후 돌아오면: 보던 화면·날짜·스크롤·타이머 그대로 복원 (6시간 이내)
 (function restore(){
   const u=store.ui;
-  if(u&&Date.now()-u.t<6*3600e3){curTab=u.tab||null;curDate=u.date||today();view=u.view==='cal'?'cal':'home';}
+  if(u&&Date.now()-u.t<6*3600e3){curTab=u.tab||null;curDate=u.date||today();view=['home','cal','data','set','guide'].includes(u.view)?u.view:'home';}
   render();
   if(u&&Date.now()-u.t<6*3600e3&&u.y) setTimeout(()=>window.scrollTo(0,u.y),0);
   if(store.timerEnd&&store.timerEnd>Date.now()){tEnd=store.timerEnd;runTimer();}
