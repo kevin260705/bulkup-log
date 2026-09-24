@@ -780,6 +780,17 @@
     .timer .t{font-size:21px}
     .timer .btn{padding:0 9px;font-size:12px}
   }
+
+  /* 타이머: 초 프리셋 묶음을 캡슐 정중앙에 (좌 시간 폭 = 우 멈춤 폭) */
+  .timer .sp{display:none}
+  .timer .t{flex:0 0 76px;width:76px}
+  .timer .t+.btn{margin-left:auto}
+  .timer .btn:nth-of-type(4){margin-right:auto}
+  .timer .btn[aria-label="정지"]{margin-left:38px}
+  @media (max-width:420px){
+    .timer .t{flex-basis:62px;width:62px}
+    .timer .btn[aria-label="정지"]{margin-left:24px}
+  }
 </style>
 </head>
 <body>
