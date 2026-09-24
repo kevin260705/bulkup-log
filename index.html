@@ -857,6 +857,9 @@
   .pleg b{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:hsl(var(--primary));vertical-align:1px}
   .pleg b.f{background:rgb(var(--gl-line)/.35)}
   html[data-theme=light] .pleg b.f{background:hsl(232 25% 20%/.25)}
+
+  .tab em.done{background:rgb(var(--gl-line)/.12);color:hsl(var(--muted-foreground))}
+  html[data-theme=light] .tab em.done{background:hsl(232 25% 20%/.08)}
 </style>
 </head>
 <body>
@@ -1142,6 +1145,15 @@ function renderWeek(){
 }
 // 요일이 아니라 순서로 진행: 마지막으로 완료한 DAY 다음 순서를 추천
 
+// 오늘 완료한 부위 (없으면 null)
+function doneTodayId(){const l=store.logs[today()];return l&&isDone(l)?l.day:null;}
+// 다음 차례: 오늘까지 마지막으로 완료한 부위의 다음 순서
+function nextDay(){
+  const t=today(),past=Object.keys(store.logs).filter(d=>d<=t&&isDone(store.logs[d])).sort();
+  if(!past.length) return PROGRAM[0].id;
+  const O=PROGRAM.map(d=>d.id);
+  return O[(O.indexOf(store.logs[past[past.length-1]].day)+1)%O.length];
+}
 function suggestDay(){
   const t=today();
   if(store.logs[t]&&isDone(store.logs[t])) return store.logs[t].day;
@@ -1175,9 +1187,9 @@ const TABS=[...PROGRAM.map(d=>({id:d.id,label:d.short})),{id:'hist',label:'기�
 function centerTab(){const t=document.getElementById('tabs');if(!t||!t.querySelector)return;const a=t.querySelector('.tab.active');if(!a)return;const x=a.offsetLeft-(t.clientWidth-a.offsetWidth)/2;t.style.scrollBehavior='auto';t.scrollLeft=Math.max(0,x);t.style.scrollBehavior='';t.onscroll=tabFade;tabFade();}
 function tabFade(){const t=document.getElementById('tabs');if(!t||!t.classList)return;t.classList.toggle('fl',t.scrollLeft>2);t.classList.toggle('fr',t.scrollLeft+t.clientWidth<t.scrollWidth-2);}
 function renderTabs(){
-  const next=suggestDay();
+  const done=doneTodayId(),next=nextDay();
   document.getElementById('tabs').innerHTML=
-    PROGRAM.map(p=>`<button class="tab ${p.id===curTab?'active':''}" style="--c:${DAY_COLOR[p.id]}" onclick="curTab='${p.id}';render()"><i></i>${p.short}${p.id===next&&p.id!==curTab?'<em>추천</em>':''}</button>`).join('');
+    PROGRAM.map(p=>`<button class="tab ${p.id===curTab?'active':''}" style="--c:${DAY_COLOR[p.id]}" onclick="curTab='${p.id}';render()"><i></i>${p.short}${p.id===done?'<em class="done">완료</em>':p.id===next&&p.id!==curTab?`<em>${done?'다음':'추천'}</em>`:''}</button>`).join('');
 }
 
 // ---------- 운동일 화면 ----------
@@ -1227,10 +1239,11 @@ function renderDay(day){
   const pct=totalSets?Math.round(doneSets/totalSets*100):0;
   const idx=PROGRAM.findIndex(p=>p.id===day.id), c=DAY_COLOR[day.id];
   const mins=Math.round(day.ex.reduce((a,e)=>a+e.s*(e.rest+45),0)/300)*5;
-  const isToday=curDate===today(), isNext=isToday&&suggestDay()===day.id;
+  const isToday=curDate===today(),dT=doneTodayId();
+  const status=!isToday?'':dT===day.id?' · 오늘 완료':nextDay()===day.id?(dT?' · 다음 운동':' · 오늘 추천'):'';
   const chevDown='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
   return `${renderQuote()}<section class="dayhead" style="--c:${c}">
-      <div class="dh-top"><span class="kicker"><i></i>${idx>=0?'DAY '+(idx+1):'지난 루틴'}${isNext?' · 오늘 추천':''}</span>
+      <div class="dh-top"><span class="kicker"><i></i>${idx>=0?'DAY '+(idx+1):'지난 루틴'}${status}</span>
         <label class="datebtn">${isToday?'오늘':dayLabel(curDate)}${chevDown}<input type="date" value="${curDate}" onchange="curDate=this.value||today();render()"></label></div>
       <h2>${day.name}</h2>
       <div class="dh-meta">${day.ex.length}종목 · ${totalSets}세트 · 약 ${mins}분${day.opt?' · '+day.opt:''}</div>
