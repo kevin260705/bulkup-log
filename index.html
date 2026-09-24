@@ -9,7 +9,7 @@
 <meta property="og:title" content="Bulkup Log">
 <meta property="og:description" content="상체 벌크업 5분할 루틴 기록장">
 <meta property="og:image" content="https://d2ol7oe51mr4n9.cloudfront.net/user_39Bv7Twf1ididBYxsmBgq7k5JAA/d42221b3-8043-477c-a727-9200cc626abb.png">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#08080c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,29 +20,31 @@
 <style>
   /* ---- tokens: 다크 기본 (버핏그라운드 톤) ---- */
   :root{
-    --background:0 0% 0%;--foreground:0 0% 100%;
-    --card:240 3% 11%;--card-foreground:0 0% 100%;
-    --elev:240 2% 18%;--elev2:240 2% 24%;--seg-on:240 2% 39%;--bar:240 4% 9%;
-    --primary:135 64% 50%;--primary-foreground:140 60% 7%;
-    --secondary:240 2% 18%;--secondary-foreground:0 0% 100%;
-    --muted:240 2% 18%;--muted-foreground:240 5% 61%;
-    --accent:240 2% 24%;--accent-foreground:0 0% 100%;
+    --background:240 20% 4%;--foreground:0 0% 100%;
+    --card:232 13% 12%;--card-foreground:0 0% 100%;
+    --elev:232 11% 17%;--elev2:232 10% 22%;--seg-on:232 10% 30%;--bar:240 20% 4%;
+    --primary:138 100% 47%;--primary-foreground:0 0% 0%;
+    --chart:188 85% 58%;--chart-rest:232 6% 42%;
+    --secondary:232 11% 17%;--secondary-foreground:0 0% 100%;
+    --muted:232 11% 17%;--muted-foreground:232 6% 62%;
+    --accent:232 10% 22%;--accent-foreground:0 0% 100%;
     --destructive:3 100% 61%;--destructive-foreground:0 0% 100%;
-    --border:240 3% 22%;--input:240 2% 30%;--ring:135 64% 50%;
-    --success:135 64% 50%;--warning:36 100% 52%;--info:211 100% 60%;
+    --border:232 10% 18%;--input:232 8% 30%;--ring:138 100% 47%;
+    --success:138 100% 47%;--warning:36 100% 55%;--info:188 85% 58%;
     --radius:14px;
   }
   html[data-theme=light]{
-    --background:240 24% 96%;--foreground:0 0% 0%;
-    --card:0 0% 100%;--card-foreground:0 0% 0%;
-    --elev:240 24% 96%;--elev2:240 11% 91%;--seg-on:0 0% 100%;--bar:0 0% 98%;
-    --primary:135 59% 36%;--primary-foreground:0 0% 100%;
-    --secondary:240 24% 96%;--secondary-foreground:0 0% 0%;
-    --muted:240 24% 96%;--muted-foreground:240 2% 54%;
-    --accent:240 11% 91%;--accent-foreground:0 0% 0%;
-    --destructive:3 100% 50%;
-    --border:240 6% 83%;--input:240 6% 78%;--ring:135 59% 36%;
-    --success:135 59% 36%;--warning:32 100% 44%;--info:211 100% 45%;
+    --background:232 20% 96%;--foreground:232 25% 8%;
+    --card:0 0% 100%;--card-foreground:232 25% 8%;
+    --elev:232 20% 95%;--elev2:232 14% 90%;--seg-on:0 0% 100%;--bar:0 0% 100%;
+    --primary:138 80% 34%;--primary-foreground:0 0% 100%;
+    --chart:190 90% 38%;--chart-rest:232 8% 72%;
+    --secondary:232 20% 95%;--secondary-foreground:232 25% 8%;
+    --muted:232 20% 95%;--muted-foreground:232 6% 45%;
+    --accent:232 14% 90%;--accent-foreground:232 25% 8%;
+    --destructive:3 90% 50%;
+    --border:232 12% 88%;--input:232 10% 78%;--ring:138 80% 34%;
+    --success:138 80% 34%;--warning:32 100% 42%;--info:190 90% 38%;
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
@@ -432,16 +434,82 @@
   .irow input[type=date]{height:40px;border:0;border-radius:10px;background:hsl(var(--elev));color:hsl(var(--foreground));font:inherit;font-size:15px;font-weight:600;padding:0 10px;color-scheme:dark}
   html[data-theme=light] .irow input[type=date]{color-scheme:light}
   .latest{display:flex;justify-content:space-between;align-items:center;margin:-4px 2px 12px;font-size:13px;color:hsl(var(--muted-foreground))}
+
+  /* ================= 버핏그라운드 디자인 시스템 ================= */
+  body{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",Roboto,"Malgun Gothic",sans-serif;letter-spacing:-.02em}
+  /* 헤더: 아바타 + 닉네임 / 우측 수치 */
+  header{background:hsl(var(--background));backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:0}
+  .hwrap{padding:14px 18px}
+  .who{display:flex;align-items:center;gap:12px;border:0;background:none;padding:0;color:inherit;cursor:pointer;text-align:left;min-width:0}
+  .who .avatar{width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:18px;font-weight:900}
+  .who b{display:block;font-size:21px;font-weight:800;letter-spacing:-.03em;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #weekBadge{display:block;font-size:12.5px;font-weight:600;color:hsl(var(--muted-foreground))}
+  #weekBadge.deload{color:hsl(var(--warning))}
+  .wk{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+  .wk svg{width:34px;height:34px;color:hsl(var(--primary))}
+  .wk b{display:block;font-size:26px;font-weight:900;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+  .wk small{display:block;font-size:11px;font-weight:700;color:hsl(var(--muted-foreground));margin-top:2px}
+  /* 밑줄 탭 */
+  .tabs-wrap{border-bottom:1px solid hsl(var(--border))}
+  .tabs{gap:20px;padding:0 18px}
+  .tab{position:relative;height:48px;padding:0 1px;border-radius:0;background:none!important;color:hsl(var(--muted-foreground));font-size:16px;font-weight:700;gap:6px}
+  .tab i{width:7px;height:7px}
+  .tab.active{color:hsl(var(--foreground))}
+  .tab.active i{background:hsl(var(--c))}
+  .tab.active:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:hsl(var(--foreground))}
+  .tab em{background:hsl(var(--primary)/.16);color:hsl(var(--primary));border-radius:6px;padding:2px 7px;font-size:11.5px;font-weight:800}
+  main{padding-top:14px}
+  /* 평평한 카드 */
+  .card,.tile,.citem,.dayhead{border-radius:14px}
+  .dayhead:before,.nutri:before{display:none}
+  .page-title h2{font-size:28px;font-weight:800;letter-spacing:-.03em}
+  .set-sec{font-size:14px;font-weight:600;margin:26px 4px 10px}
+  .field>span,.linkrow{font-size:16px;font-weight:700}
+  /* 굵은 숫자 */
+  .hero b{font-size:52px;font-weight:900;letter-spacing:-.045em}
+  .dh-nums b,.wk b{font-weight:900}
+  .tile b,.macros b,.stats b,.calhead h2{font-weight:800}
+  .dayhead h2{font-weight:800;letter-spacing:-.035em}
+  /* 버튼 */
+  .btn{border-radius:10px;font-weight:700}
+  .btn.primary,.btn.ok{background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-weight:800}
+  .btn.big{height:58px;border-radius:12px;font-size:18px;font-weight:800}
+  .btn.tint{background:hsl(var(--primary)/.08);color:hsl(var(--primary));box-shadow:inset 0 0 0 1.5px hsl(var(--primary))}
+  .btn.tint:hover{background:hsl(var(--primary)/.14)}
+  /* 선택 컨트롤: 선택된 칸만 초록 */
+  .seg{background:hsl(var(--elev));border-radius:10px;padding:3px}
+  .seg button{border-radius:8px;font-weight:700;color:hsl(var(--muted-foreground))}
+  .seg button.on{background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-weight:800;box-shadow:none}
+  /* 상태 칩 */
+  .cur-badge{padding:2px 7px;border-radius:6px;background:hsl(var(--primary)/.16);font-weight:800}
+  .cur-badge:before{display:none}
+  .badge.today{border-radius:6px}
+  /* 차트: 청록 라인 + 회색 막대 + 점선 격자 + 말풍선 */
+  .chart .grid{stroke:hsl(var(--border));stroke-dasharray:4 4}
+  .chart .ln{stroke:hsl(var(--chart))}
+  .chart .pt{fill:hsl(var(--chart))}
+  .chart .bar{fill:hsl(var(--chart-rest))}
+  .chart .bar.cur{fill:hsl(var(--chart))}
+  .chart .cross circle{fill:hsl(var(--chart))}
+  .tip{background:hsl(var(--chart));color:hsl(var(--primary-foreground));border-radius:8px;box-shadow:none;font-weight:700}
+  html[data-theme=light] .tip{color:#fff}
+  .tip:after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-bottom:0;border-top-color:hsl(var(--chart))}
+  .tip b{font-weight:900}
+  /* 하단바: 불투명, 선택만 초록 */
+  .bnav{background:hsl(var(--background));backdrop-filter:none;-webkit-backdrop-filter:none;border-top:1px solid hsl(var(--border))}
+  .bnav button{font-size:12px;font-weight:600;gap:4px;height:56px}
+  .bnav svg{width:26px;height:26px}
+  .timer{background:hsl(var(--background));backdrop-filter:none;-webkit-backdrop-filter:none;border-top:1px solid hsl(var(--border))}
+  .timer .t{font-weight:900}
+  body[data-view=home] main{padding-bottom:calc(178px + env(safe-area-inset-bottom))}
+  .timer{bottom:calc(69px + env(safe-area-inset-bottom))}
 </style>
 </head>
 <body>
 <header>
   <div class="hwrap">
-    <div class="brand">
-      <span class="logo"><svg viewBox="0 0 64 64"><rect x="10" y="28" width="44" height="8" rx="3" fill="currentColor"/><rect x="7" y="19" width="8" height="26" rx="2.5" fill="currentColor"/><rect x="49" y="19" width="8" height="26" rx="2.5" fill="currentColor"/></svg></span>
-      <div><h1>Bulkup Log</h1><div class="meta"><span id="weekBadge"></span></div></div>
-    </div>
-    <button class="avatar" id="avatar" onclick="setView('set')" aria-label="마이페이지"></button>
+    <button class="who" onclick="setView('set')" aria-label="마이페이지"><span class="avatar" id="avatar"></span><span><b id="uname"></b><small id="weekBadge"></small></span></button>
+    <div class="wk" aria-label="이번 주 운동 횟수"><svg viewBox="0 0 64 64"><rect x="10" y="28" width="44" height="8" rx="3" fill="currentColor"/><rect x="7" y="19" width="8" height="26" rx="2.5" fill="currentColor"/><rect x="49" y="19" width="8" height="26" rx="2.5" fill="currentColor"/></svg><span><b id="weekCount">0/5</b><small>이번 주</small></span></div>
   </div>
 </header>
 <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
@@ -687,11 +755,11 @@ function weekNo(iso){if(!store.start)return null;return Math.floor((dnum(iso||to
 function isDeload(iso){const w=weekNo(iso);return !!w&&w>0&&w%7===0;}
 function weekSessions(){const w=weekNo(today());if(!w||w<1)return 0;const s0=dnum(store.start)+(w-1)*7;return Object.keys(store.logs).filter(d=>{const n=dnum(d);return n>=s0&&n<s0+7&&isDone(store.logs[d]);}).length;}
 function renderWeek(){
-  const el=document.getElementById('weekBadge');if(!el)return;const w=weekNo(today());
-  if(!w||w<1){el.textContent='첫 세트를 완료하면 1주차 시작';el.className='';return;}
+  const el=document.getElementById('weekBadge'),wc=document.getElementById('weekCount');if(!el)return;const w=weekNo(today());
+  if(!w||w<1){el.textContent='첫 세트 완료 시 1주차 시작';el.className='';if(wc)wc.textContent='0/5';return;}
   const dl=w%7===0;
-  el.textContent=`${w}주차${dl?' 디로드':''} · 이번 주 ${weekSessions()}/5회`;
-  el.className=dl?'deload':'';
+  el.textContent=`${w}주차${dl?' · 디로드 주':''}`;el.className=dl?'deload':'';
+  if(wc)wc.textContent=`${weekSessions()}/5`;
 }
 // 요일이 아니라 순서로 진행: 마지막으로 완료한 DAY 다음 순서를 추천
 const ORDER=['mon','tue','thu','fri','sat'];
@@ -971,6 +1039,7 @@ function renderNav(){
   const act=view==='guide'?'set':view;
   document.getElementById('bnav').innerHTML=NAV.map(([v,l,i])=>`<button class="${v===act?'on':''}" onclick="setView('${v}')" aria-label="${l}">${i}<span>${l}</span></button>`).join('');
   const av=document.getElementById('avatar');if(av)av.textContent=((store.profile.name||'?').trim()[0]||'?').toUpperCase();
+  const un=document.getElementById('uname');if(un)un.textContent=store.profile.name||'나';
 }
 function setView(v){
   if(v==='cal'&&view!=='cal'){const t=new Date();calY=t.getFullYear();calM=t.getMonth();selDate=null;}
@@ -1059,7 +1128,7 @@ function lineChart(id,pts,unit,dec){
   const last=P[P.length-1];
   charts[id]={P,unit,dec,W,H};
   return `<div class="chart" data-id="${id}"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${id} 추이">
-    <defs><linearGradient id="g_${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:hsl(var(--primary));stop-opacity:.22"/><stop offset="1" style="stop-color:hsl(var(--primary));stop-opacity:0"/></linearGradient></defs>
+    <defs><linearGradient id="g_${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:hsl(var(--chart));stop-opacity:.25"/><stop offset="1" style="stop-color:hsl(var(--chart));stop-opacity:0"/></linearGradient></defs>
     ${grid}${xl}
     ${P.length>1?`<path d="${line}L${last.x.toFixed(1)} ${H-B}L${P[0].x.toFixed(1)} ${H-B}Z" fill="url(#g_${id})"/><path class="ln" d="${line}"/>`:''}
     ${P.map(p=>`<circle class="pt" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4"/>`).join('')}
@@ -1074,7 +1143,7 @@ function barChart(id,bars){
   const Y=v=>T+(1-v/nice)*(H-T-B);
   const grid=[0,.5,1].map(t=>nice*t).map(v=>`<line class="grid" x1="${L}" x2="${W-R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text class="axis" x="${L-6}" y="${(Y(v)+3.5).toFixed(1)}" text-anchor="end">${fmtK(v)}</text>`).join('');
   const P=bars.map((b,i)=>({x:L+slot*i+slot/2,y:b.v?Y(b.v):base,lab:b.lab,sub:b.sub,v:b.v,label:b.label}));
-  const rects=P.map(p=>{if(!p.v)return '';const x=p.x-bw/2,y=p.y,r=Math.min(4,bw/2,base-y);return `<path class="bar" d="M${x.toFixed(1)} ${base}V${(y+r).toFixed(1)}Q${x.toFixed(1)} ${y.toFixed(1)} ${(x+r).toFixed(1)} ${y.toFixed(1)}H${(x+bw-r).toFixed(1)}Q${(x+bw).toFixed(1)} ${y.toFixed(1)} ${(x+bw).toFixed(1)} ${(y+r).toFixed(1)}V${base}Z"/>`;}).join('');
+  const rects=P.map(p=>{if(!p.v)return '';const x=p.x-bw/2,y=p.y,r=Math.min(4,bw/2,base-y);return `<path class="bar${p===P[P.length-1]?' cur':''}" d="M${x.toFixed(1)} ${base}V${(y+r).toFixed(1)}Q${x.toFixed(1)} ${y.toFixed(1)} ${(x+r).toFixed(1)} ${y.toFixed(1)}H${(x+bw-r).toFixed(1)}Q${(x+bw).toFixed(1)} ${y.toFixed(1)} ${(x+bw).toFixed(1)} ${(y+r).toFixed(1)}V${base}Z"/>`;}).join('');
   const xl=P.map((p,i)=>i%2===bars.length%2?'':`<text class="axis" x="${p.x.toFixed(1)}" y="${H-7}" text-anchor="middle">${p.label}</text>`).join('');
   const last=P[P.length-1];
   charts[id]={P,unit:'',dec:0,W,H};
