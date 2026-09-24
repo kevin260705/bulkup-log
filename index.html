@@ -1137,8 +1137,8 @@ function renderDay(day){
       const ph=carrySet(last,k);
       rows.push(`<tr class="${s.d?'row-done':''}">
         <td><span class="sn">${k+1}</span></td>
-        <td><input type="number" class="ghost ${s.w==null&&ph.w!=null?'carry':''}" inputmode="decimal" step="0.5" value="${s.w??ph.w??''}" ${s.w==null&&ph.w!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'w',this.value)"></td>
-        <td><input type="number" class="ghost ${s.r==null&&ph.r!=null?'carry':''}" inputmode="numeric" value="${s.r??ph.r??''}" ${s.r==null&&ph.r!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'r',this.value)"></td>
+        <td><input type="number" class="ghost ${s.w==null&&ph.w!=null?'carry':''}" inputmode="decimal" step="0.5" enterkeyhint="next" onkeydown="nextField(event,this)" onfocus="this.select()" value="${s.w??ph.w??''}" ${s.w==null&&ph.w!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'w',this.value)"></td>
+        <td><input type="number" class="ghost ${s.r==null&&ph.r!=null?'carry':''}" inputmode="numeric" enterkeyhint="next" onkeydown="nextField(event,this)" onfocus="this.select()" value="${s.r??ph.r??''}" ${s.r==null&&ph.r!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'r',this.value)"></td>
         <td><input type="checkbox" class="chk" ${s.d?'checked':''} onchange="setVal('${day.id}','${esc(ex.n)}',${k},'d',this.checked);if(this.checked)startRest(${ex.rest})"></td>
       </tr>`);
     }
@@ -1169,6 +1169,13 @@ function renderDay(day){
     </section>
     ${cards}
     <div class="finish"><button class="btn ok big" onclick="finishDay('${day.id}')">운동 마무리</button><button class="btn danger small" onclick="if(confirm('${curDate} 기록을 삭제할까요?')){delete store.logs[curDate];save();render()}">이 날 기록 삭제</button></div>`;
+}
+// 엔터(키패드 '다음'): kg → 같은 세트 횟수 → 다음 세트 kg … 마지막이면 키보드 닫기
+function nextField(e,el){
+  if(e.key!=='Enter')return;e.preventDefault();
+  const card=el.closest('.card');if(!card)return;
+  const all=[...card.querySelectorAll('td input[type=number]')],i=all.indexOf(el);
+  if(i>-1&&i<all.length-1){all[i+1].focus();}else el.blur();
 }
 function esc(s){return s.replace(/'/g,"\\'");}
 function renderForm(name, open){
