@@ -185,6 +185,49 @@
   .tt{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:calc(var(--radius) - 2px);border:1px solid hsl(var(--input));background:transparent;color:hsl(var(--foreground));cursor:pointer}
   .tt:hover{background:hsl(var(--accent))}
   .tt svg{width:16px;height:16px}
+  #viewBtn svg{width:15px;height:15px}
+
+  /* ---- 달력 ---- */
+  body.cal-view .tabs-wrap,body.cal-view .timer{display:none}
+  body.cal-view main{padding-bottom:32px}
+  .calhead{display:flex;align-items:center;justify-content:center;gap:12px;margin:12px 0}
+  .calhead h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em;min-width:150px;text-align:center;font-variant-numeric:tabular-nums}
+  .card.cal{padding:10px 6px 12px}
+  .cgrid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px}
+  .cwd{text-align:center;font-size:12px;font-weight:600;color:hsl(var(--muted-foreground));padding:6px 0 8px}
+  .cwd.sun{color:hsl(var(--destructive))}
+  .cday{position:relative;background:none;border:0;padding:14px 0 4px;display:flex;justify-content:center;cursor:pointer;color:hsl(var(--foreground));font:inherit;-webkit-tap-highlight-color:transparent}
+  .cday .dot{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-variant-numeric:tabular-nums;transition:transform .12s,box-shadow .12s}
+  .cday.done .dot{background:hsl(var(--c));color:#fff;font-weight:700;font-size:13px}
+  .cday.sel .dot{box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring))}
+  .cday:not(.done).sel .dot{background:hsl(var(--accent))}
+  .cday:active .dot{transform:scale(.9)}
+  .cday.today:not(.done) .dot{color:hsl(var(--success));font-weight:700}
+  .tlabel{position:absolute;top:0;left:0;right:0;text-align:center;font-size:10px;font-weight:700;color:hsl(var(--success))}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin:2px 4px 12px;font-size:12.5px;color:hsl(var(--muted-foreground))}
+  .lg{display:inline-flex;align-items:center;gap:6px}
+  .lg i{width:12px;height:12px;border-radius:50%;background:hsl(var(--c))}
+  .msum{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 8px}
+  .cdot{display:inline-block;width:10px;height:10px;border-radius:50%;background:hsl(var(--c));margin-right:8px;vertical-align:1px}
+  .crow{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:center;padding:6px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .cdate{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:700}
+  .cdate i{width:28px;height:28px;border-radius:50%;background:hsl(var(--c))}
+  .citem{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--radius);padding:14px;display:flex;justify-content:space-between;align-items:center;gap:8px;transition:background .15s}
+  .crow:hover .citem{background:hsl(var(--accent))}
+  .cname{font-weight:600;font-size:14px}
+  .cmeta{font-size:12px;color:hsl(var(--muted-foreground));font-variant-numeric:tabular-nums;text-align:right}
+  .dcard{border-top:3px solid hsl(var(--c))}
+  .dtop{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px}
+  .stats div{background:hsl(var(--muted)/.5);border-radius:calc(var(--radius) - 2px);padding:10px 6px;text-align:center}
+  .stats b{display:block;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stats span{font-size:11px;color:hsl(var(--muted-foreground))}
+  .dex{padding:10px 0;border-top:1px solid hsl(var(--border))}
+  .dexh{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;font-weight:600;margin-bottom:6px}
+  .dexh .muted{font-weight:400;white-space:nowrap}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12px;padding:3px 9px;border-radius:9999px;background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-variant-numeric:tabular-nums}
+  .chip.undone{opacity:.45}
   .sun{display:none}.moon{display:block}
   html[data-theme=light] .sun{display:block}html[data-theme=light] .moon{display:none}
 </style>
@@ -198,6 +241,7 @@
     </div>
     <div class="hright">
       <span id="weekBadge" class="badge"></span>
+      <button class="btn small" id="viewBtn" onclick="toggleView()"></button>
       <button class="tt" onclick="toggleTheme()" aria-label="테마 전환">
         <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
         <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
@@ -420,7 +464,8 @@ store.logs = store.logs||{};     // {date: {day, ex:{name:{sets:[{w,r,d}],note}}
 store.bw = store.bw||[];         // [{date,kg}]
 store.start = store.start||null;
 function save(){localStorage.setItem(KEY,JSON.stringify(store));renderWeek();}
-function today(){const d=new Date();return d.toISOString().slice(0,10);}
+function localISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function today(){return localISO(new Date());}
 let curDate = today();
 let curTab = (()=>{const w=new Date().getDay();return ({1:'mon',2:'tue',4:'thu',5:'fri',6:'sat'})[w]||'mon';})();
 
@@ -524,6 +569,7 @@ function setVal(dayId,exName,k,f,v){
   const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};
   e.sets[k]=e.sets[k]||{};
   if(f==='d') e.sets[k].d=v; else e.sets[k][f]=v===''?null:Number(v);
+  if(f==='d'&&v&&!log.at){const n=new Date();log.at=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
   if(!store.start) store.start=curDate;
   save();
   if(f==='d') render();
@@ -546,7 +592,7 @@ function finishDay(dayId){
   const kg=prompt('오늘 체중(kg)? 건너뛰려면 취소');
   if(kg){store.bw=store.bw.filter(b=>b.date!==curDate);store.bw.push({date:curDate,kg:Number(kg)});store.bw.sort((a,b)=>a.date<b.date?-1:1);save();}
   alert('저장 완료. 수고했어요.');
-  curTab='hist';render();
+  view='cal';{const d=new Date(curDate+'T00:00:00');calY=d.getFullYear();calM=d.getMonth();}selDate=curDate;render();window.scrollTo(0,0);
 }
 
 // ---------- 기록 화면 ----------
@@ -630,8 +676,61 @@ function stopTimer(){clearInterval(tInt);tInt=null;}
 function tick(){const el=document.getElementById('timerText');el.classList.remove('done');el.textContent=Math.floor(tLeft/60)+':'+String(tLeft%60).padStart(2,'0');}
 function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.2;o.start();setTimeout(()=>{o.stop();c.close();},350);}catch(e){}}
 
+// ---------- 달력 ----------
+const DAY_COLOR={mon:'221 83% 58%',tue:'160 70% 40%',thu:'28 90% 52%',fri:'271 70% 60%',sat:'340 80% 58%'};
+const WD=['일','월','화','수','목','금','토'];
+const ICON_CAL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+const ICON_HOME='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>';
+let view='home',calY=new Date().getFullYear(),calM=new Date().getMonth(),selDate=null;
+function isDone(l){return !!l&&Object.values(l.ex).some(e=>e.sets.some(s=>s&&s.d));}
+function doneSets(l){let n=0;Object.values(l.ex).forEach(e=>e.sets.forEach(s=>{if(s&&s.d)n++;}));return n;}
+function dayTitle(id){const p=PROGRAM.find(x=>x.id===id);if(!p)return id;const t=p.name.slice(p.name.indexOf(' · ')+3);return t.replace(/\s*\(.*$/,'');}
+function dayLabel(iso){const d=new Date(iso+'T00:00:00');return `${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;}
+function toggleView(){view=view==='home'?'cal':'home';if(view==='cal'){const t=new Date();calY=t.getFullYear();calM=t.getMonth();selDate=null;}render();window.scrollTo(0,0);}
+function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}selDate=null;render();}
+function selectDay(iso){selDate=selDate===iso?null:iso;render();if(selDate){const el=document.getElementById('calDetail');if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});}}
+function openDay(iso,id){view='home';curDate=iso;curTab=id;render();window.scrollTo(0,0);}
+function renderCal(){
+  const prefix=`${calY}-${String(calM+1).padStart(2,'0')}-`;
+  const days=new Date(calY,calM+1,0).getDate(),lead=new Date(calY,calM,1).getDay(),tISO=today();
+  const monthLogs=Object.keys(store.logs).filter(d=>d.startsWith(prefix)&&isDone(store.logs[d])).sort();
+  let cells=WD.map((w,i)=>`<div class="cwd ${i===0?'sun':''}">${w}</div>`).join('');
+  for(let i=0;i<lead;i++)cells+='<div></div>';
+  for(let d=1;d<=days;d++){
+    const iso=prefix+String(d).padStart(2,'0'),l=store.logs[iso],done=isDone(l);
+    cells+=`<button class="cday ${done?'done':''} ${iso===selDate?'sel':''} ${iso===tISO?'today':''}" onclick="selectDay('${iso}')" aria-label="${dayLabel(iso)}">${iso===tISO?'<span class="tlabel">Today</span>':''}<span class="dot"${done?` style="--c:${DAY_COLOR[l.day]||'var(--primary)'}"`:''}>${d}</span></button>`;
+  }
+  const vol=monthLogs.reduce((a,d)=>a+volume(store.logs[d]),0);
+  const legend=PROGRAM.map(p=>`<span class="lg"><i style="--c:${DAY_COLOR[p.id]}"></i>${dayTitle(p.id)}</span>`).join('');
+  const chev=(d)=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+  return `<div class="calhead"><button class="btn ghost icon" onclick="calMove(-1)" aria-label="이전 달">${chev('m15 18-6-6 6-6')}</button><h2>${calY}년 ${String(calM+1).padStart(2,'0')}월</h2><button class="btn ghost icon" onclick="calMove(1)" aria-label="다음 달">${chev('m9 18 6-6-6-6')}</button></div>
+  <div class="card cal"><div class="cgrid">${cells}</div></div>
+  <div class="legend">${legend}</div>
+  <div class="msum"><span class="badge sec">이번 달 ${monthLogs.length}회</span><span class="badge sec">총 볼륨 ${Math.round(vol).toLocaleString()}kg</span>${selDate?`<button class="btn ghost small" style="margin-left:auto" onclick="selectDay('${selDate}')">전체 목록</button>`:''}</div>
+  <div id="calDetail">${selDate?renderCalDetail(selDate):renderCalList(monthLogs)}</div>`;
+}
+function renderCalList(list){
+  if(!list.length) return `<div class="card muted" style="text-align:center">이번 달 운동 기록이 없어요.<br>루틴 화면에서 세트를 완료하면 여기 표시됩니다.</div>`;
+  return list.map(d=>{const l=store.logs[d];return `<div class="crow" onclick="selectDay('${d}')"><div class="cdate"><i style="--c:${DAY_COLOR[l.day]}"></i>${+d.slice(8)}일</div><div class="citem"><span class="cname">${dayTitle(l.day)}</span><span class="cmeta">${doneSets(l)}세트 · ${Math.round(volume(l)).toLocaleString()}kg${l.at?'<br>'+l.at:''}</span></div></div>`;}).join('');
+}
+function renderCalDetail(iso){
+  const l=store.logs[iso];
+  if(!isDone(l)) return `<div class="card"><h3>${dayLabel(iso)}</h3><div class="muted">이 날은 운동 기록이 없어요.</div><div class="rowbtns">${PROGRAM.map(p=>`<button class="btn small" onclick="openDay('${iso}','${p.id}')"><span class="cdot" style="--c:${DAY_COLOR[p.id]};margin-right:0"></span>${dayTitle(p.id)} 기록</button>`).join('')}</div></div>`;
+  const p=PROGRAM.find(x=>x.id===l.day),c=DAY_COLOR[l.day];
+  const total=p?p.ex.reduce((a,e)=>a+e.s,0):0;
+  const order=(p?p.ex.map(e=>e.n):[]).concat(Object.keys(l.ex).filter(n=>!p||!p.ex.some(e=>e.n===n)));
+  const used=order.filter(n=>l.ex[n]&&l.ex[n].sets.some(s=>s&&(s.d||s.w!=null||s.r!=null)));
+  const rows=used.map(n=>{const e=l.ex[n],sets=e.sets.filter(s=>s&&(s.d||s.w!=null||s.r!=null)),v=sets.reduce((a,s)=>a+(s.w&&s.r?s.w*s.r:0),0);
+    return `<div class="dex"><div class="dexh"><span>${n}</span><span class="muted">${sets.length}세트${v?' · '+Math.round(v).toLocaleString()+'kg':''}</span></div><div class="chips">${sets.map(s=>`<span class="chip ${s.d?'':'undone'}">${s.w??'-'}kg × ${s.r??'-'}</span>`).join('')}</div>${e.note?`<div class="muted" style="margin-top:6px">메모 · ${e.note}</div>`:''}</div>`;}).join('');
+  return `<div class="card dcard" style="--c:${c}"><div class="dtop"><div><div class="muted">${dayLabel(iso)}${l.at?' · '+l.at+' 시작':''}</div><h3 style="margin:4px 0 0"><span><span class="cdot" style="--c:${c}"></span>${dayTitle(l.day)}</span></h3></div><button class="btn small" onclick="openDay('${iso}','${l.day}')">수정</button></div>
+  <div class="stats"><div><b>${doneSets(l)}${total?'<span style="font-size:13px;color:hsl(var(--muted-foreground))">/'+total+'</span>':''}</b><span>완료 세트</span></div><div><b>${Math.round(volume(l)).toLocaleString()}</b><span>볼륨 (kg)</span></div><div><b>${used.length}</b><span>종목</span></div></div>${rows}</div>`;
+}
+
 // ---------- 렌더 ----------
 function render(){
+  document.body.classList.toggle('cal-view',view==='cal');
+  const vb=document.getElementById('viewBtn');if(vb)vb.innerHTML=view==='cal'?ICON_HOME+'루틴':ICON_CAL+'달력';
+  if(view==='cal'){renderWeek();document.getElementById('main').innerHTML=renderCal();return;}
   renderTabs();renderWeek();
   const m=document.getElementById('main');
   if(curTab==='hist') m.innerHTML=renderHist();
