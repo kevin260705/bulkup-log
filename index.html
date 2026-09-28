@@ -1115,7 +1115,9 @@ const store = JSON.parse(localStorage.getItem(KEY)||'{}');
 store.logs = store.logs||{};     // {date: {day, ex:{name:{sets:[{w,r,d}],note}}}}
 store.bw = store.bw||[];         // [{date,kg}]
 store.start = store.start||null;
-store.profile = Object.assign({name:'kevin',age:33,height:182,sex:'m',weight:73,goal:'bulk',activity:'mid',freq:5},store.profile||{});
+store.profile = Object.assign({name:'kevin',age:33,height:182,sex:'m',weight:73,goal:'lean',activity:'mid',freq:5},store.profile||{});
+// 목표를 린매스업으로 변경 (2026-09-28): 기존 저장값도 한 번만 전환, 이후엔 설정에서 자유롭게 변경
+if(!store.leanSet){store.profile.goal='lean';store.leanSet=true;}
 applyPlan();
 store.body = store.body||[];     // 인바디 [{date,w,smm,bf,bmr}]
 if(!store.bodySeeded){           // 처음 알려준 스펙 + 기존 체중 기록 이관
