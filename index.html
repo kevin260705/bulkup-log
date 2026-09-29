@@ -876,6 +876,8 @@
   .ra-tx span{display:block;font-size:12.5px;color:hsl(var(--muted-foreground));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ralert .btn.small{height:34px;padding:0 12px;flex:0 0 auto}
   .gsub{display:block;font-size:11.5px;font-weight:400;color:hsl(var(--muted-foreground));margin-top:1px}
+  .steps b{margin-right:0}
+  .steps p>b:first-child{display:inline-block;min-width:18px;margin-right:4px}
 </style>
 </head>
 <body>
@@ -1766,6 +1768,22 @@ function renderSettings(){
   </div>
 
   <div class="muted" style="margin:8px 16px 0">주 ${pr.freq||5}회 · ${PLAN_DESC[pr.freq||5]}</div>
+  <div class="set-sec">알림 설정 · 다른 앱 위에 뜨게</div>
+  <div class="card glist">
+    <div class="grow">${I(C.gray,ico.bell)}<span class="gl">알림 권한<small class="gsub">${({granted:'허용됨 ✓',denied:'차단됨 · 아래 방법으로 허용해 주세요',default:'아직 설정 안 함',unsupported:'이 브라우저는 알림 미지원'})[notiPerm()]}</small></span>${notiPerm()==='default'?'<button class="btn primary small" onclick="reqNoti()">허용하기</button>':notiPerm()==='granted'?'<span class="gv" style="color:hsl(var(--primary));font-weight:600">켜짐</span>':''}</div>
+    <button class="grow" onclick="testNoti()">${I(C.gray,ico.flag)}<span class="gl">알림 테스트<small class="gsub">누르고 5초 안에 홈 화면으로 나가보세요</small></span><span class="gv">${ICON_CHEV}</span></button>
+  </div>
+  <div class="card pad" style="margin-top:10px">
+    <details class="tbl" ${notiPerm()==='granted'?'':'open'}><summary>갤럭시에서 팝업으로 뜨게 하는 법</summary><div class="pcalc steps">
+      ${notiPerm()==='denied'?`<p><b>0. 차단 풀기</b> 크롬에서 이 앱 주소를 열고, 주소창 왼쪽 <b>자물쇠(또는 ⓘ)</b> → <b>권한</b> → <b>알림</b> → <b>허용</b></p>`:''}
+      <p><b>1.</b> 폰 <b>설정</b> → <b>알림</b> → <b>앱 알림</b></p>
+      <p><b>2.</b> ${isApp()?'<b>벌크업 루틴</b> (홈 화면에 추가한 앱)':'<b>Chrome</b>'} 선택 → 알림 <b>켜기</b></p>
+      <p><b>3.</b> ${isApp()?'알림 카테고리 중 <b>일반</b>':'<b>사이트</b> 항목에서 <b>kevin260705.github.io</b>'} 선택</p>
+      <p><b>4.</b> <b>알림 스타일</b>을 <b>팝업</b>으로 (또는 <b>"소리 및 팝업"</b> / <b>중요도: 긴급</b>)</p>
+      <p><b>5.</b> 위의 <b>알림 테스트</b>로 확인</p>
+      <p class="muted">메뉴 이름은 One UI 버전에 따라 조금 달라요. "팝업", "배너", "긴급" 중 하나를 켜면 돼요. 삐삐 소리는 <b>미디어 볼륨</b>을 따라가요.</p>
+    </div></details>
+  </div>
   <div class="set-sec">가이드</div>
   <div class="card glist"><button class="grow" onclick="setView('guide')">${I(C.pink,ico.book)}<span class="gl">운동 원칙 · 연구 근거 · 황철순 채널</span><span class="gv">${ICON_CHEV}</span></button></div>
 
@@ -1853,11 +1871,23 @@ function restDone(){
   const a=document.getElementById('restAlert');if(a)a.classList.add('on');
   if(!audioArmed){beep();setTimeout(beep,450);}
   if(navigator.vibrate)navigator.vibrate([300,120,300,120,300]);
-  if(document.visibilityState==='hidden'&&!store.notiOff&&'Notification' in window&&Notification.permission==='granted'){
-    const opt={body:msg,tag:'rest',renotify:true,requireInteraction:true,vibrate:[300,120,300,120,300],icon:'icon-192.png',badge:'favicon.png'};
-    if(swReg&&swReg.showNotification)swReg.showNotification('휴식 끝 · 다음 세트',opt).catch(()=>{});
-    else{try{new Notification('휴식 끝 · 다음 세트',opt);}catch(e){}}
-  }
+  if(document.visibilityState==='hidden')sendNoti('휴식 끝 · 다음 세트',msg);
+}
+function sendNoti(title,body,force){
+  if((store.notiOff&&!force)||!('Notification' in window)||Notification.permission!=='granted')return false;
+  const opt={body,tag:'rest',renotify:true,requireInteraction:true,vibrate:[300,120,300,120,300],icon:'icon-192.png',badge:'favicon.png'};
+  const go=r=>r&&r.showNotification?r.showNotification(title,opt).catch(()=>{}):(()=>{try{new Notification(title,opt);}catch(e){}})();
+  if(swReg)go(swReg);else if('serviceWorker' in navigator)navigator.serviceWorker.ready.then(go).catch(()=>go(null));else go(null);
+  return true;
+}
+function isApp(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;}
+function notiPerm(){return 'Notification' in window?Notification.permission:'unsupported';}
+function reqNoti(){if(!('Notification' in window))return;try{Notification.requestPermission().then(()=>render());}catch(e){}}
+function testNoti(){
+  if(notiPerm()!=='granted'){reqNoti();return;}
+  armAudio(5);
+  flashSaved('5초 뒤 알림이 와요 · 지금 홈 화면이나 다른 앱으로 나가보세요');
+  setTimeout(()=>{disarmAudio();sendNoti('알림 테스트','휴식이 끝나면 이렇게 알려드려요',true);},5000);
 }
 function closeRestAlert(go){
   const a=document.getElementById('restAlert');if(a)a.classList.remove('on');
