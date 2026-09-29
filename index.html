@@ -1401,7 +1401,7 @@ applyTheme();
 // ---------- 타이머 ----------
 let tInt=null,tLeft=0,tEnd=0,tTotal=0,tRaf=0;
 let tTo=0;
-function startTimer(sec){stopTimer();closeRestAlert();askNoti();tTotal=sec*1000;tEnd=Date.now()+tTotal;store.timerEnd=tEnd;store.timerTotal=tTotal;persist();armAudio(sec);runTimer();clearTimeout(tTo);tTo=setTimeout(tick,tTotal+60);}
+function startTimer(sec){stopTimer();closeRestAlert();askNoti();tTotal=sec*1000;tEnd=Date.now()+tTotal;store.timerEnd=tEnd;store.timerTotal=tTotal;persist();armAudio(sec);runTimer();openPip();clearTimeout(tTo);tTo=setTimeout(tick,tTotal+60);}
 // 세트 완료 시: 직접 고른 시간이 있으면 그 시간, 없으면 종목별 기본 휴식
 function startRest(def){startTimer(store.restSel||def);}
 function pickRest(sec){store.restSel=sec;persist();markRest();startTimer(sec);}
@@ -1771,6 +1771,8 @@ function renderSettings(){
   <div class="set-sec">알림 설정 · 다른 앱 위에 뜨게</div>
   <div class="card glist">
     <div class="grow">${I(C.gray,ico.bell)}<span class="gl">알림 권한<small class="gsub">${({granted:'허용됨 ✓',denied:'차단됨 · 아래 방법으로 허용해 주세요',default:'아직 설정 안 함',unsupported:'이 브라우저는 알림 미지원'})[notiPerm()]}</small></span>${notiPerm()==='default'?'<button class="btn primary small" onclick="reqNoti()">허용하기</button>':notiPerm()==='granted'?'<span class="gv" style="color:hsl(var(--primary));font-weight:600">켜짐</span>':''}</div>
+    <div class="grow">${I(C.gray,ico.flag)}<span class="gl">플로팅 타이머<small class="gsub">${pipSupported()?'휴식 중 알약 타이머가 다른 앱 위에 떠요':'이 폰(브라우저)은 미지원 · 팝업 알림을 써주세요'}</small></span>${pipSupported()?`<button class="sw ${pipOn()?'on':''}" onclick="setPip(${pipOn()?'false':'true'})" aria-label="플로팅 타이머"></button>`:''}</div>
+    ${pipSupported()?'<button class="grow" onclick="testPip()">'+I(C.gray,ico.flag)+'<span class="gl">플로팅 타이머 테스트<small class="gsub">10초 타이머 · 홈 화면으로 나가서 확인</small></span><span class="gv">'+ICON_CHEV+'</span></button>':''}
     <button class="grow" onclick="testNoti()">${I(C.gray,ico.flag)}<span class="gl">알림 테스트<small class="gsub">누르고 5초 안에 홈 화면으로 나가보세요</small></span><span class="gv">${ICON_CHEV}</span></button>
   </div>
   <div class="card pad" style="margin-top:10px">
@@ -1824,7 +1826,58 @@ function render(){
   if(store.timerEnd&&store.timerEnd>Date.now()){tEnd=store.timerEnd;tTotal=store.timerTotal||Math.max(1,tEnd-Date.now());runTimer();}
 })();
 function saveNow(){if(store.ui){store.ui.y=window.scrollY;store.ui.t=Date.now();}persist();}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow();else if(tEnd)tick();});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow();else{if(tEnd)tick();else closePip();}});
+
+// ---------- 플로팅 타이머 (PiP): 다른 앱 위에 알약 모양으로 떠 있는 타이머 ----------
+// 캔버스에 알약을 그리고 → 영상 스트림으로 바꿔 → 작은 창(PiP)으로 띄움. 유튜브 작은 창과 같은 방식.
+let pipV=null,pipC=null,pipIv=0,pipMsg='';
+function pipSupported(){return !!(document.pictureInPictureEnabled&&window.HTMLVideoElement&&HTMLVideoElement.prototype.requestPictureInPicture&&HTMLCanvasElement.prototype.captureStream);}
+function pipOn(){return store.pipOn!==false;}
+function drawPip(){
+  if(!pipC)return;
+  const x=pipC.getContext('2d'),W=pipC.width,H=pipC.height,now=Date.now();
+  const running=!!tEnd,left=running?Math.max(0,Math.ceil((tEnd-now)/1000)):0,p=running&&tTotal?Math.max(0,Math.min(1,(tEnd-now)/tTotal)):0;
+  const G='#00F048',BG='#15161B',FG='#FFFFFF',MUTED='#9B9CA6';
+  x.clearRect(0,0,W,H);
+  const r=H/2;x.beginPath();x.roundRect(0,0,W,H,r);x.fillStyle=running?BG:G;x.fill();
+  if(running){ // 남은 시간 게이지 (알약 안쪽이 줄어듦)
+    x.save();x.beginPath();x.roundRect(0,0,W,H,r);x.clip();x.fillStyle='rgba(0,240,72,.22)';x.fillRect(0,0,W*p,H);x.restore();
+  }
+  // 왼쪽 원 아이콘
+  const cx=r,cy=r;x.beginPath();x.arc(cx,cy,r*0.62,0,Math.PI*2);x.fillStyle=running?G:'#0B0B10';x.fill();
+  x.strokeStyle=running?'#0B0B10':G;x.lineWidth=H*0.05;x.lineCap='round';
+  const R=r*0.3,oy=cy+H*0.035;x.beginPath();x.arc(cx,oy,R,0,Math.PI*2);x.stroke();
+  x.beginPath();x.moveTo(cx-R*0.35,oy-R-H*0.045);x.lineTo(cx+R*0.35,oy-R-H*0.045);x.stroke();
+  x.beginPath();x.moveTo(cx,oy);x.lineTo(cx,oy-R*0.55);x.moveTo(cx,oy);x.lineTo(cx+R*0.42,oy+R*0.2);x.stroke();
+  x.textBaseline='middle';
+  if(running){
+    x.fillStyle=FG;x.font=`800 ${Math.round(H*0.42)}px -apple-system,"Pretendard Variable",Pretendard,sans-serif`;
+    x.fillText(`${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`,H*1.05,H*0.45);
+    x.fillStyle=MUTED;x.font=`600 ${Math.round(H*0.17)}px -apple-system,"Pretendard Variable",Pretendard,sans-serif`;
+    x.fillText('휴식 중',H*1.07,H*0.8);
+  }else{
+    x.fillStyle='#04120A';x.font=`800 ${Math.round(H*0.3)}px -apple-system,"Pretendard Variable",Pretendard,sans-serif`;
+    x.fillText('휴식 끝!',H*1.05,H*0.38);
+    x.font=`600 ${Math.round(H*0.17)}px -apple-system,"Pretendard Variable",Pretendard,sans-serif`;
+    const m=(pipMsg||'다음 세트 시작').replace(/^다음: /,'');x.fillText(m.length>18?m.slice(0,18)+'…':m,H*1.07,H*0.72);
+  }
+}
+async function openPip(force){
+  if((!pipOn()&&!force)||!pipSupported())return false;
+  try{
+    if(!pipC){pipC=document.createElement('canvas');pipC.width=480;pipC.height=150;}
+    if(!pipV){pipV=document.createElement('video');pipV.muted=true;pipV.playsInline=true;pipV.setAttribute('playsinline','');pipV.srcObject=pipC.captureStream(8);}
+    pipMsg='';drawPip();await pipV.play();
+    if(document.pictureInPictureElement!==pipV)await pipV.requestPictureInPicture();
+    clearInterval(pipIv);pipIv=setInterval(drawPip,250);return true;
+  }catch(e){return false;}
+}
+function closePip(){clearInterval(pipIv);if(document.pictureInPictureElement){document.exitPictureInPicture().catch(()=>{});}}
+async function testPip(){
+  if(!pipSupported()){flashSaved('이 폰(브라우저)은 플로팅 타이머를 지원하지 않아요');return;}
+  startTimer(10);flashSaved('10초 타이머 · 홈 화면으로 나가서 확인해 보세요');
+}
+function setPip(on){store.pipOn=on;persist();render();}
 
 // ---------- 휴식 종료 알림 (화면 위 플로팅 + 백그라운드 시스템 알림) ----------
 let swReg=null;
@@ -1866,7 +1919,7 @@ function armAudio(sec){
 }
 function disarmAudio(){if(rAudio){try{rAudio.pause();}catch(e){}}audioArmed=false;}
 function restDone(){
-  const msg=nextSetText();
+  const msg=nextSetText();pipMsg=msg;drawPip();
   const n=document.getElementById('raNext');if(n)n.textContent=msg;
   const a=document.getElementById('restAlert');if(a)a.classList.add('on');
   if(!audioArmed){beep();setTimeout(beep,450);}
