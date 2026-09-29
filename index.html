@@ -1778,11 +1778,17 @@ function renderSettings(){
   <div class="card pad" style="margin-top:10px">
     <details class="tbl" ${notiPerm()==='granted'?'':'open'}><summary>갤럭시에서 팝업으로 뜨게 하는 법</summary><div class="pcalc steps">
       ${notiPerm()==='denied'?`<p><b>0. 차단 풀기</b> 크롬에서 이 앱 주소를 열고, 주소창 왼쪽 <b>자물쇠(또는 ⓘ)</b> → <b>권한</b> → <b>알림</b> → <b>허용</b></p>`:''}
+      <p style="color:hsl(var(--primary));font-weight:600">가장 빠른 방법</p>
+      <p><b>①</b> 아래 <b>알림 테스트</b>로 알림을 받기</p>
+      <p><b>②</b> 알림창에서 그 알림을 <b>길게 누르기</b> → <b>⚙ 알림 설정</b></p>
+      <p><b>③</b> <b>무음</b>이 아니라 <b>알림</b> 선택 + <b>팝업으로 표시</b> 켜기</p>
+      <p style="margin-top:10px;color:hsl(var(--muted-foreground));font-weight:600">또는 설정에서 직접</p>
       <p><b>1.</b> 폰 <b>설정</b> → <b>알림</b> → <b>앱 알림</b></p>
       <p><b>2.</b> ${isApp()?'<b>벌크업 루틴</b> (홈 화면에 추가한 앱)':'<b>Chrome</b>'} 선택 → 알림 <b>켜기</b></p>
       <p><b>3.</b> ${isApp()?'알림 카테고리 중 <b>일반</b>':'<b>사이트</b> 항목에서 <b>kevin260705.github.io</b>'} 선택</p>
       <p><b>4.</b> <b>알림 스타일</b>을 <b>팝업</b>으로 (또는 <b>"소리 및 팝업"</b> / <b>중요도: 긴급</b>) ← <b>이게 상단에 잠깐 뜨게 하는 설정</b></p>
       <p><b>5.</b> 위의 <b>알림 테스트</b>로 확인</p>
+      <p class="muted">그래도 안 뜨면: 설정 → 알림 → <b>알림 팝업 스타일</b>이 켜져 있는지, <b>방해 금지 모드</b>가 꺼져 있는지 확인하세요. 게임·동영상 전체화면 중에는 폰이 배너를 막아요.</p>
       <p class="muted">메뉴 이름은 One UI 버전에 따라 조금 달라요. "팝업", "배너", "긴급" 중 하나를 켜면 돼요. 삐삐 소리는 <b>미디어 볼륨</b>을 따라가요.</p>
     </div></details>
   </div>
