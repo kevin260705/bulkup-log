@@ -1771,7 +1771,7 @@ function renderSettings(){
   <div class="set-sec">알림 설정 · 다른 앱 위에 뜨게</div>
   <div class="card glist">
     <div class="grow">${I(C.gray,ico.bell)}<span class="gl">알림 권한<small class="gsub">${({granted:'허용됨 ✓',denied:'차단됨 · 아래 방법으로 허용해 주세요',default:'아직 설정 안 함',unsupported:'이 브라우저는 알림 미지원'})[notiPerm()]}</small></span>${notiPerm()==='default'?'<button class="btn primary small" onclick="reqNoti()">허용하기</button>':notiPerm()==='granted'?'<span class="gv" style="color:hsl(var(--primary));font-weight:600">켜짐</span>':''}</div>
-    <div class="grow">${I(C.gray,ico.flag)}<span class="gl">플로팅 타이머<small class="gsub">${pipSupported()?'휴식 중 알약 타이머가 다른 앱 위에 떠요':'이 폰(브라우저)은 미지원 · 팝업 알림을 써주세요'}</small></span>${pipSupported()?`<button class="sw ${pipOn()?'on':''}" onclick="setPip(${pipOn()?'false':'true'})" aria-label="플로팅 타이머"></button>`:''}</div>
+    <div class="grow">${I(C.gray,ico.flag)}<span class="gl">플로팅 타이머<small class="gsub">${pipSupported()?'휴식 중 계속 떠 있는 작은 창 (기본 꺼짐)':'이 폰(브라우저)은 미지원 · 팝업 알림을 써주세요'}</small></span>${pipSupported()?`<button class="sw ${pipOn()?'on':''}" onclick="setPip(${pipOn()?'false':'true'})" aria-label="플로팅 타이머"></button>`:''}</div>
     ${pipSupported()?'<button class="grow" onclick="testPip()">'+I(C.gray,ico.flag)+'<span class="gl">플로팅 타이머 테스트<small class="gsub">10초 타이머 · 홈 화면으로 나가서 확인</small></span><span class="gv">'+ICON_CHEV+'</span></button>':''}
     <button class="grow" onclick="testNoti()">${I(C.gray,ico.flag)}<span class="gl">알림 테스트<small class="gsub">누르고 5초 안에 홈 화면으로 나가보세요</small></span><span class="gv">${ICON_CHEV}</span></button>
   </div>
@@ -1781,7 +1781,7 @@ function renderSettings(){
       <p><b>1.</b> 폰 <b>설정</b> → <b>알림</b> → <b>앱 알림</b></p>
       <p><b>2.</b> ${isApp()?'<b>벌크업 루틴</b> (홈 화면에 추가한 앱)':'<b>Chrome</b>'} 선택 → 알림 <b>켜기</b></p>
       <p><b>3.</b> ${isApp()?'알림 카테고리 중 <b>일반</b>':'<b>사이트</b> 항목에서 <b>kevin260705.github.io</b>'} 선택</p>
-      <p><b>4.</b> <b>알림 스타일</b>을 <b>팝업</b>으로 (또는 <b>"소리 및 팝업"</b> / <b>중요도: 긴급</b>)</p>
+      <p><b>4.</b> <b>알림 스타일</b>을 <b>팝업</b>으로 (또는 <b>"소리 및 팝업"</b> / <b>중요도: 긴급</b>) ← <b>이게 상단에 잠깐 뜨게 하는 설정</b></p>
       <p><b>5.</b> 위의 <b>알림 테스트</b>로 확인</p>
       <p class="muted">메뉴 이름은 One UI 버전에 따라 조금 달라요. "팝업", "배너", "긴급" 중 하나를 켜면 돼요. 삐삐 소리는 <b>미디어 볼륨</b>을 따라가요.</p>
     </div></details>
@@ -1832,7 +1832,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 // 캔버스에 알약을 그리고 → 영상 스트림으로 바꿔 → 작은 창(PiP)으로 띄움. 유튜브 작은 창과 같은 방식.
 let pipV=null,pipC=null,pipIv=0,pipMsg='';
 function pipSupported(){return !!(document.pictureInPictureEnabled&&window.HTMLVideoElement&&HTMLVideoElement.prototype.requestPictureInPicture&&HTMLCanvasElement.prototype.captureStream);}
-function pipOn(){return store.pipOn!==false;}
+function pipOn(){return store.pipOn===true;} // 기본 꺼짐 (상단 배너 알림이 기본)
 function drawPip(){
   if(!pipC)return;
   const x=pipC.getContext('2d'),W=pipC.width,H=pipC.height,now=Date.now();
@@ -1928,7 +1928,8 @@ function restDone(){
 }
 function sendNoti(title,body,force){
   if((store.notiOff&&!force)||!('Notification' in window)||Notification.permission!=='granted')return false;
-  const opt={body,tag:'rest',renotify:true,requireInteraction:true,vibrate:[300,120,300,120,300],icon:'icon-192.png',badge:'favicon.png'};
+  // 상단에 잠깐 떴다 사라지는 배너(헤드업) 알림 · 소리 없어도 알 수 있게 진동
+  const opt={body,tag:'rest-'+Date.now(),renotify:true,requireInteraction:false,silent:false,vibrate:[400,150,400,150,400],timestamp:Date.now(),icon:'icon-192.png',badge:'favicon.png'};
   const go=r=>r&&r.showNotification?r.showNotification(title,opt).catch(()=>{}):(()=>{try{new Notification(title,opt);}catch(e){}})();
   if(swReg)go(swReg);else if('serviceWorker' in navigator)navigator.serviceWorker.ready.then(go).catch(()=>go(null));else go(null);
   return true;
