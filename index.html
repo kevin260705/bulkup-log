@@ -2143,12 +2143,18 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790757620';
+const BUILD='1790757732';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
   fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
-    const m=t.match(/const BUILD='1790757620'/);if(m&&m[1]!==BUILD&&!tEnd){saveNow();sessionStorage.setItem('updated','1');location.reload();}
+    // 버전 읽기 (배포 스크립트가 이 줄을 건드리지 않도록 패턴을 문자열로 조립)
+    const m=t.match(new RegExp('^const '+'BUILD'+"='([0-9]+)';",'m'));
+    if(!m||!m[1]||m[1]===BUILD||tEnd)return;
+    // 무한 새로고침 방지: 같은 버전으로 이미 한 번 시도했으면 다시 안 함
+    if(sessionStorage.getItem('upd-try')===m[1])return;
+    sessionStorage.setItem('upd-try',m[1]);saveNow();sessionStorage.setItem('updated','1');
+    location.replace(location.pathname+'?v='+m[1]);   // 캐시를 피해서 새 버전으로
   }).catch(()=>{});
 }
 checkUpdate();
