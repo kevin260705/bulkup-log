@@ -878,6 +878,57 @@
   .gsub{display:block;font-size:11.5px;font-weight:400;color:hsl(var(--muted-foreground));margin-top:1px}
   .steps b{margin-right:0}
   .steps p>b:first-child{display:inline-block;min-width:18px;margin-right:4px}
+
+  /* 세트 추가 */
+  .setbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .setbtns .btn.small{height:34px}
+  .target b small.plus{font-size:11px;font-weight:600;color:hsl(var(--primary));margin-left:2px}
+  .anote{margin-top:8px;padding:8px 12px;border-radius:14px;background:rgb(var(--gl-line)/var(--gl-in));font-size:12.5px;line-height:1.5;color:hsl(var(--muted-foreground))}
+  .anote b{color:hsl(var(--foreground));font-weight:600}
+  /* 달력 목록 토글 */
+  .crow{position:relative}
+  .citem{position:relative;padding-right:40px}
+  .cchev{position:absolute;right:14px;top:50%;width:18px;height:18px;margin-top:-9px;color:hsl(var(--muted-foreground));transition:transform .2s}
+  .cchev svg{width:18px;height:18px;display:block}
+  .crow.open .cchev{transform:rotate(180deg);color:hsl(var(--foreground))}
+  .crow.open .citem{border-color:hsl(var(--primary)/.5)}
+  .cdet{margin:6px 0 10px 64px;animation:cdIn .2s ease-out}
+  .cdet:first-child{margin-left:0}
+  #calDetail>.cdet[id]{margin-left:0}
+  @keyframes cdIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .chip small{font-size:11px;color:hsl(var(--muted-foreground));font-weight:500}
+  @media (max-width:420px){.cdet{margin-left:0}}
+
+  /* 종목 추가 */
+  .addex{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;margin:4px 0 6px;padding:16px;border-radius:22px;
+    border:1.5px dashed hsl(var(--primary)/.55);background:hsl(var(--primary)/.06);color:hsl(var(--primary));font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+  .addex span{font-size:22px;line-height:1;font-weight:500}
+  .addex small{font-size:12px;font-weight:400;color:hsl(var(--muted-foreground))}
+  .addex:active{transform:scale(.99)}
+  .add-badge{display:inline-flex;margin-left:6px;padding:2px 7px;border-radius:9999px;font-size:10.5px;font-weight:600;vertical-align:2px;background:rgb(var(--gl-line)/.12);color:hsl(var(--muted-foreground))}
+  /* 바텀 시트 */
+  .sheet{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s}
+  .sheet.on{opacity:1;pointer-events:auto}
+  .sheet-in{position:absolute;left:0;right:0;bottom:0;max-width:720px;margin:0 auto;max-height:78vh;display:flex;flex-direction:column;
+    padding:8px 16px calc(16px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0;background:hsl(var(--card));
+    border-top:1px solid rgb(var(--gl-line)/.1);box-shadow:0 -10px 40px rgba(0,0,0,.4);transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.9,.3,1)}
+  .sheet.on .sheet-in{transform:none}
+  .sh-bar{width:40px;height:5px;border-radius:9999px;background:rgb(var(--gl-line)/.2);margin:4px auto 10px}
+  html[data-theme=light] .sh-bar{background:hsl(232 25% 20%/.2)}
+  .sh-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .sh-head h3{margin:0;font-size:18px;font-weight:700}
+  .pk-own{display:flex;gap:8px;margin-bottom:10px}
+  .pk-own input{flex:1;min-width:0;height:42px;padding:0 14px;border-radius:9999px;border:1.5px solid transparent;background:rgb(var(--gl-line)/var(--gl-in));color:hsl(var(--foreground));font:inherit;font-size:15px}
+  html[data-theme=light] .pk-own input{background:hsl(232 25% 20%/.06)}
+  .pk-own input:focus{outline:none;border-color:hsl(var(--primary))}
+  .pk-own .btn{height:42px}
+  .pk-list{overflow-y:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px}
+  .pk-g{font-size:12.5px;font-weight:500;color:hsl(var(--muted-foreground));margin:12px 4px 6px}
+  .pk-i{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:48px;padding:0 14px;margin-bottom:6px;border:0;border-radius:14px;
+    background:rgb(var(--gl-line)/var(--gl-in));color:hsl(var(--foreground));font:inherit;font-size:15px;font-weight:500;text-align:left;cursor:pointer}
+  html[data-theme=light] .pk-i{background:hsl(232 25% 20%/.05)}
+  .pk-i span{color:hsl(var(--primary));font-size:20px;font-weight:500}
+  .pk-i:active{background:hsl(var(--primary)/.15)}
 </style>
 </head>
 <body>
@@ -897,6 +948,7 @@
   <button class="btn primary small" onclick="closeRestAlert(true)">시작</button>
 </div>
 <nav class="bnav" id="bnav"></nav>
+<div id="sheet" class="sheet" onclick="if(event.target===this)closeSheet()"><div class="sheet-in" id="sheetIn"></div></div>
 
 <div class="timer"><div class="in">
   <div class="t" id="timerText">0:00</div>
@@ -1192,6 +1244,10 @@ function suggestDay(){
 }
 
 // ---------- 지난 기록 찾기 ----------
+function lastAnyLog(exName){
+  const dates=Object.keys(store.logs).filter(d=>d<curDate&&store.logs[d].ex[exName]&&store.logs[d].ex[exName].sets.some(s=>s&&(s.w!=null||s.r!=null))).sort().reverse();
+  return dates.length?{date:dates[0],...store.logs[dates[0]].ex[exName]}:null;
+}
 function lastLog(dayId, exName){
   const dates=Object.keys(store.logs).filter(d=>d<curDate && store.logs[d].day===dayId && store.logs[d].ex[exName]).sort().reverse();
   if(!dates.length) return null;
@@ -1230,19 +1286,59 @@ function effDay(day,iso){if(!isDeload(iso))return day;return Object.assign({},da
 const ASSIST=new Set();ALLDAYS.forEach(d=>d.ex.forEach(e=>{if(e.assist)ASSIST.add(e.n);}));
 function exDef(name){for(const d of ALLDAYS)for(const e of d.ex)if(e.n===name)return e;return null;}
 function carrySet(last,k){if(!last)return {};const v=last.sets.filter(x=>x&&(x.w!=null||x.r!=null));return last.sets[k]&&(last.sets[k].w!=null||last.sets[k].r!=null)?last.sets[k]:(v[v.length-1]||{});}
+// 종목 세트 수 = 기본 세트 + 이 날 추가한 세트
+function nSets(ex,e){return ex.s+((e&&e.extra)||0);}
+function addSet(dayId,exName){const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};e.extra=(e.extra||0)+1;save();render();flashSaved('세트 추가됨');}
+function delSet(dayId,exName,base){
+  const log=getLog(dayId);const e=log.ex[exName];if(!e||!e.extra)return;
+  const k=base+e.extra-1,st=e.sets[k];
+  if(st&&st.d&&!confirm(`${k+1}세트는 완료된 기록이 있어요. 삭제할까요?`))return;
+  e.sets.length=Math.min(e.sets.length,k);e.extra--;save();render();
+}
+// 그날 추가한 종목: 기존 종목이면 그 설정(세트·반복·휴식·영상) 그대로, 새 종목이면 기본값
+function customEx(name){const d=exDef(name);return Object.assign({s:3,r:[8,12],rir:'1~2',rest:90,v:[],note:''},d?JSON.parse(JSON.stringify(d)):{},{n:name,custom:true});}
+let pickDay=null;
+function openExPicker(dayId){
+  pickDay=dayId;const lg=store.logs[curDate]&&store.logs[curDate].day===dayId?store.logs[curDate]:null;
+  const base=ALLDAYS.find(d=>d.id===dayId),have=new Set(base.ex.map(e=>e.n).concat((lg&&lg.custom||[]).map(c=>c.n)));
+  const groups=ALLDAYS.map(d=>({t:d.name,ex:d.ex.map(e=>e.n).filter(n=>!have.has(n))})).filter(g=>g.ex.length);
+  const seen=new Set();
+  const list=groups.map(g=>{const items=g.ex.filter(n=>!seen.has(n)&&seen.add(n));return items.length?`<div class="pk-g">${g.t}</div>${items.map(n=>`<button class="pk-i" onclick="addCustomEx('${esc(n)}')">${n}<span>+</span></button>`).join('')}`:'';}).join('');
+  document.getElementById('sheetIn').innerHTML=`<div class="sh-bar"></div><div class="sh-head"><h3>종목 추가</h3><button class="btn ghost small" onclick="closeSheet()">닫기</button></div>
+    <div class="pk-own"><input id="ownEx" type="text" placeholder="직접 입력 (예: 딥스, 케이블 크런치)" maxlength="30" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();addOwnEx();}"><button class="btn primary small" onclick="addOwnEx()">추가</button></div>
+    <div class="pk-list">${list}</div>`;
+  document.getElementById('sheet').classList.add('on');
+}
+function closeSheet(){document.getElementById('sheet').classList.remove('on');}
+function addOwnEx(){const v=(document.getElementById('ownEx').value||'').trim();if(v)addCustomEx(v);}
+function addCustomEx(name){
+  const base=ALLDAYS.find(d=>d.id===pickDay);
+  if(base&&base.ex.some(e=>e.n===name)){closeSheet();flashSaved('이미 오늘 루틴에 있는 종목이에요');setTimeout(()=>{const c=[...document.querySelectorAll('.card[data-ex]')].find(x=>x.dataset.ex===name);if(c&&c.scrollIntoView)c.scrollIntoView({behavior:'smooth',block:'center'});},60);return;}
+  const log=getLog(pickDay);log.custom=log.custom||[];
+  if(!log.custom.some(c=>c.n===name))log.custom.push({n:name});
+  if(!store.start)store.start=curDate;save();closeSheet();render();flashSaved(`${name} 추가됨`);
+  setTimeout(()=>{const cs=[...document.querySelectorAll('.card[data-ex]')];const c=cs.find(x=>x.dataset.ex===name);if(c&&c.scrollIntoView)c.scrollIntoView({behavior:'smooth',block:'center'});},60);
+}
+function removeCustomEx(dayId,name){
+  const log=getLog(dayId);const e=log.ex[name];
+  if(e&&e.sets.some(s=>s&&s.d)&&!confirm(`${name}에 완료한 세트가 있어요. 삭제할까요?`))return;
+  log.custom=(log.custom||[]).filter(c=>c.n!==name);delete log.ex[name];save();render();
+}
 function renderDay(day){
-  day=effDay(day,curDate);const dl=isDeload(curDate);
+  {const lg=store.logs[curDate]&&store.logs[curDate].day===day.id?store.logs[curDate]:null;const cs=(lg&&lg.custom||[]).map(c=>customEx(c.n));
+   day=effDay(day,curDate);if(cs.length)day=Object.assign({},day,{ex:day.ex.concat(cs)});}const dl=isDeload(curDate);
   const log=store.logs[curDate]&&store.logs[curDate].day===day.id?store.logs[curDate]:{ex:{}};
   let totalSets=0,doneSets=0;
   // 아직 완료 안 된 첫 종목 = 지금 하는 운동 → 자세 설명 자동 펼침
-  const currentIdx=day.ex.findIndex(ex=>{const e=log.ex[ex.n];if(!e)return true;let c=0;for(let k=0;k<ex.s;k++)if(e.sets[k]&&e.sets[k].d)c++;return c<ex.s;});
+  const currentIdx=day.ex.findIndex(ex=>{const e=log.ex[ex.n];if(!e)return true;let c=0;const n=nSets(ex,e);for(let k=0;k<n;k++)if(e.sets[k]&&e.sets[k].d)c++;return c<n;});
   const cards=day.ex.map((ex,i)=>{
     const isCurrent=i===currentIdx;
     const e=log.ex[ex.n]||{sets:[],note:''};
-    const last=lastLog(day.id,ex.n);
-    totalSets+=ex.s;
+    const last=ex.custom?lastAnyLog(ex.n):(lastLog(day.id,ex.n)||lastAnyLog(ex.n));
+    const N=nSets(ex,e),extra=N-ex.s;
+    totalSets+=N;
     const rows=[];
-    for(let k=0;k<ex.s;k++){
+    for(let k=0;k<N;k++){
       const s=e.sets[k]||{};
       if(s.d) doneSets++;
       const ph0=carrySet(last,k),ph=(ph0.w!=null||ph0.r!=null)?ph0:(ex.def||{});
@@ -1254,19 +1350,22 @@ function renderDay(day){
       </tr>`);
     }
     return `<div class="card ${isCurrent?'current':''}" id="ex${i}" data-ex="${ex.n.replace(/"/g,'&quot;')}" style="--c:${DAY_COLOR[day.id]}">
-      <h3><span><span class="exn">${i+1}</span>${ex.n}${isCurrent?'<span class="cur-badge">진행 중</span>':''}</span><span class="idx">${i+1}/${day.ex.length}</span></h3>
-      <div class="target"><span>세트 <b>${ex.s}</b></span><span>반복 <b>${ex.r[0]===ex.r[1]?ex.r[0]:ex.r[0]+'~'+ex.r[1]}</b></span><span>RIR <b>${ex.rir}</b></span><span>휴식 <b>${ex.rest>=120?(ex.rest/60)+'분':ex.rest+'초'}</b></span></div>
+      <h3><span><span class="exn">${i+1}</span>${ex.n}${ex.custom?'<span class="add-badge">추가</span>':''}${isCurrent?'<span class="cur-badge">진행 중</span>':''}</span><span class="idx">${i+1}/${day.ex.length}</span></h3>
+      <div class="target"><span>세트 <b>${N}${extra?`<small class="plus">+${extra}</small>`:''}</b></span><span>반복 <b>${ex.r[0]===ex.r[1]?ex.r[0]:ex.r[0]+'~'+ex.r[1]}</b></span><span>RIR <b>${ex.rir}</b></span><span>휴식 <b>${ex.rest>=120?(ex.rest/60)+'분':ex.rest+'초'}</b></span></div>
       ${ex.note?`<div class="note">${ex.note}</div>`:''}
       ${renderForm(ex.n, isCurrent)}
       <div class="last">지난 기록${last?` (${last.date.slice(5)}): <b>${fmtSets(last.sets)}</b>`:': 없음'} ${progressionHint(ex,last)}</div>
       <table><tr><th>세트</th><th>${ex.assist?'보조 lb':'kg'}</th><th>회</th><th>완료</th></tr>${rows.join('')}</table>
-      <div class="videos">${ex.v.map(k=>`<a href="${V[k].u}" target="_blank" rel="noopener">${V[k].t}</a>`).join('')}</div>
+      <div class="setbtns"><button class="btn small tint" onclick="addSet('${day.id}','${esc(ex.n)}')">+ 세트 추가</button>${extra>0?`<button class="btn small ghost" onclick="delSet('${day.id}','${esc(ex.n)}',${ex.s})">− 마지막 세트 삭제</button>`:''}</div>
+      ${ex.assist?assistNote(e,last,curDate):''}
+      ${ex.custom?`<div class="setbtns"><button class="btn small danger" onclick="removeCustomEx('${day.id}','${esc(ex.n)}')">종목 삭제</button></div>`:''}
+      ${ex.v.length?`<div class="videos">${ex.v.map(k=>`<a href="${V[k].u}" target="_blank" rel="noopener">${V[k].t}</a>`).join('')}</div>`:''}
       <details><summary>메모</summary><textarea placeholder="느낌, 통증, 다음에 바꿀 것..." oninput="setNote('${day.id}','${esc(ex.n)}',this.value)">${e.note||''}</textarea></details>
     </div>`;
   }).join('');
   const pct=totalSets?Math.round(doneSets/totalSets*100):0;
   const idx=PROGRAM.findIndex(p=>p.id===day.id), c=DAY_COLOR[day.id];
-  const mins=Math.round(day.ex.reduce((a,e)=>a+e.s*(e.rest+45),0)/300)*5;
+  const mins=Math.round(day.ex.reduce((a,x)=>a+nSets(x,log.ex[x.n])*(x.rest+45),0)/300)*5;
   const isToday=curDate===today(),dT=doneTodayId();
   const status=!isToday?'':dT===day.id?' · 오늘 완료':nextDay()===day.id?(dT?' · 다음 운동':' · 오늘 추천'):'';
   const chevDown='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
@@ -1280,6 +1379,7 @@ function renderDay(day){
       ${!store.start?`<div class="rowbtns"><button class="btn primary" onclick="store.start=curDate;save();render()">이 날짜를 프로그램 시작일로</button></div>`:''}
     </section>
     ${cards}
+    <button class="addex" onclick="openExPicker('${day.id}')"><span>+</span>종목 추가<small>루틴 끝나고 더 하고 싶은 운동</small></button>
     <div class="finish"><button class="btn ok big" onclick="finishDay('${day.id}')">운동 마무리</button><button class="btn danger small" onclick="if(confirm('${curDate} 기록을 삭제할까요?')){delete store.logs[curDate];save();render()}">이 날 기록 삭제</button></div>`;
 }
 // 엔터(키패드 '다음'): kg → 같은 세트 횟수 → 다음 세트 kg … 마지막이면 키보드 닫기
@@ -1304,7 +1404,7 @@ function setVal(dayId,exName,k,f,v){
   const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};
   e.sets[k]=e.sets[k]||{};
   if(f==='d') e.sets[k].d=v; else e.sets[k][f]=v===''?null:Number(v);
-  if(f==='d'&&v){const c0=carrySet(lastLog(dayId,exName),k),dx=exDef(exName),ph=(c0.w!=null||c0.r!=null)?c0:((dx&&dx.def)||{});if(e.sets[k].w==null&&ph.w!=null)e.sets[k].w=ph.w;if(e.sets[k].r==null&&ph.r!=null)e.sets[k].r=ph.r;}
+  if(f==='d'&&v){const c0=carrySet(lastLog(dayId,exName)||lastAnyLog(exName),k),dx=exDef(exName),ph=(c0.w!=null||c0.r!=null)?c0:((dx&&dx.def)||{});if(e.sets[k].w==null&&ph.w!=null)e.sets[k].w=ph.w;if(e.sets[k].r==null&&ph.r!=null)e.sets[k].r=ph.r;}
   if(f==='d'&&v&&!log.at){const n=new Date();log.at=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
   if(!store.start) store.start=curDate;
   save();flashSaved();
@@ -1318,7 +1418,7 @@ function finishDay(dayId){
   day.ex.forEach(ex=>{
     const e=log.ex[ex.n]=log.ex[ex.n]||{sets:[],note:''};
     const last=lastLog(dayId,ex.n);
-    for(let k=0;k<ex.s;k++){
+    for(let k=0;k<nSets(ex,e);k++){
       const s=e.sets[k]=e.sets[k]||{};
       if(s.d){ if(s.w==null&&last&&last.sets[k]) s.w=last.sets[k].w; if(s.r==null&&last&&last.sets[k]) s.r=last.sets[k].r; }
     }
@@ -1326,11 +1426,21 @@ function finishDay(dayId){
   if(!store.start) store.start=curDate;
   save();
   flashSaved('운동 기록 저장 완료 · 수고했어요');
-  view='cal';{const d=new Date(curDate+'T00:00:00');calY=d.getFullYear();calM=d.getMonth();}selDate=curDate;render();window.scrollTo(0,0);
+  view='cal';{const d=new Date(curDate+'T00:00:00');calY=d.getFullYear();calM=d.getMonth();}openDays.add(curDate);selDate=null;render();window.scrollTo(0,0);
 }
 
 // ---------- 기록 화면 ----------
-function volume(log){let v=0;Object.entries(log.ex).forEach(([n,e])=>{if(ASSIST.has(n))return;e.sets.forEach(s=>{if(s&&s.w&&s.r)v+=s.w*s.r;});});return v;}
+const LB=0.4536;
+// 그 날짜 기준 몸무게: 그날 이전의 가장 최근 체중 기록 → 없으면 가장 오래된 기록 → 없으면 프로필
+function bwAt(date){const b=bodySorted().filter(x=>x.w!=null);if(!b.length)return store.profile.weight||70;const prev=b.filter(x=>!date||x.date<=date);return (prev.length?prev[prev.length-1]:b[0]).w;}
+// 실제 든 무게(kg): 어시스트는 몸무게 − 보조(lb→kg)
+function liftKg(name,w,date){if(w==null)return null;return ASSIST.has(name)?Math.max(0,bwAt(date)-w*LB):w;}
+function logDate(log){return Object.keys(store.logs).find(k=>store.logs[k]===log);}
+function volume(log,date){date=date||logDate(log);let v=0;Object.entries(log.ex).forEach(([n,e])=>{e.sets.forEach(s=>{if(s&&s.w!=null&&s.r){const kg=liftKg(n,s.w,date);if(kg)v+=kg*s.r;}});});return v;}
+function assistNote(e,last,date){
+  const bw=bwAt(date),s0=(e.sets||[]).find(x=>x&&x.w!=null),ph=carrySet(last,0),w=s0?s0.w:(ph.w!=null?ph.w:70);
+  return `<div class="anote">몸무게 <b>${fmtN(bw,1)}kg</b> − 보조 <b>${w}lb</b>(${fmtN(w*LB,1)}kg) = 실제 <b>${fmtN(Math.max(0,bw-w*LB),1)}kg</b> · 볼륨에 이 무게로 들어가요</div>`;
+}
 function renderHist(){
   const dates=Object.keys(store.logs).sort().reverse();
   const bw=store.bw.slice(-8).map(b=>`<span class="badge sec">${b.date.slice(5)} ${b.kg}kg</span>`).join(' ');
@@ -1431,7 +1541,12 @@ function dayTitle(id){const p=ALLDAYS.find(x=>x.id===id);return p?p.name:id;}
 function dayLabel(iso){const d=new Date(iso+'T00:00:00');return `${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;}
 function toggleView(){view=view==='home'?'cal':'home';if(view==='cal'){const t=new Date();calY=t.getFullYear();calM=t.getMonth();selDate=null;}render();window.scrollTo(0,0);}
 function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}selDate=null;render();}
-function selectDay(iso){selDate=selDate===iso?null:iso;render();if(selDate){const el=document.getElementById('calDetail');if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});}}
+let openDays=new Set();
+function selectDay(iso,fromList){
+  const was=openDays.has(iso);was?openDays.delete(iso):openDays.add(iso);selDate=null;render();
+  if(!was&&!fromList){const el=document.getElementById('cr-'+iso);if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+function closeAllDays(){openDays.clear();render();}
 function openDay(iso,id){view='home';curDate=iso;curTab=id;render();window.scrollTo(0,0);}
 function renderCal(){
   const prefix=`${calY}-${String(calM+1).padStart(2,'0')}-`;
@@ -1441,7 +1556,7 @@ function renderCal(){
   for(let i=0;i<lead;i++)cells+='<div></div>';
   for(let d=1;d<=days;d++){
     const iso=prefix+String(d).padStart(2,'0'),l=store.logs[iso],done=isDone(l);
-    cells+=`<button class="cday ${done?'done':''} ${iso===selDate?'sel':''} ${iso===tISO?'today':''}" onclick="selectDay('${iso}')" aria-label="${dayLabel(iso)}">${iso===tISO?'<span class="tlabel">Today</span>':''}<span class="dot"${done?` style="--c:${DAY_COLOR[l.day]||'var(--primary)'}"`:''}>${d}</span></button>`;
+    cells+=`<button class="cday ${done?'done':''} ${openDays.has(iso)?'sel':''} ${iso===tISO?'today':''}" onclick="selectDay('${iso}')" aria-label="${dayLabel(iso)}">${iso===tISO?'<span class="tlabel">Today</span>':''}<span class="dot"${done?` style="--c:${DAY_COLOR[l.day]||'var(--primary)'}"`:''}>${d}</span></button>`;
   }
   const vol=monthLogs.reduce((a,d)=>a+volume(store.logs[d]),0);
   const legend='<span class="lg"><i style="--c:var(--primary)"></i>운동 완료</span><span class="lg"><i class="lg-today"></i>오늘</span>';
@@ -1449,22 +1564,28 @@ function renderCal(){
   return `<div class="calhead"><button class="btn ghost icon" onclick="calMove(-1)" aria-label="이전 달">${chev('m15 18-6-6 6-6')}</button><h2>${calY}년 ${String(calM+1).padStart(2,'0')}월</h2><button class="btn ghost icon" onclick="calMove(1)" aria-label="다음 달">${chev('m9 18 6-6-6-6')}</button></div>
   <div class="card cal"><div class="cgrid">${cells}</div></div>
   <div class="legend">${legend}</div>
-  <div class="msum"><span class="badge sec">이번 달<b>${monthLogs.length}회</b></span><span class="badge sec">총 볼륨<b>${Math.round(vol).toLocaleString()}kg</b></span>${selDate?`<button class="btn ghost small" style="margin-left:auto" onclick="selectDay('${selDate}')">전체 목록</button>`:''}</div>
-  <div id="calDetail">${selDate?renderCalDetail(selDate):renderCalList(monthLogs)}</div>`;
+  <div class="msum"><span class="badge sec">이번 달<b>${monthLogs.length}회</b></span><span class="badge sec">총 볼륨<b>${Math.round(vol).toLocaleString()}kg</b></span>${openDays.size?`<button class="btn ghost small" style="margin-left:auto" onclick="closeAllDays()">모두 접기</button>`:''}</div>
+  <div id="calDetail">${renderCalList(monthLogs,prefix)}</div>`;
 }
-function renderCalList(list){
-  if(!list.length) return `<div class="card muted" style="text-align:center">이번 달 운동 기록이 없어요.<br>루틴 화면에서 세트를 완료하면 여기 표시됩니다.</div>`;
-  return list.map(d=>{const l=store.logs[d];return `<div class="crow" onclick="selectDay('${d}')"><div class="cdate"><i style="--c:${DAY_COLOR[l.day]}"></i>${+d.slice(8)}일</div><div class="citem"><span class="cname">${dayTitle(l.day)}</span><span class="cmeta">${doneSets(l)}세트 · ${Math.round(volume(l)).toLocaleString()}kg${l.at?'<br>'+l.at:''}</span></div></div>`;}).join('');
+const ICON_DOWN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+function renderCalList(list,prefix){
+  // 기록 있는 날 + 달력에서 연 빈 날(기록하기 버튼용)
+  const emptyOpen=[...openDays].filter(d=>(!prefix||d.startsWith(prefix))&&!isDone(store.logs[d]));
+  const all=[...new Set(list.concat(emptyOpen))].sort();
+  if(!all.length) return `<div class="card muted" style="text-align:center">이번 달 운동 기록이 없어요.<br>루틴 화면에서 세트를 완료하면 여기 표시됩니다.</div>`;
+  return all.map(d=>{const l=store.logs[d],open=openDays.has(d);
+    if(!isDone(l)) return `<div class="cdet" id="cr-${d}">${renderCalDetail(d)}</div>`;
+    return `<div class="crow ${open?'open':''}" id="cr-${d}" onclick="selectDay('${d}',1)" role="button" aria-expanded="${open}"><div class="cdate"><i style="--c:${DAY_COLOR[l.day]}"></i>${+d.slice(8)}일</div><div class="citem"><span class="cname">${dayTitle(l.day)}</span><span class="cmeta">${doneSets(l)}세트 · ${Math.round(volume(l,d)).toLocaleString()}kg${l.at?'<br>'+l.at:''}</span><span class="cchev">${ICON_DOWN}</span></div></div>${open?`<div class="cdet">${renderCalDetail(d)}</div>`:''}`;}).join('');
 }
 function renderCalDetail(iso){
   const l=store.logs[iso];
-  if(!isDone(l)) return `<div class="card"><h3>${dayLabel(iso)}</h3><div class="muted">이 날은 운동 기록이 없어요.</div><div class="rowbtns">${PROGRAM.map(p=>`<button class="btn small" onclick="openDay('${iso}','${p.id}')"><span class="cdot" style="--c:${DAY_COLOR[p.id]};margin-right:0"></span>${dayTitle(p.id)} 기록</button>`).join('')}</div></div>`;
+  if(!isDone(l)) return `<div class="card"><h3><span>${dayLabel(iso)}</span><button class="btn ghost small" onclick="selectDay('${iso}',1)">닫기</button></h3><div class="muted">이 날은 운동 기록이 없어요.</div><div class="rowbtns">${PROGRAM.map(p=>`<button class="btn small" onclick="openDay('${iso}','${p.id}')"><span class="cdot" style="--c:${DAY_COLOR[p.id]};margin-right:0"></span>${dayTitle(p.id)} 기록</button>`).join('')}</div></div>`;
   const p=ALLDAYS.find(x=>x.id===l.day),c=DAY_COLOR[l.day]||'var(--primary)';
-  const total=p?p.ex.reduce((a,e)=>a+e.s,0):0;
+  const total=(p?p.ex.reduce((a,e)=>a+nSets(e,l.ex[e.n]),0):0)+(l.custom||[]).reduce((a,c)=>a+nSets(customEx(c.n),l.ex[c.n]),0);
   const order=(p?p.ex.map(e=>e.n):[]).concat(Object.keys(l.ex).filter(n=>!p||!p.ex.some(e=>e.n===n)));
   const used=order.filter(n=>l.ex[n]&&l.ex[n].sets.some(s=>s&&(s.d||s.w!=null||s.r!=null)));
-  const rows=used.map(n=>{const e=l.ex[n],sets=e.sets.filter(s=>s&&(s.d||s.w!=null||s.r!=null)),as=ASSIST.has(n),v=as?0:sets.reduce((a,s)=>a+(s.w&&s.r?s.w*s.r:0),0);
-    return `<div class="dex"><div class="dexh"><span>${n}</span><span class="muted">${sets.length}세트${v?' · '+Math.round(v).toLocaleString()+'kg':''}</span></div><div class="chips">${sets.map(s=>`<span class="chip ${s.d?'':'undone'}">${as?'보조 ':''}${s.w??'-'}${as?'lb':'kg'} × ${s.r??'-'}</span>`).join('')}</div>${e.note?`<div class="muted" style="margin-top:6px">메모 · ${e.note}</div>`:''}</div>`;}).join('');
+  const rows=used.map(n=>{const e=l.ex[n],sets=e.sets.filter(s=>s&&(s.d||s.w!=null||s.r!=null)),as=ASSIST.has(n),v=sets.reduce((a,s)=>{const kg=liftKg(n,s.w,iso);return a+(kg&&s.r?kg*s.r:0);},0);
+    return `<div class="dex"><div class="dexh"><span>${n}</span><span class="muted">${sets.length}세트${v?' · '+Math.round(v).toLocaleString()+'kg':''}</span></div><div class="chips">${sets.map(s=>`<span class="chip ${s.d?'':'undone'}">${as?`실 ${s.w!=null?fmtN(liftKg(n,s.w,iso),1):'-'}kg <small>(보조 ${s.w??'-'}lb)</small>`:`${s.w??'-'}kg`} × ${s.r??'-'}</span>`).join('')}</div>${e.note?`<div class="muted" style="margin-top:6px">메모 · ${e.note}</div>`:''}</div>`;}).join('');
   return `<div class="card dcard" style="--c:${c}"><div class="dtop"><div><div class="muted">${dayLabel(iso)}${l.at?' · '+l.at+' 시작':''}</div><h3 style="margin:4px 0 0"><span><span class="cdot" style="--c:${c}"></span>${dayTitle(l.day)}</span></h3></div><button class="btn small" onclick="openDay('${iso}','${l.day}')">수정</button></div>
   <div class="stats"><div><b>${doneSets(l)}${total?'<span style="font-size:13px;color:hsl(var(--muted-foreground))">/'+total+'</span>':''}</b><span>완료 세트</span></div><div><b>${Math.round(volume(l)).toLocaleString()}</b><span>볼륨 (kg)</span></div><div><b>${used.length}</b><span>종목</span></div></div>${rows}</div>`;
 }
@@ -1693,8 +1814,8 @@ function renderData(){
       ${pts.length?lineChart(k,pts,unit,1,k==='w'?projPoint():null):'<div class="empty">인바디를 입력하면 그래프가 그려져요</div>'}
       ${pts.length?`<details class="tbl"><summary>표로 보기</summary><table>${pts.slice().reverse().map(p=>`<tr><td>${dayLabel(p.d)}</td><td style="text-align:right">${fmtN(p.v,1)}${unit}</td></tr>`).join('')}</table></details>`:''}</div>`;};
   const prs={};
-  Object.keys(store.logs).forEach(d=>Object.entries(store.logs[d].ex).forEach(([nm,e])=>e.sets.forEach(x=>{if(x&&x.d&&x.w&&x.r&&!ASSIST.has(nm)){const e1=x.w*(1+x.r/30);if(!prs[nm]||e1>prs[nm].e1)prs[nm]={e1,w:x.w,r:x.r,d};}})));
-  const prList=Object.entries(prs).sort((a,b)=>b[1].e1-a[1].e1).slice(0,10).map(([nm,x])=>`<div class="prrow"><span>${nm}<small>${dayLabel(x.d)}</small></span><b>${x.w}kg × ${x.r}<small>추정 1RM ${Math.round(x.e1)}kg</small></b></div>`).join('');
+  Object.keys(store.logs).forEach(d=>Object.entries(store.logs[d].ex).forEach(([nm,e])=>e.sets.forEach(x=>{if(x&&x.d&&x.w!=null&&x.r){const kg=liftKg(nm,x.w,d);if(!kg)return;const e1=kg*(1+x.r/30);if(!prs[nm]||e1>prs[nm].e1)prs[nm]={e1,w:Math.round(kg*10)/10,r:x.r,d,as:ASSIST.has(nm)?x.w:null};}})));
+  const prList=Object.entries(prs).sort((a,b)=>b[1].e1-a[1].e1).slice(0,10).map(([nm,x])=>`<div class="prrow"><span>${nm}<small>${dayLabel(x.d)}</small></span><b>${x.w}kg × ${x.r}<small>${x.as!=null?`보조 ${x.as}lb · `:''}추정 1RM ${Math.round(x.e1)}kg</small></b></div>`).join('');
   const pct=v=>Math.round(v/n.kcal*100);
   return `<div class="page-title"><h2>데이터</h2><button class="btn tint small" onclick="toggleBodyForm()">${bodyFormOpen?'입력 닫기':'+ 인바디 입력'}</button></div>
   ${bodyFormOpen?renderBodyForm():''}
