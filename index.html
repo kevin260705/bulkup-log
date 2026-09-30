@@ -959,6 +959,15 @@
   .schip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px 0 12px;border-radius:9999px;border:1.5px dashed hsl(var(--primary)/.55);background:transparent;color:hsl(var(--foreground));font:inherit;font-size:13.5px;font-weight:500;cursor:pointer}
   .schip span{color:hsl(var(--primary));font-size:16px;font-weight:600}
   .schip:active{background:hsl(var(--primary)/.12)}
+
+  .delx{align-self:center;height:30px;padding:0 10px;border:0;background:none;color:hsl(var(--muted-foreground));font:inherit;font-size:12.5px;font-weight:500;cursor:pointer}
+  .delx:active{color:hsl(var(--destructive))}
+  /* 메모 (세트 표 위) */
+  details.memo{margin:4px 0 8px}
+  details.memo textarea{margin-top:6px;min-height:56px}
+  .mtag{margin-left:6px;padding:1px 7px;border-radius:9999px;font-size:10.5px;font-weight:600;background:hsl(var(--primary)/.16);color:hsl(var(--primary))}
+  .lastmemo{margin-top:6px;padding:10px 12px;border-radius:14px;background:hsl(var(--primary)/.08);border-left:3px solid hsl(var(--primary));font-size:13.5px;line-height:1.55;white-space:pre-wrap}
+  .lastmemo span{display:block;font-size:11px;font-weight:600;color:hsl(var(--primary));margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -1398,11 +1407,11 @@ function renderDay(day){
       if(s.d) doneSets++;
       const ph0=carrySet(last,k),ph=(ph0.w!=null||ph0.r!=null)?ph0:(ex.def||{});
       const xr=k>=ex.s;
-      rows.push(`<tr class="${s.d?'row-done':''} ${xr?'xrow':''}" ${xr?'ontouchstart="swS(event,this)" ontouchend="swE(event,this)" onpointerdown="swS(event,this)" onpointerup="swE(event,this)"':''}>
+      rows.push(`<tr class="${s.d?'row-done':''} ${xr?'xrow':''}">
         <td><span class="sn">${k+1}</span></td>
         <td><input type="number" class="ghost ${s.w==null&&ph.w!=null?'carry':''}" inputmode="decimal" step="0.5" enterkeyhint="next" onkeydown="nextField(event,this)" onfocus="this.select()" value="${s.w??ph.w??''}" ${s.w==null&&ph.w!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'w',this.value)"></td>
         <td><input type="number" class="ghost ${s.r==null&&ph.r!=null?'carry':''}" inputmode="numeric" enterkeyhint="next" onkeydown="nextField(event,this)" onfocus="this.select()" value="${s.r??ph.r??''}" ${s.r==null&&ph.r!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'r',this.value)"></td>
-        <td><input type="checkbox" class="chk" ${s.d?'checked':''} onchange="setVal('${day.id}','${esc(ex.n)}',${k},'d',this.checked);if(this.checked)startRest(${ex.rest})">${xr?`<button class="rowdel" onclick="delSetAt('${day.id}','${esc(ex.n)}',${k})">삭제</button>`:''}</td>
+        <td><input type="checkbox" class="chk" ${s.d?'checked':''} onchange="setVal('${day.id}','${esc(ex.n)}',${k},'d',this.checked);if(this.checked)startRest(${ex.rest})"></td>
       </tr>`);
     }
     // 지난번에 추가했던 세트: 흐린 줄로 보여주고 누르면 활성화
@@ -1415,12 +1424,15 @@ function renderDay(day){
       ${ex.note?`<div class="note">${ex.note}</div>`:''}
       ${renderForm(ex.n, isCurrent)}
       <div class="last">지난 기록${last?` (${last.date.slice(5)}): <b>${fmtSets(last.sets)}</b>`:': 없음'} ${progressionHint(ex,last)}</div>
+      ${(()=>{const ln=last&&last.note&&last.note.trim()?last.note:'',open=isCurrent||ln||(e.note||'').trim();
+        return `<details class="memo" ${open?'open':''}><summary>메모${ln?'<span class="mtag">지난 메모</span>':''}</summary>
+          ${ln?`<div class="lastmemo"><span>지난번 ${last.date.slice(5).replace('-','/')}</span>${ln.replace(/</g,'&lt;')}</div>`:''}
+          <textarea placeholder="${ln?'오늘 메모 (느낌, 통증, 다음에 바꿀 것)':'느낌, 통증, 다음에 바꿀 것...'}" oninput="setNote('${day.id}','${esc(ex.n)}',this.value)">${e.note||''}</textarea></details>`;})()}
       <table><tr><th>세트</th><th>${ex.assist?'보조 lb':'kg'}</th><th>회</th><th>완료</th></tr>${rows.join('')}</table>
-      <div class="setbtns"><button class="btn small tint" onclick="addSet('${day.id}','${esc(ex.n)}')">+ 세트 추가</button>${extra>0?'<span class="swhint">추가한 세트는 왼쪽으로 밀어서 삭제</span>':''}</div>
+      <div class="setbtns"><button class="btn small tint" onclick="addSet('${day.id}','${esc(ex.n)}')">+ 세트 추가</button>${extra>0?`<button class="delx" onclick="delSetAt('${day.id}','${esc(ex.n)}',${N-1})">− 추가한 세트 삭제</button>`:''}</div>
       ${ex.assist?assistNote(e,last,curDate):''}
       ${ex.custom?`<div class="setbtns"><button class="btn small danger" onclick="removeCustomEx('${day.id}','${esc(ex.n)}')">종목 삭제</button></div>`:''}
       ${ex.v.length?`<div class="videos">${ex.v.map(k=>`<a href="${V[k].u}" target="_blank" rel="noopener">${V[k].t}</a>`).join('')}</div>`:''}
-      <details><summary>메모</summary><textarea placeholder="느낌, 통증, 다음에 바꿀 것..." oninput="setNote('${day.id}','${esc(ex.n)}',this.value)">${e.note||''}</textarea></details>
     </div>`;
   }).join('');
   const pct=totalSets?Math.round(doneSets/totalSets*100):0;
@@ -2143,7 +2155,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790757732';
+const BUILD='1790757947';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
