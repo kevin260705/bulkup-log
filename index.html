@@ -1293,6 +1293,8 @@ store.start = store.start||null;
 store.profile = Object.assign({name:'kevin',age:33,height:182,sex:'m',weight:73,goal:'lean',activity:'mid',freq:5},store.profile||{});
 // 목표를 린매스업으로 변경 (2026-09-28): 기존 저장값도 한 번만 전환, 이후엔 설정에서 자유롭게 변경
 if(!store.leanSet){store.profile.goal='lean';store.leanSet=true;}
+// 인바디 2026-09-30 (체중 73.7 · 골격근 33.9 · 체지방량 13.7kg → 18.6%) 한 번만 추가
+if(!store.inbody0930){store.body=(store.body||[]).filter(x=>x.date!=='2026-09-30');store.body.push({date:'2026-09-30',w:73.7,smm:33.9,bf:18.6});store.inbody0930=true;}
 applyPlan();
 store.body = store.body||[];     // 인바디 [{date,w,smm,bf,bmr}]
 if(!store.bodySeeded){           // 처음 알려준 스펙 + 기존 체중 기록 이관
@@ -2233,7 +2235,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790758959';
+const BUILD='1790761134';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
