@@ -936,6 +936,29 @@
   .setbtns .btn.tint:active{background:hsl(var(--primary)/.18)}
   .setbtns .btn.ghost{align-self:center;height:32px;font-size:12.5px;color:hsl(var(--muted-foreground))}
   .setbtns .btn.danger{align-self:center}
+
+  /* 추가 세트 스와이프 삭제 */
+  tr.xrow td{transition:transform .2s ease}
+  .rowdel{display:none;height:34px;padding:0 12px;border:0;border-radius:9999px;background:hsl(var(--destructive));color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  tr.swiped .chk{display:none}
+  tr.swiped .rowdel{display:inline-flex;align-items:center;animation:cdIn .15s ease-out}
+  tr.swiped td:not(:last-child){transform:translateX(-6px);opacity:.6}
+  .swhint{align-self:center;font-size:11.5px;color:hsl(var(--muted-foreground));margin-top:2px}
+  /* 지난번 추가 세트 (흐린 줄, 누르면 활성화) */
+  tr.ghostrow{cursor:pointer;-webkit-tap-highlight-color:transparent}
+  tr.ghostrow td{opacity:.55}
+  tr.ghostrow .sn{background:transparent;box-shadow:inset 0 0 0 1.5px rgb(var(--gl-line)/.25)}
+  .gtext{display:flex;align-items:center;height:46px;padding:0 14px;border-radius:16px;border:1.5px dashed rgb(var(--gl-line)/.25);font-size:13px;color:hsl(var(--muted-foreground));text-align:left}
+  html[data-theme=light] .gtext{border-color:hsl(232 25% 20%/.2)}
+  .gadd{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:2px dashed hsl(var(--primary)/.7);color:hsl(var(--primary));font-size:18px;font-weight:600}
+  tr.ghostrow:active td{opacity:.9}
+  /* 지난번 추가 종목 칩 */
+  .sugg{margin:4px 0 8px}
+  .sugg-t{font-size:12.5px;color:hsl(var(--muted-foreground));margin:0 4px 8px}
+  .sugg-c{display:flex;flex-wrap:wrap;gap:6px}
+  .schip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px 0 12px;border-radius:9999px;border:1.5px dashed hsl(var(--primary)/.55);background:transparent;color:hsl(var(--foreground));font:inherit;font-size:13.5px;font-weight:500;cursor:pointer}
+  .schip span{color:hsl(var(--primary));font-size:16px;font-weight:600}
+  .schip:active{background:hsl(var(--primary)/.12)}
 </style>
 </head>
 <body>
@@ -1296,6 +1319,31 @@ function carrySet(last,k){if(!last)return {};const v=last.sets.filter(x=>x&&(x.w
 // 종목 세트 수 = 기본 세트 + 이 날 추가한 세트
 function nSets(ex,e){return ex.s+((e&&e.extra)||0);}
 function addSet(dayId,exName){const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};e.extra=(e.extra||0)+1;save();render();flashSaved('세트 추가됨');}
+// 추가 세트 스와이프: 왼쪽 → 삭제 버튼, 오른쪽 → 숨김
+function swS(e,el){const t=e.touches?e.touches[0]:e;if(e.pointerType==='touch')return;el._sx=t.clientX;el._sy=t.clientY;}
+function swE(e,el){
+  if(e.pointerType==='touch')return;const t=e.changedTouches?e.changedTouches[0]:e;if(el._sx==null)return;
+  const dx=t.clientX-el._sx,dy=t.clientY-el._sy;el._sx=null;
+  if(Math.abs(dx)<40||Math.abs(dx)<Math.abs(dy)*1.5)return;
+  if(dx<0){document.querySelectorAll('tr.swiped').forEach(r=>r!==el&&r.classList.remove('swiped'));el.classList.add('swiped');}
+  else el.classList.remove('swiped');
+}
+document.addEventListener('pointerdown',e=>{if(!e.target.closest||!e.target.closest('tr.swiped'))document.querySelectorAll('tr.swiped').forEach(r=>r.classList.remove('swiped'));},true);
+function delSetAt(dayId,exName,k){
+  const log=getLog(dayId);const e=log.ex[exName];if(!e||!e.extra)return;
+  const st=e.sets[k];if(st&&st.d&&!confirm(`${k+1}세트는 완료된 기록이 있어요. 삭제할까요?`))return;
+  if(k<e.sets.length)e.sets.splice(k,1);e.extra--;save();render();flashSaved('세트 삭제됨');
+}
+// 지난번 같은 루틴에서 추가했던 종목 → 칩으로 제안
+function suggestCustom(day){
+  const cur=store.logs[curDate]&&store.logs[curDate].day===day.id?store.logs[curDate]:null;
+  const have=new Set(day.ex.map(e=>e.n).concat((cur&&cur.custom||[]).map(c=>c.n)));
+  const prev=Object.keys(store.logs).filter(d=>d<curDate&&store.logs[d].day===day.id&&(store.logs[d].custom||[]).length).sort().pop();
+  if(!prev)return '';
+  const names=store.logs[prev].custom.map(c=>c.n).filter(n=>!have.has(n));
+  if(!names.length)return '';
+  return `<div class="sugg"><div class="sugg-t">지난번에 추가한 종목 · 눌러서 추가</div><div class="sugg-c">${names.map(n=>`<button class="schip" onclick="pickDay='${day.id}';addCustomEx('${esc(n)}')"><span>+</span>${n}</button>`).join('')}</div></div>`;
+}
 function delSet(dayId,exName,base){
   const log=getLog(dayId);const e=log.ex[exName];if(!e||!e.extra)return;
   const k=base+e.extra-1,st=e.sets[k];
@@ -1349,13 +1397,18 @@ function renderDay(day){
       const s=e.sets[k]||{};
       if(s.d) doneSets++;
       const ph0=carrySet(last,k),ph=(ph0.w!=null||ph0.r!=null)?ph0:(ex.def||{});
-      rows.push(`<tr class="${s.d?'row-done':''}">
+      const xr=k>=ex.s;
+      rows.push(`<tr class="${s.d?'row-done':''} ${xr?'xrow':''}" ${xr?'ontouchstart="swS(event,this)" ontouchend="swE(event,this)" onpointerdown="swS(event,this)" onpointerup="swE(event,this)"':''}>
         <td><span class="sn">${k+1}</span></td>
         <td><input type="number" class="ghost ${s.w==null&&ph.w!=null?'carry':''}" inputmode="decimal" step="0.5" enterkeyhint="next" onkeydown="nextField(event,this)" onfocus="this.select()" value="${s.w??ph.w??''}" ${s.w==null&&ph.w!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'w',this.value)"></td>
         <td><input type="number" class="ghost ${s.r==null&&ph.r!=null?'carry':''}" inputmode="numeric" enterkeyhint="next" onkeydown="nextField(event,this)" onfocus="this.select()" value="${s.r??ph.r??''}" ${s.r==null&&ph.r!=null?'data-carry="1"':''} oninput="setVal('${day.id}','${esc(ex.n)}',${k},'r',this.value)"></td>
-        <td><input type="checkbox" class="chk" ${s.d?'checked':''} onchange="setVal('${day.id}','${esc(ex.n)}',${k},'d',this.checked);if(this.checked)startRest(${ex.rest})"></td>
+        <td><input type="checkbox" class="chk" ${s.d?'checked':''} onchange="setVal('${day.id}','${esc(ex.n)}',${k},'d',this.checked);if(this.checked)startRest(${ex.rest})">${xr?`<button class="rowdel" onclick="delSetAt('${day.id}','${esc(ex.n)}',${k})">삭제</button>`:''}</td>
       </tr>`);
     }
+    // 지난번에 추가했던 세트: 흐린 줄로 보여주고 누르면 활성화
+    const lastN=last?ex.s+(last.extra||0):0;
+    for(let k=N;k<lastN;k++){const ls=(last.sets||[])[k]||{};
+      rows.push(`<tr class="ghostrow" onclick="addSet('${day.id}','${esc(ex.n)}')" role="button" aria-label="${k+1}세트 활성화"><td><span class="sn">${k+1}</span></td><td colspan="2"><span class="gtext">지난번 추가한 세트${ls.w!=null?` · ${ls.w}${ex.assist?'lb':'kg'} × ${ls.r??'-'}`:''}</span></td><td><span class="gadd">+</span></td></tr>`);}
     return `<div class="card ${isCurrent?'current':''}" id="ex${i}" data-ex="${ex.n.replace(/"/g,'&quot;')}" style="--c:${DAY_COLOR[day.id]}">
       <h3><span><span class="exn">${i+1}</span>${ex.n}${ex.custom?'<span class="add-badge">추가</span>':''}${isCurrent?'<span class="cur-badge">진행 중</span>':''}</span><span class="idx">${i+1}/${day.ex.length}</span></h3>
       <div class="target"><span>세트 <b>${N}${extra?`<small class="plus">+${extra}</small>`:''}</b></span><span>반복 <b>${ex.r[0]===ex.r[1]?ex.r[0]:ex.r[0]+'~'+ex.r[1]}</b></span><span>RIR <b>${ex.rir}</b></span><span>휴식 <b>${ex.rest>=120?(ex.rest/60)+'분':ex.rest+'초'}</b></span></div>
@@ -1363,7 +1416,7 @@ function renderDay(day){
       ${renderForm(ex.n, isCurrent)}
       <div class="last">지난 기록${last?` (${last.date.slice(5)}): <b>${fmtSets(last.sets)}</b>`:': 없음'} ${progressionHint(ex,last)}</div>
       <table><tr><th>세트</th><th>${ex.assist?'보조 lb':'kg'}</th><th>회</th><th>완료</th></tr>${rows.join('')}</table>
-      <div class="setbtns"><button class="btn small tint" onclick="addSet('${day.id}','${esc(ex.n)}')">+ 세트 추가</button>${extra>0?`<button class="btn small ghost" onclick="delSet('${day.id}','${esc(ex.n)}',${ex.s})">− 마지막 세트 삭제</button>`:''}</div>
+      <div class="setbtns"><button class="btn small tint" onclick="addSet('${day.id}','${esc(ex.n)}')">+ 세트 추가</button>${extra>0?'<span class="swhint">추가한 세트는 왼쪽으로 밀어서 삭제</span>':''}</div>
       ${ex.assist?assistNote(e,last,curDate):''}
       ${ex.custom?`<div class="setbtns"><button class="btn small danger" onclick="removeCustomEx('${day.id}','${esc(ex.n)}')">종목 삭제</button></div>`:''}
       ${ex.v.length?`<div class="videos">${ex.v.map(k=>`<a href="${V[k].u}" target="_blank" rel="noopener">${V[k].t}</a>`).join('')}</div>`:''}
@@ -1386,6 +1439,7 @@ function renderDay(day){
       ${!store.start?`<div class="rowbtns"><button class="btn primary" onclick="store.start=curDate;save();render()">이 날짜를 프로그램 시작일로</button></div>`:''}
     </section>
     ${cards}
+    ${suggestCustom(day)}
     <button class="addex" onclick="openExPicker('${day.id}')"><span>+</span>종목 추가<small>루틴 끝나고 더 하고 싶은 운동</small></button>
     <div class="finish"><button class="btn ok big" onclick="finishDay('${day.id}')">운동 마무리</button><button class="btn danger small" onclick="if(confirm('${curDate} 기록을 삭제할까요?')){delete store.logs[curDate];save();render()}">이 날 기록 삭제</button></div>`;
 }
@@ -2089,12 +2143,12 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790757434';
+const BUILD='1790757620';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
   fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
-    const m=t.match(/const BUILD='1790757434'/);if(m&&m[1]!==BUILD&&!tEnd){saveNow();sessionStorage.setItem('updated','1');location.reload();}
+    const m=t.match(/const BUILD='1790757620'/);if(m&&m[1]!==BUILD&&!tEnd){saveNow();sessionStorage.setItem('updated','1');location.reload();}
   }).catch(()=>{});
 }
 checkUpdate();
