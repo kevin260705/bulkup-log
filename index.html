@@ -2081,6 +2081,18 @@ function setNoti(on){
   render();
 }
 window.addEventListener('pagehide',saveNow);
+// ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
+const BUILD='1790757309';
+let lastVerCheck=0;
+function checkUpdate(){
+  if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
+  fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
+    const m=t.match(/const BUILD='1790757309'/);if(m&&m[1]!==BUILD&&!tEnd){saveNow();sessionStorage.setItem('updated','1');location.reload();}
+  }).catch(()=>{});
+}
+checkUpdate();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkUpdate();});
+if(sessionStorage.getItem('updated')){sessionStorage.removeItem('updated');setTimeout(()=>flashSaved('새 버전으로 업데이트됐어요'),400);}
 </script>
 </body>
 </html>
