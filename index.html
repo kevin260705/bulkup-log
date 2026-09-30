@@ -1003,6 +1003,15 @@
   .mks .mk.burst{width:23px;height:23px;left:-3px;bottom:-4px}
   .mks.sm .mk.dia{width:13px;height:13px}
   .mks.sm .mk.burst{width:17px;height:17px}
+
+  /* 오늘 표시: 글자 대신 초록 링 (문양과 겹치지 않게) */
+  .tlabel{display:none}
+  .cday.today .dot{box-shadow:0 0 0 2px hsl(var(--card)),0 0 0 4px hsl(var(--primary))}
+  .cday.today:not(.done) .dot{color:hsl(var(--primary));font-weight:700}
+  .cday.today.sel .dot{box-shadow:0 0 0 2px hsl(var(--card)),0 0 0 4px hsl(var(--foreground))}
+  .cday.today .mks{width:60px;height:60px;margin:-25px 0 0 -30px}
+  .mks .mk.burst{left:auto;right:-3px;bottom:-4px}
+  .mks.sm .mk.burst{left:auto;right:-5px;bottom:-5px}
 </style>
 </head>
 <body>
@@ -2235,7 +2244,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790761134';
+const BUILD='1790761273';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
