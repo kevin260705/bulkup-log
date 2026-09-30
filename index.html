@@ -929,6 +929,13 @@
   html[data-theme=light] .pk-i{background:hsl(232 25% 20%/.05)}
   .pk-i span{color:hsl(var(--primary));font-size:20px;font-weight:500}
   .pk-i:active{background:hsl(var(--primary)/.15)}
+
+  /* 세트 추가: 카드 폭 전체 버튼, 삭제는 아래 작게 */
+  .setbtns{flex-direction:column;align-items:stretch;gap:4px;margin-top:10px}
+  .setbtns .btn.tint{width:100%;height:46px;border-radius:14px;font-size:15px;background:hsl(var(--primary)/.08);box-shadow:inset 0 0 0 1.5px hsl(var(--primary)/.55)}
+  .setbtns .btn.tint:active{background:hsl(var(--primary)/.18)}
+  .setbtns .btn.ghost{align-self:center;height:32px;font-size:12.5px;color:hsl(var(--muted-foreground))}
+  .setbtns .btn.danger{align-self:center}
 </style>
 </head>
 <body>
@@ -2082,12 +2089,12 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790757309';
+const BUILD='1790757434';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
   fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
-    const m=t.match(/const BUILD='1790757309'/);if(m&&m[1]!==BUILD&&!tEnd){saveNow();sessionStorage.setItem('updated','1');location.reload();}
+    const m=t.match(/const BUILD='1790757434'/);if(m&&m[1]!==BUILD&&!tEnd){saveNow();sessionStorage.setItem('updated','1');location.reload();}
   }).catch(()=>{});
 }
 checkUpdate();
