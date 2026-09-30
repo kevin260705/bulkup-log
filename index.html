@@ -1029,6 +1029,33 @@
   .ftab tr.left td:last-child{border-radius:0 12px 12px 0}
   .ftab tr.left td b{color:hsl(var(--primary))}
   .ftab .ok{font-size:12px;font-weight:600}
+
+  /* 오늘의 식단 카드 */
+  .fixm .fm-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:12px}
+  .fixm .fm-head h3{margin:0}
+  .fm-bar{display:flex;gap:3px;height:12px;border-radius:9999px;overflow:hidden}
+  .fm-bar i{display:block;min-width:4px;background:hsl(var(--primary));border-radius:3px}
+  .fm-bar i:first-child{border-radius:9999px 3px 3px 9999px}
+  .fm-bar i:last-child{border-radius:3px 9999px 9999px 3px}
+  .fm-bar i.l{background:repeating-linear-gradient(135deg,hsl(var(--primary)/.35) 0 4px,transparent 4px 8px);box-shadow:inset 0 0 0 1.5px hsl(var(--primary)/.6)}
+  .fm-bar-l{display:flex;justify-content:space-between;margin:8px 2px 14px;font-size:12px;color:hsl(var(--muted-foreground))}
+  .fm-bar-l b{color:hsl(var(--foreground));font-weight:600;font-variant-numeric:tabular-nums;margin-left:3px}
+  .fm-bar-l span:last-child b{color:hsl(var(--primary))}
+  .fm-list{display:flex;flex-direction:column;gap:8px}
+  .fm-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:rgb(var(--gl-line)/var(--gl-in))}
+  html[data-theme=light] .fm-row{background:hsl(232 25% 20%/.05)}
+  .fm-t{flex:0 0 auto;min-width:40px;height:26px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;border-radius:9999px;background:rgb(var(--gl-line)/.1);font-size:12px;font-weight:600;color:hsl(var(--foreground)/.85)}
+  html[data-theme=light] .fm-t{background:hsl(232 25% 20%/.08)}
+  .fm-n{flex:1;min-width:0;font-size:14.5px;font-weight:600;letter-spacing:-.02em;line-height:1.35}
+  .fm-n small{display:block;margin-top:2px;font-size:12px;font-weight:400;color:hsl(var(--muted-foreground));font-variant-numeric:tabular-nums}
+  .fm-row>b{flex:0 0 auto;font-size:18px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;text-align:right}
+  .fm-row>b small{font-size:11px;font-weight:500;color:hsl(var(--muted-foreground));margin-left:2px}
+  .fm-row.lunch{background:hsl(var(--primary)/.08);box-shadow:inset 0 0 0 1.5px hsl(var(--primary)/.55);border:0;outline:1.5px dashed transparent}
+  .fm-row.lunch .fm-t{background:hsl(var(--primary));color:hsl(var(--primary-foreground))}
+  .fm-row.lunch .fm-n,.fm-row.lunch>b{color:hsl(var(--primary))}
+  .fm-row.lunch .fm-n small{color:hsl(var(--primary)/.8)}
+  .fm-tip{margin-top:12px;padding:0 4px;font-size:13px;line-height:1.5;color:hsl(var(--muted-foreground))}
+  .fm-tip b{color:hsl(var(--foreground));font-weight:600}
 </style>
 </head>
 <body>
@@ -1995,24 +2022,28 @@ const FIXED_MEALS=[
 const LUNCH_REF={n:'제육덮밥 1인분',k:800,p:30,c:110,f:25};
 function renderFixedMeals(n){
   const S=FIXED_MEALS.reduce((a,m)=>({k:a.k+m.k,p:a.p+m.p,c:a.c+m.c,f:a.f+m.f}),{k:0,p:0,c:0,f:0});
-  const T={k:n.kcal,p:n.p,c:n.c,f:n.f},R={k:T.k-S.k,p:T.p-S.p,c:T.c-S.c,f:T.f-S.f};
-  const num=v=>Math.round(v).toLocaleString();
-  const need=(v,u)=>v<=0?'<span class="ok">충분 ✓</span>':`${num(v)}${u}`;
-  const row=(label,sub,x,cls='')=>`<tr class="${cls}"><td><b>${label}</b>${sub?`<small>${sub}</small>`:''}</td><td>${num(x.k)}</td><td>${num(x.p)}</td><td>${num(x.c)}</td><td>${num(x.f)}</td></tr>`;
+  const R={k:n.kcal-S.k,p:n.p-S.p,c:n.c-S.c,f:n.f-S.f},num=v=>Math.round(v).toLocaleString();
+  // 같은 끼니는 한 줄로 (저녁: 파스타 + 목살)
+  const meals=[];FIXED_MEALS.forEach(m=>{const x=meals.find(y=>y.t===m.t&&m.t==='저녁');if(x){x.n+=' + '+m.n.replace(/\s*\(.*\)/,'');x.k+=m.k;x.p+=m.p;x.c+=m.c;x.f+=m.f;}else meals.push({...m,n:m.n.replace(/\s*\(.*\)/,'')});});
+  const lunch={t:'점심',lunch:true,k:Math.max(0,R.k)};
+  const order=[meals.find(m=>m.t==='아침'),lunch,...meals.filter(m=>m.t==='간식'),...meals.filter(m=>m.t==='저녁')].filter(Boolean);
+  const tot=Math.max(n.kcal,S.k);
+  const bar=order.map(m=>`<i class="${m.lunch?'l':''}" style="flex:${Math.max(m.k,1)/tot}" title="${m.t}"></i>`).join('');
+  const need=[R.c>0?`탄수 ${num(R.c)}g`:null,R.f>0?`지방 ${num(R.f)}g`:null].filter(Boolean).join(' · ');
   const diff=R.k-LUNCH_REF.k;
-  const verdict=R.k<=0?'고정 식단만으로 목표를 채워요. 점심은 가볍게 드셔도 돼요.'
-    :Math.abs(diff)<=150?`점심 <b>일반식 1인분</b>(${LUNCH_REF.n} 기준 약 ${num(LUNCH_REF.k)}kcal)이면 딱 맞아요.`
-    :diff>150?`점심 일반식(약 ${num(LUNCH_REF.k)}kcal)에 <b>${num(diff)}kcal</b> 정도를 더 드세요. (건과일 한 줌 130 · 즉석밥 반 공기 158)`
-    :`점심은 일반식보다 <b>${num(-diff)}kcal</b> 가볍게 드시면 맞아요.`;
+  const tip=R.k<=0?'고정 식단만으로 목표를 채워요. 점심은 가볍게 드셔도 돼요.'
+    :Math.abs(diff)<=150?`제육덮밥 같은 <b>일반식 1인분</b>(약 ${num(LUNCH_REF.k)}kcal)이면 딱 맞아요`
+    :diff>150?`일반식 1인분에 <b>+${num(diff)}kcal</b> 더 (건과일 한 줌 130 · 즉석밥 반 공기 158)`
+    :`일반식보다 <b>${num(-diff)}kcal</b> 가볍게 드시면 맞아요`;
+  const row=m=>m.lunch
+    ?`<div class="fm-row lunch"><span class="fm-t">점심</span><div class="fm-n">채울 양<small>${[need,R.p>0?`단백질 ${num(R.p)}g`:null].filter(Boolean).join(' · ')||'—'}</small></div><b>${num(m.k)}<small>kcal</small></b></div>`
+    :`<div class="fm-row"><span class="fm-t">${m.t}</span><div class="fm-n">${m.n}<small>단 ${num(m.p)} · 탄 ${num(m.c)} · 지 ${num(m.f)}</small></div><b>${num(m.k)}<small>kcal</small></b></div>`;
   return `<div class="card fixm">
-    <div class="ch-head"><h3>고정 식단 · 남은 섭취량</h3><span class="muted">kcal · 단백질 · 탄수 · 지방(g)</span></div>
-    <table class="ftab"><tr><th></th><th>kcal</th><th>단</th><th>탄</th><th>지</th></tr>
-      ${FIXED_MEALS.map(m=>row(m.t,m.n,m)).join('')}
-      ${row('고정 합계','',S,'sum')}
-      ${row('하루 목표',n.G.l,T,'goal')}
-      <tr class="left"><td><b>점심 + 나머지</b><small>채워야 할 양</small></td><td>${need(R.k,'')}</td><td>${need(R.p,'')}</td><td>${need(R.c,'')}</td><td>${need(R.f,'')}</td></tr>
-    </table>
-    <div class="advice ok" style="margin-top:12px">${verdict}</div>
+    <div class="fm-head"><h3>오늘의 식단</h3><span class="muted">목표 ${num(n.kcal)}kcal · ${n.G.l}</span></div>
+    <div class="fm-bar">${bar}</div>
+    <div class="fm-bar-l"><span>고정 식단 <b>${num(S.k)}</b></span><span>점심에 채울 양 <b>${num(Math.max(0,R.k))}</b></span></div>
+    <div class="fm-list">${order.map(row).join('')}</div>
+    <div class="fm-tip">${tip}${R.p<=0?' · 단백질은 이미 충분해요':''}</div>
   </div>`;
 }
 function renderData(){
@@ -2292,7 +2323,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790762898';
+const BUILD='1790765783';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
