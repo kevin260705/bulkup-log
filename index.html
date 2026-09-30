@@ -968,6 +968,20 @@
   .mtag{margin-left:6px;padding:1px 7px;border-radius:9999px;font-size:10.5px;font-weight:600;background:hsl(var(--primary)/.16);color:hsl(var(--primary))}
   .lastmemo{margin-top:6px;padding:10px 12px;border-radius:14px;background:hsl(var(--primary)/.08);border-left:3px solid hsl(var(--primary));font-size:13.5px;line-height:1.55;white-space:pre-wrap}
   .lastmemo span{display:block;font-size:11px;font-weight:600;color:hsl(var(--primary));margin-bottom:2px}
+
+  /* 추가한 세트: 네온 블루 */
+  :root{--xb:208 100% 60%}
+  html[data-theme=light]{--xb:212 100% 48%}
+  tr.xrow .sn{background:hsl(var(--xb)/.14);color:hsl(var(--xb));box-shadow:0 0 0 1.5px hsl(var(--xb)/.75),0 0 12px hsl(var(--xb)/.45)}
+  tr.xrow input[type=number]{background:hsl(var(--xb)/.07);box-shadow:inset 0 0 0 1.5px hsl(var(--xb)/.45),0 0 10px hsl(var(--xb)/.12)}
+  tr.xrow input[type=number].carry{color:hsl(var(--xb)/.6)}
+  tr.xrow input[type=number]:focus{border-color:hsl(var(--xb));box-shadow:0 0 0 1.5px hsl(var(--xb)),0 0 14px hsl(var(--xb)/.35)}
+  tr.xrow .chk{border-color:hsl(var(--xb)/.85);box-shadow:0 0 10px hsl(var(--xb)/.35)}
+  tr.xrow .chk:checked{background:hsl(var(--xb));border-color:hsl(var(--xb));box-shadow:0 0 14px hsl(var(--xb)/.75)}
+  tr.xrow .chk:checked:after{border-color:#04162B}
+  tr.row-done.xrow .sn{background:hsl(var(--xb));color:#04162B;box-shadow:0 0 14px hsl(var(--xb)/.75)}
+  tr.row-done.xrow input[type=number]{color:hsl(var(--xb));background:hsl(var(--xb)/.14);box-shadow:inset 0 0 0 1.5px hsl(var(--xb)/.6),0 0 12px hsl(var(--xb)/.25)}
+  .target b small.plus{color:hsl(var(--xb));text-shadow:0 0 8px hsl(var(--xb)/.6)}
 </style>
 </head>
 <body>
@@ -2155,7 +2169,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790757947';
+const BUILD='1790758075';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
