@@ -1012,6 +1012,23 @@
   .cday.today .mks{width:60px;height:60px;margin:-25px 0 0 -30px}
   .mks .mk.burst{left:auto;right:-3px;bottom:-4px}
   .mks.sm .mk.burst{left:auto;right:-5px;bottom:-5px}
+
+  /* 고정 식단 표 */
+  .ftab{width:100%;border-collapse:collapse;margin-top:6px;font-variant-numeric:tabular-nums}
+  .ftab th{font-size:11px;font-weight:500;color:hsl(var(--muted-foreground));text-align:right;padding:4px 4px 8px}
+  .ftab th:first-child{text-align:left}
+  .ftab td{padding:9px 4px;border-top:.5px solid hsl(var(--border));text-align:right;font-size:13.5px;vertical-align:middle}
+  .ftab td:first-child{text-align:left;width:46%}
+  .ftab td b{display:block;font-size:13.5px;font-weight:600}
+  .ftab td small{display:block;font-size:11.5px;color:hsl(var(--muted-foreground));line-height:1.35;margin-top:1px}
+  .ftab tr.sum td{font-weight:600;border-top:1px solid hsl(var(--foreground)/.35)}
+  .ftab tr.goal td{color:hsl(var(--muted-foreground))}
+  .ftab tr.goal td b{color:hsl(var(--foreground))}
+  .ftab tr.left td{font-weight:700;font-size:15px;color:hsl(var(--primary));border-top:1px solid hsl(var(--primary)/.5);background:hsl(var(--primary)/.07)}
+  .ftab tr.left td:first-child{border-radius:12px 0 0 12px}
+  .ftab tr.left td:last-child{border-radius:0 12px 12px 0}
+  .ftab tr.left td b{color:hsl(var(--primary))}
+  .ftab .ok{font-size:12px;font-weight:600}
 </style>
 </head>
 <body>
@@ -1968,6 +1985,36 @@ function tileHTML(k,label,unit,good){
   const l=b[b.length-1],d=l[k]-b[0][k],dir=Math.abs(d)<0.05?0:Math.sign(d),cls=!dir||!good?'':(dir===good?'good':'bad');
   return `<div class="tile"><span>${label}</span><b>${fmtN(l[k],1)}<small>${unit}</small></b><div class="delta ${cls}">${b.length<2?'첫 측정':(dir>0?'▲ ':dir<0?'▼ ':'– ')+fmtN(Math.abs(d),1)+unit}</div></div>`;
 }
+// 매일 고정으로 먹는 식단 → 점심·나머지에 필요한 양 계산
+const FIXED_MEALS=[
+  {t:'아침',n:'한끼통살 폭탄볶음밥 1봉',k:535,p:40,c:64,f:13},
+  {t:'간식',n:'한끼통살 폭탄볶음밥 1봉',k:535,p:40,c:64,f:13},
+  {t:'저녁',n:'파스타 (면 100g + 소스 200g)',k:559,p:28,c:81,f:14.1},
+  {t:'저녁',n:'목살 200g',k:360,p:40.4,c:2.6,f:19},
+];
+const LUNCH_REF={n:'제육덮밥 1인분',k:800,p:30,c:110,f:25};
+function renderFixedMeals(n){
+  const S=FIXED_MEALS.reduce((a,m)=>({k:a.k+m.k,p:a.p+m.p,c:a.c+m.c,f:a.f+m.f}),{k:0,p:0,c:0,f:0});
+  const T={k:n.kcal,p:n.p,c:n.c,f:n.f},R={k:T.k-S.k,p:T.p-S.p,c:T.c-S.c,f:T.f-S.f};
+  const num=v=>Math.round(v).toLocaleString();
+  const need=(v,u)=>v<=0?'<span class="ok">충분 ✓</span>':`${num(v)}${u}`;
+  const row=(label,sub,x,cls='')=>`<tr class="${cls}"><td><b>${label}</b>${sub?`<small>${sub}</small>`:''}</td><td>${num(x.k)}</td><td>${num(x.p)}</td><td>${num(x.c)}</td><td>${num(x.f)}</td></tr>`;
+  const diff=R.k-LUNCH_REF.k;
+  const verdict=R.k<=0?'고정 식단만으로 목표를 채워요. 점심은 가볍게 드셔도 돼요.'
+    :Math.abs(diff)<=150?`점심 <b>일반식 1인분</b>(${LUNCH_REF.n} 기준 약 ${num(LUNCH_REF.k)}kcal)이면 딱 맞아요.`
+    :diff>150?`점심 일반식(약 ${num(LUNCH_REF.k)}kcal)에 <b>${num(diff)}kcal</b> 정도를 더 드세요. (건과일 한 줌 130 · 즉석밥 반 공기 158)`
+    :`점심은 일반식보다 <b>${num(-diff)}kcal</b> 가볍게 드시면 맞아요.`;
+  return `<div class="card fixm">
+    <div class="ch-head"><h3>고정 식단 · 남은 섭취량</h3><span class="muted">kcal · 단백질 · 탄수 · 지방(g)</span></div>
+    <table class="ftab"><tr><th></th><th>kcal</th><th>단</th><th>탄</th><th>지</th></tr>
+      ${FIXED_MEALS.map(m=>row(m.t,m.n,m)).join('')}
+      ${row('고정 합계','',S,'sum')}
+      ${row('하루 목표',n.G.l,T,'goal')}
+      <tr class="left"><td><b>점심 + 나머지</b><small>채워야 할 양</small></td><td>${need(R.k,'')}</td><td>${need(R.p,'')}</td><td>${need(R.c,'')}</td><td>${need(R.f,'')}</td></tr>
+    </table>
+    <div class="advice ok" style="margin-top:12px">${verdict}</div>
+  </div>`;
+}
 function renderData(){
   const n=nutrition(),g=store.profile.goal,gw=g==='cut'?-1:g==='keep'?0:1,bs=bodySorted();
   const series=k=>bs.filter(x=>x[k]!=null).map(x=>({d:x.date,v:x[k]}));
@@ -1988,6 +2035,7 @@ function renderData(){
     <div class="muted calc">기초대사량 ${n.bmr.toLocaleString()}kcal (${n.src}) × 활동량 ${n.A.f} = 유지 ${n.tdee.toLocaleString()}kcal, 목표 ${n.G.k>=0?'+':''}${n.G.k}kcal<br>단백질 체중 ${fmtN(n.w,1)}kg × ${n.G.p}g · 지방 25% · 나머지 탄수화물</div>
     ${adviceHTML(n)}
   </section>
+  ${renderFixedMeals(n)}
   ${renderProj()}
   <div class="set-sec">신체 변화 · 처음 측정 대비</div>
   <div class="tiles">${tileHTML('w','체중','kg',gw)}${tileHTML('smm','골격근량','kg',1)}${tileHTML('bf','체지방률','%',-1)}</div>
@@ -2244,7 +2292,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790761273';
+const BUILD='1790762898';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
