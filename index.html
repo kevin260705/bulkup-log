@@ -1367,9 +1367,11 @@ let curTab = null; // 첫 렌더에서 suggestDay()로 결정
 // ---------- 주차 계산 ----------
 function dnum(iso){const [y,m,d]=iso.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/864e5);}
 // 프로그램 시작일 기준 주차 (1주차부터). 7주차마다 디로드.
-function weekNo(iso){if(!store.start)return null;return Math.floor((dnum(iso||today())-dnum(store.start))/7)+1;}
+// 주는 월요일~일요일. dnum 0(1970-01-01)은 목요일 → 월요일 시작 보정 +3
+function monOf(n){return n-((n+3)%7);}
+function weekNo(iso){if(!store.start)return null;return Math.floor((monOf(dnum(iso||today()))-monOf(dnum(store.start)))/7)+1;}
 function isDeload(iso){const w=weekNo(iso);return !!w&&w>0&&w%7===0;}
-function weekSessions(){const w=weekNo(today());if(!w||w<1)return 0;const s0=dnum(store.start)+(w-1)*7;return Object.keys(store.logs).filter(d=>{const n=dnum(d);return n>=s0&&n<s0+7&&isDone(store.logs[d]);}).length;}
+function weekSessions(){const s0=monOf(dnum(today()));return Object.keys(store.logs).filter(d=>{const n=dnum(d);return n>=s0&&n<s0+7&&isDone(store.logs[d]);}).length;}
 function renderWeek(){
   const el=document.getElementById('weekBadge'),wc=document.getElementById('weekCount');if(!el)return;const w=weekNo(today());
   if(!w||w<1){el.textContent='첫 세트 완료 시 1주차 시작';el.className='';if(wc)wc.textContent='0/'+PROGRAM.length;return;}
@@ -2323,7 +2325,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790765783';
+const BUILD='1790816857';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
