@@ -1356,6 +1356,8 @@ store.start = store.start||null;
 store.profile = Object.assign({name:'kevin',age:33,height:182,sex:'m',weight:73,goal:'lean',activity:'mid',freq:5},store.profile||{});
 // 목표를 린매스업으로 변경 (2026-09-28): 기존 저장값도 한 번만 전환, 이후엔 설정에서 자유롭게 변경
 if(!store.leanSet){store.profile.goal='lean';store.leanSet=true;}
+store.notes=store.notes||{};
+if(!store.notesMigrated){Object.keys(store.logs).sort().forEach(d=>Object.entries(store.logs[d].ex||{}).forEach(([n,e])=>{if(e&&e.note&&e.note.trim())store.notes[n]=e.note;}));store.notesMigrated=true;}
 // 인바디 2026-09-30 (체중 73.7 · 골격근 33.9 · 체지방량 13.7kg → 18.6%) 한 번만 추가
 if(!store.inbody0930){store.body=(store.body||[]).filter(x=>x.date!=='2026-09-30');store.body.push({date:'2026-09-30',w:73.7,smm:33.9,bf:18.6});store.inbody0930=true;}
 applyPlan();
@@ -1586,10 +1588,9 @@ function renderDay(day){
       ${renderForm(ex.n, isCurrent)}
       <div class="last">지난 기록${last?` (${last.date.slice(5)}): <b>${fmtSets(last.sets)}</b>`:': 없음'} ${progressionHint(ex,last)}</div>
       ${stallBanner(ex,stallInfo(ex))}
-      ${(()=>{const ln=last&&last.note&&last.note.trim()?last.note:'',open=isCurrent||ln||(e.note||'').trim();
-        return `<details class="memo" ${open?'open':''}><summary>메모${ln?'<span class="mtag">지난 메모</span>':''}</summary>
-          ${ln?`<div class="lastmemo"><span>지난번 ${last.date.slice(5).replace('-','/')}</span>${ln.replace(/</g,'&lt;')}</div>`:''}
-          <textarea placeholder="${ln?'오늘 메모 (느낌, 통증, 다음에 바꿀 것)':'느낌, 통증, 다음에 바꿀 것...'}" oninput="setNote('${day.id}','${esc(ex.n)}',this.value)">${e.note||''}</textarea></details>`;})()}
+      ${(()=>{const nt=(store.notes[ex.n]||'').trim(),open=isCurrent||nt;
+        return `<details class="memo" ${open?'open':''}><summary>메모${nt?'<span class="mtag">적혀 있음</span>':''}</summary>
+          <textarea placeholder="느낌, 통증, 다음에 바꿀 것... (종목마다 계속 남아요)" oninput="setNote('${day.id}','${esc(ex.n)}',this.value)">${(store.notes[ex.n]||'').replace(/</g,'&lt;')}</textarea></details>`;})()}
       <table><tr><th>${ex.cardio?'회차':'세트'}</th><th>${ex.cardio?'시간(분)':ex.assist?'보조 lb':'kg'}</th><th>${ex.cardio?'거리(km)':'회'}</th><th>완료</th></tr>${rows.join('')}</table>
       <div class="setbtns"><button class="btn small tint" onclick="addSet('${day.id}','${esc(ex.n)}')">+ 세트 추가</button>${extra>0?`<button class="delx" onclick="delSetAt('${day.id}','${esc(ex.n)}',${N-1})">− 추가한 세트 삭제</button>`:''}</div>
       ${ex.assist?assistNote(e,last,curDate):''}
@@ -1646,7 +1647,7 @@ function setVal(dayId,exName,k,f,v){
   save();flashSaved();
   if(f==='d') render();
 }
-function setNote(dayId,exName,v){const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};e.note=v;save();flashSaved();}
+function setNote(dayId,exName,v){store.notes[exName]=v;const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};e.note=v;save();flashSaved();}
 function finishDay(dayId){
   const log=getLog(dayId);
   // 빈 칸은 placeholder(지난 기록) 값으로 채움
@@ -2358,7 +2359,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790816978';
+const BUILD='1790818048';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
