@@ -1,0 +1,19 @@
+name: workout-reminder
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 10:00 KST
+    - cron: '0 6 * * *'   # 15:00 KST
+    - cron: '0 7 * * *'   # 16:00 KST
+  workflow_dispatch:
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm i --no-save web-push
+      - run: node .github/push/send.mjs
+        env:
+          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
+          PUSH_SUBS: ${{ secrets.PUSH_SUBS }}

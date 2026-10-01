@@ -12,3 +12,13 @@ self.addEventListener('notificationclick', (e) => {
     })
   );
 });
+
+// 운동 알림 푸시 (10시 · 15시 · 16시)
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data.json(); } catch (_) { d = { body: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(d.title || '💪 운동하자', {
+    body: d.body || '', tag: d.tag || 'workout', renotify: true,
+    icon: 'icon-192.png?v=3', badge: 'favicon.png?v=3', vibrate: [200, 100, 200],
+  }));
+});
