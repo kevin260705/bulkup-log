@@ -1442,8 +1442,8 @@ function stallBanner(ex,st){
   if(!st)return '';
   const unit=ex.assist?'lb':'kg',span=st.days>=7?`${Math.round(st.days/7)}주째`:`${st.days+1}일간`;
   return st.up
-    ?`<div class="stall up"><b>📈 ${st.w}${unit}로 ${st.c}회째 · ${span}</b><span>${ex.assist?'오늘은 보조를 줄여보세요.':'오늘은 무게를 올려보세요.'}</span></div>`
-    :`<div class="stall hold"><b>⏸ ${st.w}${unit}로 ${st.c}회째 · 반복이 안 늘어요</b><span>이번엔 마지막 세트를 끝까지. 다음에도 그대로면 쉬어가거나 종목을 바꿔보세요.</span></div>`;
+    ?`<div class="stall up"><b>📈 같은 무게 ${st.c}회째 · ${span}</b><span>${ex.assist?'💡 보조를 줄여보세요!':'💡 무게를 증량해보세요!'}</span></div>`
+    :`<div class="stall hold"><b>⏸ 같은 무게 ${st.c}회째 · 반복이 안 늘어요</b><span>이번엔 마지막 세트를 끝까지. 다음에도 그대로면 쉬어가거나 종목을 바꿔보세요.</span></div>`;
 }
 function progressionHint(ex, last){
   if(!last||ex.cardio) return '';
@@ -1451,7 +1451,7 @@ function progressionHint(ex, last){
   if(!done.length) return '';
   const allTop=done.length>=ex.s && done.every(s=>s.r>=ex.r[1]);
   const anyBelow=done.some(s=>s.r<ex.r[0]);
-  if(allTop) return ex.assist?`<span class="hint">↑ 보조를 줄여보세요</span>`:`<span class="hint">↑ 무게를 올려보세요</span>`;
+  if(allTop) return ex.assist?`<span class="hint">💡 보조를 줄여보세요!</span>`:`<span class="hint">💡 무게를 증량해보세요!</span>`;
   if(anyBelow) return `<span class="hint warn">→ 같은 무게로 한 번 더</span>`;
   return `<span class="hint keep">→ 같은 무게로 반복수 늘리기</span>`;
 }
@@ -1608,7 +1608,7 @@ function renderDay(day){
       <div class="dh-top"><span class="kicker"><i></i>${idx>=0?'DAY '+(idx+1):'지난 루틴'}${status}</span>
         <label class="datebtn">${isToday?'오늘':dayLabel(curDate)}${chevDown}<input type="date" value="${curDate}" onchange="curDate=this.value||today();render()"></label></div>
       <h2>${day.name}</h2>
-      ${(()=>{const up=day.ex.filter(x=>{const t=stallInfo(x);return t&&t.up;}).length;return up?`<div class="dh-up">📈 오늘 무게 올려볼 종목 ${up}개</div>`:'';})()}
+      ${(()=>{const up=day.ex.filter(x=>{const t=stallInfo(x);return t&&t.up;}).length;return up?`<div class="dh-up">💡 오늘 무게 증량해볼 종목 ${up}개</div>`:'';})()}
       <div class="dh-meta">${day.ex.length}종목 · ${totalSets}세트 · 약 ${mins}분${day.opt?' · '+day.opt:''}</div>
       ${dl?'<div class="dl-note">디로드 주 · 세트 절반, RIR 3~4로 가볍게 회복</div>':''}
       <div class="dh-prog"><div class="dh-nums"><b>${doneSets}</b><span>/ ${totalSets} 세트 완료</span><em>${pct}%</em></div><div class="prog"><div style="width:${pct}%"></div></div></div>
@@ -1710,7 +1710,7 @@ function importJSON(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{c
 function renderInfo(){
   return `<div class="page-title"><h2>운동 가이드</h2></div>
   <div class="card"><h3>진행 규칙</h3><ul>
-    <li><b>이중 진행</b>: 반복 상한을 전 세트에서 채우면 다음에 +2.5kg (덤벨 +2kg). 앱이 자동으로 알려줌</li>
+    <li><b>이중 진행</b>: 반복 상한을 전 세트에서 채우면 다음엔 무게 증량. 앱이 "무게를 증량해보세요!"로 알려줌</li>
     <li><b>첫 2주는 무게 찾기</b>: 목표 RIR에 맞는 무게 기록</li>
     <li><b>7주차 = 디로드</b>: 세트 절반, RIR 3~4. 상단 배지로 표시</li>
     <li><b>황철순식 마무리</b>: 부위별 마지막 종목 마지막 세트만 강제반복/드롭. 매 세트 하면 회복 안 됨</li>
@@ -2359,7 +2359,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790818497';
+const BUILD='1790819960';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
