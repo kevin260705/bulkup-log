@@ -1066,6 +1066,9 @@
   .stall.hold{background:rgb(var(--gl-line)/var(--gl-in));color:hsl(var(--foreground)/.9)}
   html[data-theme=light] .stall.hold{background:hsl(232 25% 20%/.05)}
   .dh-up{display:inline-flex;margin:6px 0 2px;padding:4px 10px;border-radius:9999px;font-size:12px;font-weight:700;background:hsl(var(--primary)/.14);color:hsl(var(--primary))}
+
+  /* 메모: 항상 열린 한 칸 */
+  .memo-ta{display:block;width:100%;min-height:48px;margin:8px 0 10px;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5;resize:none;overflow:hidden}
 </style>
 </head>
 <body>
@@ -1588,9 +1591,7 @@ function renderDay(day){
       ${renderForm(ex.n, isCurrent)}
       <div class="last">지난 기록${last?` (${last.date.slice(5)}): <b>${fmtSets(last.sets)}</b>`:': 없음'} ${progressionHint(ex,last)}</div>
       ${stallBanner(ex,stallInfo(ex))}
-      ${(()=>{const nt=(store.notes[ex.n]||'').trim(),open=isCurrent||nt;
-        return `<details class="memo" ${open?'open':''}><summary>메모${nt?'<span class="mtag">적혀 있음</span>':''}</summary>
-          <textarea placeholder="느낌, 통증, 다음에 바꿀 것... (종목마다 계속 남아요)" oninput="setNote('${day.id}','${esc(ex.n)}',this.value)">${(store.notes[ex.n]||'').replace(/</g,'&lt;')}</textarea></details>`;})()}
+      <textarea class="memo-ta" rows="2" placeholder="메모 (느낌, 통증, 다음에 바꿀 것)" oninput="setNote('${day.id}','${esc(ex.n)}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'">${(store.notes[ex.n]||'').replace(/</g,'&lt;')}</textarea>
       <table><tr><th>${ex.cardio?'회차':'세트'}</th><th>${ex.cardio?'시간(분)':ex.assist?'보조 lb':'kg'}</th><th>${ex.cardio?'거리(km)':'회'}</th><th>완료</th></tr>${rows.join('')}</table>
       <div class="setbtns"><button class="btn small tint" onclick="addSet('${day.id}','${esc(ex.n)}')">+ 세트 추가</button>${extra>0?`<button class="delx" onclick="delSetAt('${day.id}','${esc(ex.n)}',${N-1})">− 추가한 세트 삭제</button>`:''}</div>
       ${ex.assist?assistNote(e,last,curDate):''}
@@ -2216,7 +2217,7 @@ function render(){
   else if(view==='data'){m.innerHTML=renderData();bindCharts();}
   else if(view==='set') m.innerHTML=renderSettings();
   else if(view==='guide') m.innerHTML=`<button class="btn ghost small back" onclick="setView('set')">‹ 설정</button>`+renderInfo();
-  else{renderTabs();m.innerHTML=renderDay(ALLDAYS.find(d=>d.id===curTab));centerTab();}
+  else{renderTabs();m.innerHTML=renderDay(ALLDAYS.find(d=>d.id===curTab));centerTab();document.querySelectorAll('.memo-ta').forEach(t=>{t.style.height='auto';t.style.height=t.scrollHeight+'px';});}
   const key=view+'|'+curTab+'|'+curDate;
   if(key!==lastKey){window.scrollTo(0,0);lastKey=key;}
 }
@@ -2359,7 +2360,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790818048';
+const BUILD='1790818146';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
