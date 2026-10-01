@@ -1056,6 +1056,16 @@
   .fm-row.lunch .fm-n small{color:hsl(var(--primary)/.8)}
   .fm-tip{margin-top:12px;padding:0 4px;font-size:13px;line-height:1.5;color:hsl(var(--muted-foreground))}
   .fm-tip b{color:hsl(var(--foreground));font-weight:600}
+
+  /* 정체·증량 알림 */
+  .stall{margin:8px 0;padding:10px 12px;border-radius:16px;font-size:13px;line-height:1.5}
+  .stall>b{display:block;font-size:13.5px;font-weight:700;margin-bottom:2px}
+  .stall span b{font-weight:700}
+  .stall.up{background:hsl(var(--primary)/.12);box-shadow:inset 0 0 0 1.5px hsl(var(--primary)/.5);color:hsl(var(--foreground))}
+  .stall.up>b,.stall.up span b{color:hsl(var(--primary))}
+  .stall.hold{background:rgb(var(--gl-line)/var(--gl-in));color:hsl(var(--foreground)/.9)}
+  html[data-theme=light] .stall.hold{background:hsl(232 25% 20%/.05)}
+  .dh-up{display:inline-flex;margin:6px 0 2px;padding:4px 10px;border-radius:9999px;font-size:12px;font-weight:700;background:hsl(var(--primary)/.14);color:hsl(var(--primary))}
 </style>
 </head>
 <body>
@@ -1410,6 +1420,27 @@ function lastLog(dayId, exName){
   return {date:dates[0], ...store.logs[dates[0]].ex[exName]};
 }
 function fmtSets(sets){return sets.filter(s=>s.w!=null||s.r!=null).map(s=>`${s.w??'-'}×${s.r??'-'}`).join(', ')||'-';}
+// 같은 무게 정체 감지: 최근 기록이 같은 무게로 3회 이상 이어졌는지
+function stallInfo(ex){
+  if(ex.cardio)return null;
+  const ds=Object.keys(store.logs).filter(d=>d<curDate&&store.logs[d].ex[ex.n]&&store.logs[d].ex[ex.n].sets.some(x=>x&&x.d&&x.w!=null)).sort().reverse().slice(0,8);
+  if(ds.length<3)return null;
+  const top=d=>{const ws=store.logs[d].ex[ex.n].sets.filter(x=>x&&x.d&&x.w!=null).map(x=>x.w);return ex.assist?Math.min(...ws):Math.max(...ws);};
+  const w0=top(ds[0]);let c=0;for(const d of ds){if(top(d)===w0)c++;else break;}
+  if(c<3)return null;
+  const days=dnum(ds[0])-dnum(ds[c-1]);
+  const ls=store.logs[ds[0]].ex[ex.n].sets.filter(x=>x&&x.d&&x.r!=null);
+  const avgR=ls.reduce((a,x)=>a+x.r,0)/Math.max(1,ls.length);
+  return {w:w0,c,days,up:avgR>=(ex.r[0]+ex.r[1])/2};
+}
+function stallBanner(ex,st){
+  if(!st)return '';
+  const unit=ex.assist?'lb':'kg',span=st.days>=7?`${Math.round(st.days/7)}주째`:`${st.days+1}일간`;
+  const step=ex.assist?'보조 −5lb':(/덤벨/.test(ex.n)?'+2kg (덤벨 한 단계)':'+2.5kg');
+  return st.up
+    ?`<div class="stall up"><b>📈 ${st.w}${unit}로 ${st.c}회째 · ${span}</b><span>반복도 충분해요. 오늘은 <b>${step}</b> 올려서 도전해 보세요. 반복이 목표 하한 아래로 떨어지면 다시 내려도 괜찮아요.</span></div>`
+    :`<div class="stall hold"><b>⏸ ${st.w}${unit}로 ${st.c}회째 · 반복이 안 늘어요</b><span>이번엔 마지막 세트를 실패 직전까지. 다음 회차도 그대로면 <b>디로드(세트 절반)</b> 하거나 비슷한 종목으로 바꿔보세요.</span></div>`;
+}
 function progressionHint(ex, last){
   if(!last||ex.cardio) return '';
   const done=last.sets.filter(s=>s.r!=null);
@@ -1554,6 +1585,7 @@ function renderDay(day){
       ${ex.note?`<div class="note">${ex.note}</div>`:''}
       ${renderForm(ex.n, isCurrent)}
       <div class="last">지난 기록${last?` (${last.date.slice(5)}): <b>${fmtSets(last.sets)}</b>`:': 없음'} ${progressionHint(ex,last)}</div>
+      ${stallBanner(ex,stallInfo(ex))}
       ${(()=>{const ln=last&&last.note&&last.note.trim()?last.note:'',open=isCurrent||ln||(e.note||'').trim();
         return `<details class="memo" ${open?'open':''}><summary>메모${ln?'<span class="mtag">지난 메모</span>':''}</summary>
           ${ln?`<div class="lastmemo"><span>지난번 ${last.date.slice(5).replace('-','/')}</span>${ln.replace(/</g,'&lt;')}</div>`:''}
@@ -1575,6 +1607,7 @@ function renderDay(day){
       <div class="dh-top"><span class="kicker"><i></i>${idx>=0?'DAY '+(idx+1):'지난 루틴'}${status}</span>
         <label class="datebtn">${isToday?'오늘':dayLabel(curDate)}${chevDown}<input type="date" value="${curDate}" onchange="curDate=this.value||today();render()"></label></div>
       <h2>${day.name}</h2>
+      ${(()=>{const up=day.ex.filter(x=>{const t=stallInfo(x);return t&&t.up;}).length;return up?`<div class="dh-up">📈 오늘 증량 추천 ${up}종목</div>`:'';})()}
       <div class="dh-meta">${day.ex.length}종목 · ${totalSets}세트 · 약 ${mins}분${day.opt?' · '+day.opt:''}</div>
       ${dl?'<div class="dl-note">디로드 주 · 세트 절반, RIR 3~4로 가볍게 회복</div>':''}
       <div class="dh-prog"><div class="dh-nums"><b>${doneSets}</b><span>/ ${totalSets} 세트 완료</span><em>${pct}%</em></div><div class="prog"><div style="width:${pct}%"></div></div></div>
@@ -2325,7 +2358,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790816857';
+const BUILD='1790816978';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
