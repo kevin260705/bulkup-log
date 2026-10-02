@@ -2171,7 +2171,7 @@ function renderSettings(){
     <div class="grow">${I(C.gray,ico.bell)}<span class="gl">알림 권한<small class="gsub">${({granted:'허용됨 ✓',denied:'차단됨 · 아래 방법으로 허용해 주세요',default:'아직 설정 안 함',unsupported:'이 브라우저는 알림 미지원'})[notiPerm()]}</small></span>${notiPerm()==='default'?'<button class="btn primary small" onclick="reqNoti()">허용하기</button>':notiPerm()==='granted'?'<span class="gv" style="color:hsl(var(--primary));font-weight:600">켜짐</span>':''}</div>
     <div class="grow">${I(C.gray,ico.flag)}<span class="gl">플로팅 타이머<small class="gsub">${pipSupported()?'휴식 중 계속 떠 있는 작은 창 (기본 꺼짐)':'이 폰(브라우저)은 미지원 · 팝업 알림을 써주세요'}</small></span>${pipSupported()?`<button class="sw ${pipOn()?'on':''}" onclick="setPip(${pipOn()?'false':'true'})" aria-label="플로팅 타이머"></button>`:''}</div>
     ${pipSupported()?'<button class="grow" onclick="testPip()">'+I(C.gray,ico.flag)+'<span class="gl">플로팅 타이머 테스트<small class="gsub">10초 타이머 · 홈 화면으로 나가서 확인</small></span><span class="gv">'+ICON_CHEV+'</span></button>':''}
-    ${pushSupported()?`<div class="grow">${I(C.gray,ico.bell)}<span class="gl">운동 알림<small class="gsub">${store.pushSub?PUSH_TIMES+' · 헬스 명언과 함께':PUSH_TIMES+' · 앱을 꺼둬도 와요'}</small></span><button class="sw ${store.pushSub?'on':''}" onclick="setPush(${store.pushSub?'false':'true'})" aria-label="운동 알림"></button></div>
+    ${pushSupported()?`<div class="grow">${I(C.gray,ico.bell)}<span class="gl">운동 알림<small class="gsub">${store.pushSub?PUSH_TIMES+' · 오늘의 한 문장':PUSH_TIMES+' · 앱을 꺼둬도 와요'}</small></span><button class="sw ${store.pushSub?'on':''}" onclick="setPush(${store.pushSub?'false':'true'})" aria-label="운동 알림"></button></div>
     ${store.pushSub?`<button class="grow" onclick="copyPush()">${I(C.gray,ico.flag)}<span class="gl">연결 코드 복사<small class="gsub">${pushCopied?'복사됨 ✓ · Claude에게 붙여넣어 주세요':'처음 한 번만 Claude에게 전달'}</small></span><span class="gv">${ICON_CHEV}</span></button>`:''}`:''}
     <button class="grow" onclick="testNoti()">${I(C.gray,ico.flag)}<span class="gl">알림 테스트<small class="gsub">누르고 5초 안에 홈 화면으로 나가보세요</small></span><span class="gv">${ICON_CHEV}</span></button>
   </div>
@@ -2383,7 +2383,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790852976';
+const BUILD='1790903848';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
