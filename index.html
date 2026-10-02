@@ -2297,13 +2297,16 @@ async function setPush(on){
     const reg=swReg||await navigator.serviceWorker.ready;
     if(on){
       if(Notification.permission!=='granted'&&await Notification.requestPermission()!=='granted'){render();return;}
-      const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID_PUB)});
+      const opt={userVisibleOnly:true,applicationServerKey:b64u(VAPID_PUB)};
+      let sub;
+      try{sub=await reg.pushManager.subscribe(opt);}
+      catch(e){const old=await reg.pushManager.getSubscription();if(old)await old.unsubscribe();await new Promise(r=>setTimeout(r,1500));sub=await reg.pushManager.subscribe(opt);}
       store.pushSub=JSON.stringify(sub);persist();await copyPush();
     }else{
       const sub=await reg.pushManager.getSubscription();if(sub)await sub.unsubscribe();
       store.pushSub=null;pushCopied=false;persist();render();
     }
-  }catch(e){alert('운동 알림을 켤 수 없어요. '+(e&&e.message||''));}
+  }catch(e){alert('운동 알림을 켤 수 없어요. ('+(e&&e.name||'')+') '+(e&&e.message||''));}
 }
 async function copyPush(){
   try{await navigator.clipboard.writeText(store.pushSub);pushCopied=true;}catch(e){prompt('이 코드를 길게 눌러 복사하세요',store.pushSub);}
@@ -2383,7 +2386,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790903848';
+const BUILD='1790904019';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
