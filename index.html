@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<title>상체 벌크업 루틴 · 기록장</title>
+<title>운동</title>
 <meta name="description" content="상체 벌크업 5분할 루틴 기록장: 세트별 기록, 증량 추천, 휴식 타이머, 황철순 운동 영상">
-<meta property="og:title" content="Bulkup Log">
+<meta property="og:title" content="운동">
 <meta property="og:description" content="상체 벌크업 5분할 루틴 기록장">
 <meta property="og:image" content="https://d2ol7oe51mr4n9.cloudfront.net/user_39Bv7Twf1ididBYxsmBgq7k5JAA/d42221b3-8043-477c-a727-9200cc626abb.png">
 <meta name="theme-color" content="#08080c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="벌크업 루틴">
+<meta name="apple-mobile-web-app-title" content="운동">
 <link rel="icon" type="image/png" href="favicon.png?v=3">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <link rel="manifest" href="manifest.json">
@@ -2184,7 +2184,7 @@ function renderSettings(){
       <p><b>③</b> <b>무음</b>이 아니라 <b>알림</b> 선택 + <b>팝업으로 표시</b> 켜기</p>
       <p style="margin-top:10px;color:hsl(var(--muted-foreground));font-weight:600">또는 설정에서 직접</p>
       <p><b>1.</b> 폰 <b>설정</b> → <b>알림</b> → <b>앱 알림</b></p>
-      <p><b>2.</b> ${isApp()?'<b>벌크업 루틴</b> (홈 화면에 추가한 앱)':'<b>Chrome</b>'} 선택 → 알림 <b>켜기</b></p>
+      <p><b>2.</b> ${isApp()?'<b>운동</b> (홈 화면에 추가한 앱)':'<b>Chrome</b>'} 선택 → 알림 <b>켜기</b></p>
       <p><b>3.</b> ${isApp()?'알림 카테고리 중 <b>일반</b>':'<b>사이트</b> 항목에서 <b>kevin260705.github.io</b>'} 선택</p>
       <p><b>4.</b> <b>알림 스타일</b>을 <b>팝업</b>으로 (또는 <b>"소리 및 팝업"</b> / <b>중요도: 긴급</b>) ← <b>이게 상단에 잠깐 뜨게 하는 설정</b></p>
       <p><b>5.</b> 위의 <b>알림 테스트</b>로 확인</p>
@@ -2202,7 +2202,7 @@ function renderSettings(){
     <button class="grow danger" onclick="resetAll()">${I(C.red,ico.trash)}<span class="gl">모든 기록 초기화</span></button>
   </div>
   <div class="muted" style="margin:8px 16px 0">기록은 이 기기 브라우저에만 저장돼요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 내보내기 해두세요.</div>
-  <div class="muted center" style="margin:22px 0 4px">Bulkup Log</div>`;
+  <div class="muted center" style="margin:22px 0 4px">운동</div>`;
 }
 
 // ---------- 렌더 ----------
@@ -2343,7 +2343,7 @@ function armAudio(sec){
     const p=rAudio.play();audioArmed=true;if(p&&p.catch)p.catch(()=>{audioArmed=false;});
     if('mediaSession' in navigator){
       const end=new Date(Date.now()+sec*1000),f=x=>String(x).padStart(2,'0');
-      navigator.mediaSession.metadata=new MediaMetadata({title:`휴식 중 · ${f(end.getHours())}:${f(end.getMinutes())}:${f(end.getSeconds())} 종료`,artist:'Bulkup Log',artwork:[{src:'icon-192.png',sizes:'192x192',type:'image/png'},{src:'icon-512.png',sizes:'512x512',type:'image/png'}]});
+      navigator.mediaSession.metadata=new MediaMetadata({title:`휴식 중 · ${f(end.getHours())}:${f(end.getMinutes())}:${f(end.getSeconds())} 종료`,artist:'운동',artwork:[{src:'icon-192.png',sizes:'192x192',type:'image/png'},{src:'icon-512.png',sizes:'512x512',type:'image/png'}]});
       try{navigator.mediaSession.setActionHandler('pause',()=>{stopTimer();tick();});}catch(e){}
     }
   }catch(e){audioArmed=false;}
@@ -2386,7 +2386,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1790904019';
+const BUILD='1790904170';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();

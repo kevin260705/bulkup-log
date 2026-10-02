@@ -1,6 +1,6 @@
 {
-  "name": "상체 벌크업 루틴",
-  "short_name": "벌크업 루틴",
+  "name": "운동",
+  "short_name": "운동",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

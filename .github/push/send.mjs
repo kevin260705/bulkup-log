@@ -13,7 +13,7 @@ const kst = new Date(Date.now() + 9 * 3600e3);
 const day = Math.floor(kst.getTime() / 86400e3);
 const slot = hour < 13 ? 0 : hour < 16 ? 1 : 2;
 const line = LINES[(day * 3 + slot) % LINES.length];
-const payload = JSON.stringify({ title: 'Bulkup Log', body: line, tag: 'workout-' + slot });
+const payload = JSON.stringify({ title: '운동', body: line, tag: 'workout-' + slot });
 
 let subs = JSON.parse(process.env.PUSH_SUBS || '[]');
 if (!Array.isArray(subs)) subs = [subs];
