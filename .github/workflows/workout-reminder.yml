@@ -1,18 +1,21 @@
 name: workout-reminder
-# 알림: 매일 08 · 10 · 12 · 14 · 16 · 18 · 20시 (KST). 22시~08시에는 보내지 않는다.
-# 깃허브 예약은 늦거나 건너뛸 때가 많아서 20분마다 깨우고,
-# 다음 알림 시각을 먼저 맡은(태그로 잠근) 실행 하나만 정각까지 기다렸다가 보낸다.
+# 알림: 매일 08 · 10 · 12 · 14 · 16 · 18 · 20시 (KST) 즈음. 22시~08시에는 보내지 않는다.
+# 깃허브 예약은 몇 시간씩 건너뛰어서, 실행 하나가 다음 알림까지 기다렸다 보내고
+# 끝나기 전에 다음 실행을 직접 이어 붙인다(이어달리기). 예약은 끊겼을 때 다시 살리는 용도.
 on:
   schedule:
-    - cron: '*/20 21-23,0-11 * * *'
+    - cron: '7,37 * * * *'
   workflow_dispatch:
+    inputs:
+      mode: { description: 'test = 무작위 문장 1개 바로 발송, chain = 이어달리기', default: 'test' }
+      parent: { description: '이어 준 이전 실행 ID', default: '' }
 permissions:
-  actions: read
+  actions: write
   contents: write
 jobs:
   push:
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 355
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,5 +26,7 @@ jobs:
           VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
           PUSH_SUBS: ${{ secrets.PUSH_SUBS }}
           GH_TOKEN: ${{ github.token }}
-          EVENT: ${{ github.event_name }}
+          MODE: ${{ inputs.mode || 'chain' }}
+          PARENT: ${{ inputs.parent }}
           REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
