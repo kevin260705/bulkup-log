@@ -8,7 +8,7 @@ const LINES = JSON.parse(fs.readFileSync(new URL('./lines.json', import.meta.url
 const PUB = html.match(/^const VAPID_PUB='([^']+)';/m)[1];
 webpush.setVapidDetails('https://kevin260705.github.io/bulkup-log/', PUB, process.env.VAPID_PRIVATE);
 
-const HOURS = [8, 10, 12, 14, 16, 18, 20]; // KST
+const HOURS = [8, 10, 12, 14, 16, 18, 20, 22, 24]; // KST (24 = 자정)
 const KST = 9 * 3600e3, MIN = 60e3, H = 3600e3;
 const START = Date.now(), BUDGET = 5 * H + 30 * MIN; // 한 실행은 최대 6시간이라 5.5시간에서 넘긴다
 const { REPO, RUN_ID, PARENT, MODE } = process.env;
@@ -18,7 +18,7 @@ let subs = JSON.parse(process.env.PUSH_SUBS || '[]');
 if (!Array.isArray(subs)) subs = [subs];
 
 async function send(day, idx) {
-  // 하루 7번 × 문장 수만큼 순서대로 돌려서 같은 문장이 연달아 안 나오게
+  // 하루 9번 × 문장 수만큼 순서대로 돌려서 같은 문장이 연달아 안 나오게
   const line = LINES[(day * HOURS.length + idx) % LINES.length];
   const payload = JSON.stringify({ title: '오늘의 한 문장', body: line, tag: 'mind-' + HOURS[idx] });
   let ok = 0;
@@ -42,10 +42,10 @@ function olderAlive() {
 const alive = olderAlive();
 if (alive) { console.log('chain already running:', alive.id); process.exit(0); }
 
-// 알림 시각 목록 (오늘·내일)
+// 알림 시각 목록 (어제·오늘·내일 — 어제의 24시 = 오늘 자정)
 const slotsFrom = (now) => {
   const day = Math.floor((now + KST) / 86400e3), out = [];
-  for (const d of [day, day + 1]) HOURS.forEach((h, i) => out.push({ d, i, t: d * 86400e3 - KST + h * H }));
+  for (const d of [day - 1, day, day + 1]) HOURS.forEach((h, i) => out.push({ d, i, t: d * 86400e3 - KST + h * H }));
   return out;
 };
 const tagOf = (s) => 'push-' + new Date(s.t + KST).toISOString().slice(0, 13).replace(/[-T]/g, '');
@@ -57,8 +57,8 @@ function claim(s) {
 while (true) {
   const now = Date.now();
   const slots = slotsFrom(now);
-  // 지난 알림 중 아직 안 보낸 것: 다음 알림 시각 전이면 늦게라도 보낸다 (22시 이후 제외)
-  const due = slots.filter((s) => s.t <= now && now - s.t < 2 * H && new Date(now + KST).getUTCHours() < 22);
+  // 지난 알림 중 아직 안 보낸 것: 2시간 안이면 늦게라도 보낸다 (자정~8시는 알림 시각이 없어 조용)
+  const due = slots.filter((s) => s.t <= now && now - s.t < 2 * H);
   for (const s of due) if (claim(s)) await send(s.d, s.i);
   const next = slots.find((s) => s.t > now);
   const wait = next.t - now;
