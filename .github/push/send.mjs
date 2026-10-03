@@ -28,7 +28,8 @@ async function send(day, idx) {
 
 const now = Date.now();
 const day = Math.floor((now + KST) / 86400e3);
-if (process.env.EVENT !== 'schedule') { await send(day, 0); process.exit(0); }
+// 수동 실행(테스트)은 무작위 문장
+if (process.env.EVENT !== 'schedule') { await send(Math.floor(Math.random() * 1e6), Math.floor(Math.random() * HOURS.length)); process.exit(0); }
 
 // 알림 시각 후보: 오늘·내일의 각 시각. 지난 지 30분 이내면 늦게라도 보내고, 2시간 10분 안에 오는 것만 맡는다
 const slots = [];
