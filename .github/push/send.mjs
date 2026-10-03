@@ -8,44 +8,52 @@ const LINES = JSON.parse(fs.readFileSync(new URL('./lines.json', import.meta.url
 const PUB = html.match(/^const VAPID_PUB='([^']+)';/m)[1];
 webpush.setVapidDetails('https://kevin260705.github.io/bulkup-log/', PUB, process.env.VAPID_PRIVATE);
 
-const H = 3600e3;
+const HOURS = [8, 10, 12, 14, 16, 18, 20]; // KST
+const KST = 9 * 3600e3, MIN = 60e3;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let subs = JSON.parse(process.env.PUSH_SUBS || '[]');
 if (!Array.isArray(subs)) subs = [subs];
 
-async function send(slot) {
-  // 하루 3번 × 문장 수만큼 순서대로 돌려서 같은 문장이 연달아 안 나오게
-  const day = Math.floor((Date.now() + 9 * H) / 86400e3);
-  const line = LINES[(day * 3 + slot) % LINES.length];
-  const payload = JSON.stringify({ title: '오늘의 한 문장', body: line, tag: 'workout-' + slot });
+async function send(day, idx) {
+  // 하루 7번 × 문장 수만큼 순서대로 돌려서 같은 문장이 연달아 안 나오게
+  const line = LINES[(day * HOURS.length + idx) % LINES.length];
+  const payload = JSON.stringify({ title: '오늘의 한 문장', body: line, tag: 'mind-' + HOURS[idx] });
   let ok = 0;
   for (const s of subs) {
-    try { await webpush.sendNotification(s, payload, { TTL: 3600, urgency: 'high' }); ok++; }
+    try { await webpush.sendNotification(s, payload, { TTL: 1800, urgency: 'high' }); ok++; }
     catch (e) { console.log('fail', e.statusCode, e.body); }
   }
-  console.log(new Date().toISOString(), 'slot', slot, 'sent', ok, '/', subs.length, line);
+  console.log(new Date().toISOString(), `${HOURS[idx]}시`, 'sent', ok, '/', subs.length, line);
 }
 
-if (process.env.EVENT !== 'schedule') { await send(0); process.exit(0); }
+const now = Date.now();
+const day = Math.floor((now + KST) / 86400e3);
+if (process.env.EVENT !== 'schedule') { await send(day, 0); process.exit(0); }
 
-// 먼저 시작한 다른 실행이 있으면 그쪽이 보낸다
-const runs = JSON.parse(execSync(`gh api "repos/${process.env.REPO}/actions/workflows/workout-reminder.yml/runs?event=schedule&per_page=20"`).toString()).workflow_runs;
-// 같은 묶음(아침 = 22~03시 UTC, 오후 = 03~08시 UTC)에서 먼저 생긴 실행이 있는지
-const group = (ms) => { const d = new Date(ms + 3 * H); const h = d.getUTCHours(); return (h < 6 ? 'm' : h < 11 ? 'a' : 'x') + d.toISOString().slice(0, 10); };
-const me = runs.find((r) => String(r.id) === process.env.RUN_ID);
-const myStart = me ? Date.parse(me.created_at) : Date.now();
-const dup = runs.find((r) => String(r.id) !== process.env.RUN_ID && Date.parse(r.created_at) < myStart
-  && group(Date.parse(r.created_at)) === group(myStart) && !['cancelled', 'failure', 'timed_out'].includes(r.conclusion));
-if (dup) { console.log('already handled by run', dup.id); process.exit(0); }
+// 알림 시각 후보: 오늘·내일의 각 시각. 지난 지 30분 이내면 늦게라도 보내고, 2시간 10분 안에 오는 것만 맡는다
+const slots = [];
+for (const d of [day, day + 1]) HOURS.forEach((h, i) => slots.push({ d, i, t: d * 86400e3 - KST + h * 3600e3 }));
+const near = slots.filter((s) => s.t - now > -30 * MIN && s.t - now < 130 * MIN);
 
-// 이번 실행이 맡을 알림 시각 (UTC): 10시=01:00, 15시=06:00, 16시=07:00
-const now = new Date();
-const at = (h) => { const d = new Date(now); d.setUTCHours(h, 0, 0, 0); if (d - now < -6 * H) d.setTime(d.getTime() + 24 * H); return d; };
-const morning = now.getUTCHours() >= 22 || now.getUTCHours() < 3;
-const targets = morning ? [[0, at(1)]] : [[1, at(6)], [2, at(7)]];
-for (const [slot, t] of targets) {
-  const wait = t - Date.now();
-  if (wait < -90 * 60e3) { console.log('too late for slot', slot); continue; }
-  if (wait > 0) await sleep(wait);
-  await send(slot);
+// 잠금: 태그 생성은 한 번만 성공한다 → 같은 시각을 두 실행이 보내지 않게
+const tagOf = (s) => 'push-' + new Date(s.t + KST).toISOString().slice(0, 13).replace(/[-T]/g, '');
+let slot = null;
+for (const s of near) {
+  try {
+    execSync(`gh api -X POST repos/${process.env.REPO}/git/refs -f ref=refs/tags/${tagOf(s)} -f sha=${process.env.GITHUB_SHA}`, { stdio: 'pipe' });
+    slot = s; break;
+  } catch { console.log('already claimed', tagOf(s)); }
 }
+if (!slot) { console.log('nothing to do'); process.exit(0); }
+console.log('claimed', tagOf(slot));
+
+// 이틀 지난 잠금 태그 정리
+try {
+  const refs = JSON.parse(execSync(`gh api repos/${process.env.REPO}/git/matching-refs/tags/push-`).toString());
+  const cut = new Date(now + KST - 2 * 86400e3).toISOString().slice(0, 10).replace(/-/g, '');
+  for (const r of refs) { const k = r.ref.split('push-')[1]; if (k.slice(0, 8) < cut) execSync(`gh api -X DELETE repos/${process.env.REPO}/git/${r.ref}`); }
+} catch (e) { console.log('cleanup skipped'); }
+
+const wait = slot.t - Date.now();
+if (wait > 0) await sleep(wait);
+await send(slot.d, slot.i);
