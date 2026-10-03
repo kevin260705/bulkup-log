@@ -19,6 +19,6 @@ self.addEventListener('push', (e) => {
   try { d = e.data.json(); } catch (_) { d = { body: e.data ? e.data.text() : '' }; }
   e.waitUntil(self.registration.showNotification(d.title || '💪 운동하자', {
     body: d.body || '', tag: d.tag || 'workout', renotify: true,
-    badge: 'favicon.png?v=3', vibrate: [200, 100, 200],
+    icon: 'blank.png', badge: 'favicon.png?v=3', vibrate: [200, 100, 200],
   }));
 });
