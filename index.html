@@ -1372,7 +1372,8 @@ const ALLDAYS = [
   {n:'체스트서포트 로우 / 티바 로우',s:3,r:[10,10],rir:'1',rest:120,note:'',v:['back2']},
   {n:'밀리터리 프레스',s:2,r:[8,10],rir:'1~2',rest:120,note:'인중 위에서 끊고 다시 밀기',v:['sh1']},
   {n:'사이드 레터럴 (머신/덤벨)',s:2,r:[15,20],rir:'0',rest:60,note:'',v:['sh2','sh5']},
-  {n:'바벨컬 + 푸시다운 슈퍼세트',s:2,r:[12,12],rir:'0',rest:75,note:'무게는 바벨컬 기준 입력',v:['bi1','tri1','qa']},
+  {n:'바벨컬 (EZ바)',s:2,r:[10,12],rir:'0~1',rest:75,note:'펌핑 목적, 팔꿈치 고정',v:['bi1']},
+  {n:'케이블 푸시다운',s:2,r:[12,15],rir:'0~1',rest:60,note:'',v:['tri1']},
  ]},
  // 주 3회: 상체를 주 2회 유지하도록 가슴·등·어깨·팔을 두 날에 나눔 (각 19세트)
  {id:'ua',short:'상체 A',name:'상체 A',ex:[
@@ -2438,7 +2439,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1791364784';
+const BUILD='1791364934';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
