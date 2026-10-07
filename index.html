@@ -1093,9 +1093,10 @@
 <div class="timer"><div class="in">
   <div class="t" id="timerText">0:00</div>
   <button class="btn rp" data-s="60" onclick="pickRest(60)">60s</button>
+  <button class="btn rp" data-s="75" onclick="pickRest(75)">75s</button>
   <button class="btn rp" data-s="90" onclick="pickRest(90)">90s</button>
-  <button class="btn rp" data-s="120" onclick="pickRest(120)">2분</button>
-  <button class="btn rp" data-s="180" onclick="pickRest(180)">3분</button>
+  <button class="btn rp" data-s="120" onclick="pickRest(120)">120s</button>
+  <button class="btn rp" data-s="150" onclick="pickRest(150)">150s</button>
   <span class="sp"></span>
   <button class="btn ghost" onclick="stopBtn()" aria-label="정지"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
 </div></div>
@@ -1322,7 +1323,7 @@ const ALLDAYS = [
  ]},
  {id:'thu',short:'어깨·팔',name:'어깨 · 팔',ex:[
   {n:'덤벨 숄더프레스',s:3,r:[8,10],rir:'1~2',rest:120,note:'',v:['sh1','sh4']},
-  {n:'덤벨 사이드 레터럴',s:4,r:[12,15],rir:'0',rest:70,note:'가볍게, 몸에서 멀리 던지듯. 마지막 세트 드롭 2단',v:['sh2','sh1']},
+  {n:'덤벨 사이드 레터럴',s:4,r:[12,15],rir:'0',rest:75,note:'가볍게, 몸에서 멀리 던지듯. 마지막 세트 드롭 2단',v:['sh2','sh1']},
   {n:'리어델트 플라이',s:2,r:[15,15],rir:'0~1',rest:60,note:'머신/케이블',v:['sh5','sh3']},
   {n:'인클라인 해머컬',s:3,r:[10,12],rir:'0~1',rest:75,note:'벤치 45~60°. 일반 해머컬보다 20~30% 가볍게 시작',v:['bi1']},
   {n:'케이블 푸시다운',s:3,r:[12,15],rir:'0~1',rest:60,note:'',v:['tri1']},
@@ -1348,7 +1349,7 @@ const ALLDAYS = [
   {n:'어시스트 풀업',s:3,r:[8,12],rir:'1~2',rest:120,assist:true,def:{w:70,r:10},note:'무게 칸 = 보조 무게(lb). 70lb × 10회 기준, 전 세트 12회 되면 보조를 5~10lb 줄이기',v:['back1','back3']},
   {n:'플랫 바벨/머신 프레스',s:3,r:[6,10],rir:'1~2',rest:120,note:'마지막 세트 파트너 강제반복 2~3회 or 드롭세트',v:['chest1','chest3']},
   {n:'바벨 로우 / 체스트서포트 로우',s:3,r:[8,10],rir:'1~2',rest:120,note:'팔꿈치 방향으로 광배/상부 조절 (EP.4)',v:['back2','back1']},
-  {n:'덤벨 사이드 레터럴',s:4,r:[12,15],rir:'0',rest:70,note:'가볍게, 몸에서 멀리 던지듯. 마지막 세트 드롭 2단',v:['sh2','sh1']},
+  {n:'덤벨 사이드 레터럴',s:4,r:[12,15],rir:'0',rest:75,note:'가볍게, 몸에서 멀리 던지듯. 마지막 세트 드롭 2단',v:['sh2','sh1']},
   {n:'오버헤드 케이블 익스텐션',s:2,r:[12,15],rir:'0~1',rest:75,note:'장두 — 황철순 EP.7 포인트',v:['tri1']},
   {n:'인클라인 덤벨컬',s:2,r:[10,12],rir:'0~1',rest:75,note:'이두 신장 위치. 반동 금지',v:['bi1']},
  ]},
@@ -1378,6 +1379,8 @@ store.profile = Object.assign({name:'kevin',age:33,height:182,sex:'m',weight:73,
 // 목표를 린매스업으로 변경 (2026-09-28): 기존 저장값도 한 번만 전환, 이후엔 설정에서 자유롭게 변경
 if(!store.leanSet){store.profile.goal='lean';store.leanSet=true;}
 store.notes=store.notes||{};
+// 타이머 프리셋에서 3분이 빠짐: 저장된 3분 선택은 종목별 기본값으로
+if(store.restSel&&![60,75,90,120,150].includes(store.restSel)){store.restSel=null;}
 if(!store.notesMigrated){Object.keys(store.logs).sort().forEach(d=>Object.entries(store.logs[d].ex||{}).forEach(([n,e])=>{if(e&&e.note&&e.note.trim())store.notes[n]=e.note;}));store.notesMigrated=true;}
 // 인바디 2026-09-30 (체중 73.7 · 골격근 33.9 · 체지방량 13.7kg → 18.6%) 한 번만 추가
 if(!store.inbody0930){store.body=(store.body||[]).filter(x=>x.date!=='2026-09-30');store.body.push({date:'2026-09-30',w:73.7,smm:33.9,bf:18.6});store.inbody0930=true;}
@@ -2401,7 +2404,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1791358550';
+const BUILD='1791363303';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
