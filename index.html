@@ -1440,6 +1440,18 @@ store.notes=store.notes||{};
 // 빈 세트 칸(null)이 저장된 기록 정리: 세트를 건너뛰고 입력하면 JSON에 null로 남아 화면이 멈췄음
 Object.values(store.logs||{}).forEach(l=>{if(!l||!l.ex)return;Object.values(l.ex).forEach(e=>{if(e&&Array.isArray(e.sets))e.sets=Array.from(e.sets,x=>x&&typeof x==='object'?x:{});else if(e)e.sets=[];});});
 if(store.notes)Object.keys(store.notes).forEach(k=>{if(typeof store.notes[k]!=='string')delete store.notes[k];});
+// 10/12~14 앱 오류로 못 남긴 기록 채우기 (한 번만): 각 종목의 직전 기록 값으로 전 세트 완료
+if(!store.backfill1015){
+  const plan=[['2026-10-12','thu'],['2026-10-13','mon'],['2026-10-14','tue']];
+  const prevSets=(n,date)=>{const ds=Object.keys(store.logs).filter(d=>d<date&&store.logs[d].ex&&store.logs[d].ex[n]&&store.logs[d].ex[n].sets.some(x=>x&&x.d&&(x.w!=null||x.r!=null))).sort();return ds.length?store.logs[ds[ds.length-1]].ex[n].sets.filter(x=>x&&x.d):[];};
+  plan.forEach(([date,id])=>{
+    const ex0=store.logs[date];if(ex0&&Object.values(ex0.ex||{}).some(e=>e.sets.some(x=>x&&x.d)))return;
+    const day=ALLDAYS.find(d=>d.id===id);if(!day)return;
+    const ex={};day.ex.forEach(e=>{const pv=prevSets(e.n,date);const sets=[];for(let k=0;k<e.s;k++){const q=pv[k]||pv[pv.length-1]||{};sets.push({w:q.w??null,r:q.r??e.r[0],d:true});}ex[e.n]={sets,note:''};});
+    store.logs[date]={day:id,ex,custom:[],backfill:true};
+  });
+  store.backfill1015=true;try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}
+}
 // 타이머 프리셋에서 3분이 빠짐: 저장된 3분 선택은 종목별 기본값으로
 if(store.restSel&&![60,75,90,120,150].includes(store.restSel)){store.restSel=null;}
 // 랫풀다운 (와이드) → 랫풀다운: 지난 기록·메모를 새 이름으로 옮기기
@@ -1483,19 +1495,23 @@ function renderWeek(){
 // 오늘 완료한 부위 (없으면 null)
 function doneTodayId(){const l=store.logs[today()];return l&&isDone(l)?l.day:null;}
 // 다음 차례: 오늘까지 마지막으로 완료한 부위의 다음 순서
+// 이번 주(월~일)에 이미 한 운동은 건너뛰고, 마지막 운동 다음 순서부터 고르기
+function pickNext(past,t){
+  const O=PROGRAM.map(d=>d.id);if(!past.length)return O[0];
+  const s0=monOf(dnum(t)),doneWk=new Set(past.filter(d=>dnum(d)>=s0).map(d=>store.logs[d].day));
+  const i0=O.indexOf(store.logs[past[past.length-1]].day)+1;
+  for(let j=0;j<O.length;j++){const id=O[(i0+j)%O.length];if(!doneWk.has(id))return id;}
+  return O[i0%O.length];
+}
 function nextDay(){
   const t=today(),past=Object.keys(store.logs).filter(d=>d<=t&&isDone(store.logs[d])).sort();
-  if(!past.length) return PROGRAM[0].id;
-  const O=PROGRAM.map(d=>d.id);
-  return O[(O.indexOf(store.logs[past[past.length-1]].day)+1)%O.length];
+  return pickNext(past,t);
 }
 function suggestDay(){
   const t=today();
   if(store.logs[t]&&isDone(store.logs[t])) return store.logs[t].day;
   const past=Object.keys(store.logs).filter(d=>d<t&&isDone(store.logs[d])).sort();
-  if(!past.length) return PROGRAM[0].id;
-  const O=PROGRAM.map(d=>d.id);
-  return O[(O.indexOf(store.logs[past[past.length-1]].day)+1)%O.length];
+  return pickNext(past,t);
 }
 
 // ---------- 지난 기록 찾기 ----------
@@ -2587,7 +2603,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1792052890';
+const BUILD='1792053092';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
