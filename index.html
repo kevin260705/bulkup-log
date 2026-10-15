@@ -1437,6 +1437,9 @@ store.profile = Object.assign({name:'kevin',age:33,height:182,sex:'m',weight:73,
 // 목표를 린매스업으로 변경 (2026-09-28): 기존 저장값도 한 번만 전환, 이후엔 설정에서 자유롭게 변경
 if(!store.leanSet){store.profile.goal='lean';store.leanSet=true;}
 store.notes=store.notes||{};
+// 빈 세트 칸(null)이 저장된 기록 정리: 세트를 건너뛰고 입력하면 JSON에 null로 남아 화면이 멈췄음
+Object.values(store.logs||{}).forEach(l=>{if(!l||!l.ex)return;Object.values(l.ex).forEach(e=>{if(e&&Array.isArray(e.sets))e.sets=Array.from(e.sets,x=>x&&typeof x==='object'?x:{});else if(e)e.sets=[];});});
+if(store.notes)Object.keys(store.notes).forEach(k=>{if(typeof store.notes[k]!=='string')delete store.notes[k];});
 // 타이머 프리셋에서 3분이 빠짐: 저장된 3분 선택은 종목별 기본값으로
 if(store.restSel&&![60,75,90,120,150].includes(store.restSel)){store.restSel=null;}
 // 랫풀다운 (와이드) → 랫풀다운: 지난 기록·메모를 새 이름으로 옮기기
@@ -1505,7 +1508,7 @@ function lastLog(dayId, exName){
   if(!dates.length) return null;
   return {date:dates[0], ...store.logs[dates[0]].ex[exName]};
 }
-function fmtSets(sets){return sets.filter(s=>s.w!=null||s.r!=null).map(s=>`${s.w??'-'}×${s.r??'-'}`).join(', ')||'-';}
+function fmtSets(sets){return (sets||[]).filter(s=>s&&(s.w!=null||s.r!=null)).map(s=>`${s.w??'-'}×${s.r??'-'}`).join(', ')||'-';}
 // 같은 무게 정체 감지: 최근 기록이 같은 무게로 3회 이상 이어졌는지
 function stallInfo(ex){
   if(ex.cardio)return null;
@@ -1721,7 +1724,7 @@ function renderForm(name, open){
 }
 function setVal(dayId,exName,k,f,v){
   const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};
-  e.sets[k]=e.sets[k]||{};
+  for(let i=0;i<=k;i++)if(!e.sets[i])e.sets[i]={};
   if(f==='d') e.sets[k].d=v; else e.sets[k][f]=v===''?null:Number(v);
   if(f==='d'&&v){const c0=carrySet(lastLog(dayId,exName)||lastAnyLog(exName),k),dx=exDef(exName),ph=(c0.w!=null||c0.r!=null)?c0:((dx&&dx.def)||{});if(e.sets[k].w==null&&ph.w!=null)e.sets[k].w=ph.w;if(e.sets[k].r==null&&ph.r!=null)e.sets[k].r=ph.r;}
   if(f==='d'&&v&&!log.at){const n=new Date();log.at=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
@@ -1738,7 +1741,7 @@ function finishDay(dayId){
     const e=log.ex[ex.n]=log.ex[ex.n]||{sets:[],note:''};
     const last=lastLog(dayId,ex.n);
     for(let k=0;k<nSets(ex,e);k++){
-      const s=e.sets[k]=e.sets[k]||{};
+      for(let i=0;i<k;i++)if(!e.sets[i])e.sets[i]={};const s=e.sets[k]=e.sets[k]||{};
       if(s.d){ if(s.w==null&&last&&last.sets[k]) s.w=last.sets[k].w; if(s.r==null&&last&&last.sets[k]) s.r=last.sets[k].r; }
     }
   });
@@ -1766,7 +1769,7 @@ function renderHist(){
   const bwDelta=store.bw.length>=2?(store.bw[store.bw.length-1].kg-store.bw[0].kg).toFixed(1):null;
   // 종목별 최고 기록
   const prs={};
-  dates.forEach(d=>Object.entries(store.logs[d].ex).forEach(([n,e])=>e.sets.forEach(s=>{if(s.w&&s.r){const e1=s.w*(1+s.r/30);if(!prs[n]||e1>prs[n].e1)prs[n]={e1,w:s.w,r:s.r,d};}})));
+  dates.forEach(d=>Object.entries(store.logs[d].ex).forEach(([n,e])=>e.sets.forEach(s=>{if(s&&s.w&&s.r){const e1=s.w*(1+s.r/30);if(!prs[n]||e1>prs[n].e1)prs[n]={e1,w:s.w,r:s.r,d};}})));
   const prList=Object.entries(prs).sort((a,b)=>b[1].e1-a[1].e1).slice(0,12).map(([n,p])=>`<div class="kv"><span>${n}</span><span>${p.w}×${p.r} (e1RM ${Math.round(p.e1)}) · ${p.d.slice(5)}</span></div>`).join('');
   return `<div class="day-title"><h2>기록</h2></div>
   <div class="card"><h3>체중 ${bwDelta!=null?`<span class="badge ${bwDelta>0?'today':''}">${bwDelta>0?'+':''}${bwDelta}kg</span>`:''}</h3>
@@ -2584,7 +2587,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1792052263';
+const BUILD='1792052890';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
