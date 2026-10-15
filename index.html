@@ -1069,6 +1069,31 @@
 
   /* 메모: 항상 열린 한 칸 */
   .memo-ta{display:block;width:100%;min-height:48px;margin:8px 0 10px;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5;resize:none;overflow:hidden}
+
+  /* ================= 코치 (채팅) ================= */
+  .coach{display:flex;flex-direction:column;gap:10px}
+  .coach-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+  .msg{max-width:88%;padding:10px 14px;border-radius:20px;font-size:15px;line-height:1.62;overflow-wrap:anywhere;word-break:keep-all}
+  .msg.u{align-self:flex-end;background:hsl(var(--primary)/.14);border:1px solid hsl(var(--primary)/.32);border-bottom-right-radius:6px;white-space:pre-wrap}
+  .msg.a{align-self:flex-start;background:hsl(var(--card));border:1px solid hsl(var(--border));border-bottom-left-radius:6px}
+  .msg.a p{margin:0 0 8px}.msg.a p:last-child{margin-bottom:0}
+  .msg.a ul,.msg.a ol{margin:2px 0 8px;padding-left:20px}.msg.a li{margin:2px 0}
+  .msg.a b{font-weight:600}
+  .msg.err{border-color:hsl(var(--destructive)/.5);color:hsl(var(--destructive))}
+  .msg .dots{display:inline-flex;gap:4px;padding:4px 0}.msg .dots i{width:6px;height:6px;border-radius:50%;background:hsl(var(--muted-foreground));animation:cdot 1.2s infinite}
+  .msg .dots i:nth-child(2){animation-delay:.2s}.msg .dots i:nth-child(3){animation-delay:.4s}
+  @keyframes cdot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .chips button{border:1px solid hsl(var(--border));background:hsl(var(--card));color:hsl(var(--foreground));border-radius:9999px;padding:8px 14px;font:inherit;font-size:13.5px;font-weight:500}
+  .chips button:active{background:hsl(var(--elev))}
+  .composer{position:fixed;left:12px;right:12px;bottom:calc(80px + env(safe-area-inset-bottom));max-width:520px;margin:0 auto;z-index:25;display:flex;gap:8px;align-items:flex-end;padding:6px 6px 6px 18px;border-radius:26px;background:hsl(var(--glass)/.72);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid hsl(var(--border))}
+  .composer textarea{flex:1;min-width:0;min-height:0;height:40px;box-sizing:border-box;border:0;box-shadow:none;background:none;color:hsl(var(--foreground));font:inherit;font-size:15px;line-height:1.45;resize:none;max-height:120px;padding:9px 0;outline:none}
+  .composer button{flex:0 0 40px;width:40px;height:40px;border-radius:50%;border:0;background:hsl(var(--primary));color:hsl(var(--primary-foreground));display:flex;align-items:center;justify-content:center}
+  .composer button:disabled{opacity:.4}
+  .composer button svg{width:18px;height:18px}
+  body:not([data-view=coach]) .composer{display:none}
+  body[data-view=coach] main{padding-bottom:calc(160px + env(safe-area-inset-bottom))}
+  .keybox input{width:100%;box-sizing:border-box;margin:10px 0;padding:12px 14px;border-radius:14px;border:1px solid hsl(var(--border));background:hsl(var(--elev));color:hsl(var(--foreground));font:inherit;font-size:14px}
 </style>
 </head>
 <body>
@@ -1088,6 +1113,7 @@
   <button class="btn primary small" onclick="closeRestAlert(true)">시작</button>
 </div>
 <nav class="bnav" id="bnav"></nav>
+<div class="composer" id="composer"><textarea id="coachIn" rows="1" placeholder="코치에게 질문하기" oninput="this.style.height='40px';this.style.height=Math.min(this.scrollHeight,120)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();coachSend();}"></textarea><button id="coachBtn" onclick="coachSend()" aria-label="보내기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button></div>
 <div id="sheet" class="sheet" onclick="if(event.target===this)closeSheet()"><div class="sheet-in" id="sheetIn"></div></div>
 
 <div class="timer"><div class="in">
@@ -1894,12 +1920,127 @@ const ICON_DUMB='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const ICON_CHART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>';
 const ICON_USER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>';
 const ICON_CHEV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
-const NAV=[['home','운동',ICON_DUMB],['cal','달력',ICON_CAL],['data','데이터',ICON_CHART],['set','설정',ICON_USER]];
+const ICON_CHAT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>';
+const NAV=[['home','운동',ICON_DUMB],['cal','달력',ICON_CAL],['data','데이터',ICON_CHART],['coach','코치',ICON_CHAT],['set','설정',ICON_USER]];
 function renderNav(){
   const act=view==='guide'?'set':view;
   document.getElementById('bnav').innerHTML=NAV.map(([v,l,i])=>`<button class="${v===act?'on':''}" onclick="setView('${v}')" aria-label="${l}">${i}<span>${l}</span></button>`).join('');
   const av=document.getElementById('avatar');if(av)av.textContent=((store.profile.name||'?').trim()[0]||'?').toUpperCase();
   const un=document.getElementById('uname');if(un)un.textContent=store.profile.name||'나';
+}
+
+// ================= AI 코치 (GPT) =================
+// 키는 이 기기에만 저장 (store와 분리 → 백업 파일에도 안 들어감). 공개 사이트라 코드에는 절대 넣지 않는다.
+const COACH_KEY='wl_ai_key',COACH_MODEL='gpt-5.5';
+let coachBusy=false;
+function aiKey(){try{return localStorage.getItem(COACH_KEY)||'';}catch(e){return '';}}
+function setAiKey(k){k=(k||'').trim();try{k?localStorage.setItem(COACH_KEY,k):localStorage.removeItem(COACH_KEY);}catch(e){}render();}
+// QR(주소#k=키)로 열면 키를 저장하고 주소창에서 바로 지우기
+(function(){const m=location.hash.match(/^#k=([\w-]{20,})$/);if(m){try{localStorage.setItem(COACH_KEY,m[1]);}catch(e){}history.replaceState(null,'',location.pathname+location.search);}})();
+function maskKey(k){return k?k.slice(0,7)+'…'+k.slice(-4):'';}
+function coachKeyBox(){
+  const k=aiKey();
+  return k?`<div class="grow" style="padding:0"><span class="gl">GPT 연결됨<small class="gsub">${maskKey(k)} · 이 폰에만 저장, 백업에 안 들어가요</small></span><button class="btn ghost small" onclick="if(confirm('코치 키를 이 폰에서 지울까요?'))setAiKey('')">지우기</button></div>`
+  :`<b>GPT 키 연결</b><div class="muted" style="margin-top:4px">코치 탭이 내 운동 기록을 보고 GPT로 답해요. 키는 이 폰에만 저장되고 백업 파일에도 안 들어가요.</div><input id="aiKeyIn" type="password" autocomplete="off" placeholder="sk-로 시작하는 키 붙여넣기"><button class="btn primary small" onclick="setAiKey(document.getElementById('aiKeyIn').value)">저장</button>`;
+}
+function coachLog(){store.chat=store.chat||[];return store.chat;}
+const COACH_CHIPS=['이번 주 운동 어땠는지 평가해줘','정체된 종목 어떻게 할까?','오늘 운동 전에 뭘 신경 쓸까?','식단 지금 괜찮아?','인바디 변화 해석해줘'];
+function hesc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);}
+function mdLite(t){
+  const lines=hesc(t).split('\n'),out=[];let list=null;
+  const inl=x=>x.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^#{1,4}\s*(.+)$/,'<b>$1</b>');
+  const close=()=>{if(list){out.push(`</${list}>`);list=null;}};
+  for(const raw of lines){const l=raw.trim();
+    let m;
+    if((m=l.match(/^[-•*]\s+(.*)$/))){if(list!=='ul'){close();out.push('<ul>');list='ul';}out.push(`<li>${inl(m[1])}</li>`);}
+    else if((m=l.match(/^\d+[.)]\s+(.*)$/))){if(list!=='ol'){close();out.push('<ol>');list='ol';}out.push(`<li>${inl(m[1])}</li>`);}
+    else if(!l){close();}
+    else{close();out.push(`<p>${inl(l)}</p>`);}
+  }
+  close();return out.join('');
+}
+function renderCoach(){
+  const k=aiKey(),log=coachLog();
+  const head=`<div class="page-title coach-head"><h2>코치</h2>${log.length?'<button class="btn ghost small" onclick="coachClear()">대화 지우기</button>':''}</div>`;
+  if(!k) return head+`<div class="card pad keybox">${coachKeyBox()}</div>`;
+  const msgs=log.map(m=>m.role==='user'?`<div class="msg u">${hesc(m.content)}</div>`:`<div class="msg a${m.err?' err':''}">${mdLite(m.content)}</div>`).join('');
+  const intro=log.length?'':`<div class="msg a"><p>운동 기록, 인바디, 식단 목표를 보고 답해요. 궁금한 걸 물어보세요.</p></div><div class="chips">${COACH_CHIPS.map(c=>`<button onclick="coachSend(${hesc(JSON.stringify(c))})">${c}</button>`).join('')}</div>`;
+  return head+`<div class="coach" id="coachList">${intro}${msgs}${coachBusy?'<div class="msg a" id="coachLive"><span class="dots"><i></i><i></i><i></i></span></div>':''}</div>`;
+}
+function coachScroll(){requestAnimationFrame(()=>window.scrollTo(0,document.body.scrollHeight));}
+function coachClear(){if(!confirm('코치와의 대화를 모두 지울까요?'))return;store.chat=[];persist();render();}
+
+// 코치에게 넘길 내 데이터 (텍스트 요약)
+function coachContext(){
+  const t=today(),pr=store.profile||{},n=nutrition(),w=weekNo(t);
+  const L=[];
+  L.push(`오늘: ${t} (${'일월화수목금토'[new Date(t+'T00:00').getDay()]}요일)${w&&w>0?` · 프로그램 ${w}주차${isDeload(t)?' (디로드 주)':''}`:''} · 이번 주 완료 ${weekSessions()}/${PROGRAM.length}회 · 다음 추천: ${(ALLDAYS.find(d=>d.id===nextDay())||{}).name||''}`);
+  L.push(`프로필: ${pr.age||'?'}세 ${pr.sex==='f'?'여':'남'} · 키 ${pr.height||'?'}cm · 목표 ${n.G.l} (${n.G.d}) · 활동량 ${n.A.l}`);
+  const body=bodySorted();
+  if(body.length)L.push('인바디/체중 기록:\n'+body.map(b=>`- ${b.date}: 체중 ${b.w??'-'}kg, 골격근 ${b.smm??'-'}kg, 체지방률 ${b.bf??'-'}%${b.bmr?`, 기초대사 ${b.bmr}`:''}`).join('\n'));
+  L.push(`하루 영양 목표: ${n.kcal}kcal · 단백질 ${n.p}g · 탄수 ${n.c}g · 지방 ${n.f}g (유지 칼로리 ${n.tdee}, 기초대사 ${n.bmr} ${n.src})`);
+  L.push('기본 식단(고정): '+FIXED_MEALS.map(m=>`${m.t} ${m.n} ${m.k}kcal/단백질 ${m.p}g`).join(' · ')+` · 점심은 일반식(예: ${LUNCH_REF.n} 약 ${LUNCH_REF.k}kcal)`);
+  L.push(`주 ${pr.freq||5}회 프로그램:\n`+PROGRAM.map(d=>`- ${d.name}${d.opt?' ('+d.opt+')':''}: `+d.ex.map(e=>`${e.n} ${e.s}세트×${e.r[0]}~${e.r[1]}회 RIR ${e.rir}`).join(' / ')).join('\n'));
+  const dates=Object.keys(store.logs).filter(d=>d<=t&&isDone(store.logs[d])).sort().slice(-24);
+  if(dates.length)L.push('최근 운동 기록 (무게×횟수, 완료 세트만; 어시스트 풀업은 보조 무게 lb라 낮을수록 강함):\n'+dates.map(d=>{const l=store.logs[d],day=ALLDAYS.find(x=>x.id===l.day);
+    const ex=Object.entries(l.ex).map(([nm,e])=>{const ss=e.sets.filter(x=>x&&x.d).map(x=>`${x.w??'-'}×${x.r??'-'}`);return ss.length?`${nm} ${ss.join(', ')}`:'';}).filter(Boolean);
+    return `- ${d} ${day?day.name:l.day}: ${ex.join(' | ')}`;}).join('\n'));
+  else L.push('최근 운동 기록: 아직 없음');
+  const stalls=[];ALLDAYS.forEach(d=>d.ex.forEach(e=>{if(stalls.some(x=>x.n===e.n))return;const st=stallInfo(e);if(st)stalls.push({n:e.n,...st});}));
+  if(stalls.length)L.push('같은 무게가 이어지는 종목: '+stalls.map(s=>`${s.n} ${s.c}회째(${s.days}일)${s.up?' · 반복 수 충분, 증량 시점':' · 반복 수 정체'}`).join(' / '));
+  const notes=Object.entries(store.notes||{}).filter(([,v])=>v&&v.trim());
+  if(notes.length)L.push('종목 메모: '+notes.map(([k,v])=>`${k}: ${v.trim()}`).join(' / '));
+  return L.join('\n\n');
+}
+const COACH_SYSTEM=`너는 운동 기록 앱 "운동" 안에 있는 사용자의 개인 PT 코치다.
+근거: 근비대 연구(부위별 주 10~20세트, RIR 0~2, 점진적 과부하, 늘어난 위치 자극, 단백질 체중당 1.6~2.2g, 린매스업은 완만한 잉여 칼로리)와 황철순 코칭(형태 먼저, 쥐어짜기보다 이완, 새끼·약지 그립, 가벼운 무게로 고립).
+말투와 형식:
+- 한국어 해요체. 휴대폰 화면이라 짧게(보통 4~8줄), 결론부터.
+- 아래 [내 데이터]의 날짜·무게·횟수·세트 수를 근거로 구체적으로 말한다. 데이터에 없는 건 지어내지 말고 모른다고 한다.
+- 무게를 올리라고 할 때는 kg 숫자 대신 "무게를 증량해보세요"처럼 말한다.
+- 식단은 사용자의 기본 식단을 바꾸지 말고, 더할 음식으로 제안한다.
+- 통증·부상이 의심되면 그 운동을 멈추고 진료를 권한다.
+- 형식은 **굵게**와 "- " 목록만 쓴다. 표·제목은 쓰지 않는다.`;
+
+async function coachSend(text){
+  const ta=document.getElementById('coachIn');
+  text=(text!=null?text:(ta?ta.value:'')).trim();
+  if(!text||coachBusy)return;
+  const key=aiKey();if(!key){render();return;}
+  if(ta){ta.value='';ta.style.height='40px';}
+  const log=coachLog();log.push({role:'user',content:text,t:Date.now()});
+  coachBusy=true;persist();render();
+  const btn=document.getElementById('coachBtn');if(btn)btn.disabled=true;
+  let out='',err=null;
+  try{
+    const hist=log.filter(m=>!m.err).slice(-20).map(m=>({role:m.role,content:m.content}));
+    const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:COACH_MODEL,stream:true,reasoning_effort:'medium',
+        messages:[{role:'system',content:COACH_SYSTEM+'\n\n[내 데이터]\n'+coachContext()},...hist]})});
+    if(!res.ok){
+      let msg='';try{msg=(await res.json()).error.message||'';}catch(e){}
+      err=res.status===401?'키가 올바르지 않아요. 설정에서 키를 다시 넣어주세요.'
+        :res.status===429?'요청 한도에 걸렸거나 API 잔액이 부족해요. 잠시 뒤 다시 시도하거나 OpenAI 결제 상태를 확인해 주세요.'
+        :`답변을 받지 못했어요 (${res.status}). ${msg}`;
+    }else{
+      const rd=res.body.getReader(),dec=new TextDecoder();let buf='';
+      for(;;){const {done,value}=await rd.read();if(done)break;
+        buf+=dec.decode(value,{stream:true});let i;
+        while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);
+          if(!line.startsWith('data:'))continue;const d=line.slice(5).trim();if(d==='[DONE]')continue;
+          try{const j=JSON.parse(d);const c=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;if(c){out+=c;const el=document.getElementById('coachLive');if(el){el.innerHTML=mdLite(out);if(window.innerHeight+window.scrollY>=document.body.scrollHeight-160)coachScroll();}}}catch(e){}
+        }
+      }
+      if(!out.trim())err='빈 답변이 왔어요. 다시 물어봐 주세요.';
+    }
+  }catch(e){err='인터넷 연결을 확인해 주세요.';}
+  coachBusy=false;
+  log.push(err?{role:'assistant',content:err,err:true,t:Date.now()}:{role:'assistant',content:out.trim(),t:Date.now()});
+  if(log.length>80)log.splice(0,log.length-80);
+  persist();
+  if(view==='coach'){render();}
+  const b2=document.getElementById('coachBtn');if(b2)b2.disabled=false;
 }
 function setView(v){
   if(v==='cal'&&view!=='cal'){const t=new Date();calY=t.getFullYear();calM=t.getMonth();selDate=null;}
@@ -2248,6 +2389,8 @@ function renderSettings(){
       <p class="muted">메뉴 이름은 One UI 버전에 따라 조금 달라요. "팝업", "배너", "긴급" 중 하나를 켜면 돼요. 삐삐 소리는 <b>미디어 볼륨</b>을 따라가요.</p>
     </div></details>
   </div>
+  <div class="set-sec">AI 코치</div>
+  <div class="card pad keybox">${coachKeyBox()}</div>
   <div class="set-sec">가이드</div>
   <div class="card glist"><button class="grow" onclick="setView('guide')">${I(C.pink,ico.book)}<span class="gl">운동 원칙 · 연구 근거 · 황철순 채널</span><span class="gv">${ICON_CHEV}</span></button></div>
 
@@ -2273,15 +2416,17 @@ function render(){
   if(view==='cal') m.innerHTML=renderCal();
   else if(view==='data'){m.innerHTML=renderData();bindCharts();}
   else if(view==='set') m.innerHTML=renderSettings();
+  else if(view==='coach'){m.innerHTML=renderCoach();coachScroll();}
   else if(view==='guide') m.innerHTML=`<button class="btn ghost small back" onclick="setView('set')">‹ 설정</button>`+renderInfo();
   else{renderTabs();m.innerHTML=renderDay(ALLDAYS.find(d=>d.id===curTab));centerTab();document.querySelectorAll('.memo-ta').forEach(t=>{t.style.height='auto';t.style.height=t.scrollHeight+'px';});}
+  {const cp=document.getElementById('composer');if(cp)cp.style.display=view==='coach'&&aiKey()?'':'none';}
   const key=view+'|'+curTab+'|'+curDate;
   if(key!==lastKey){window.scrollTo(0,0);lastKey=key;}
 }
 // 앱 전환 후 돌아오면: 보던 화면·날짜·스크롤·타이머 그대로 복원 (6시간 이내)
 (function restore(){
   const u=store.ui;
-  if(u&&Date.now()-u.t<6*3600e3){curTab=u.tab||null;curDate=u.date||today();view=['home','cal','data','set','guide'].includes(u.view)?u.view:'home';}
+  if(u&&Date.now()-u.t<6*3600e3){curTab=u.tab||null;curDate=u.date||today();view=['home','cal','data','set','guide','coach'].includes(u.view)?u.view:'home';}
   try{render();}catch(e){view='home';curTab=null;render();}
   if(u&&Date.now()-u.t<6*3600e3&&u.y) setTimeout(()=>window.scrollTo(0,u.y),0);
   markRest();
@@ -2439,7 +2584,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1791364934';
+const BUILD='1792052263';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
