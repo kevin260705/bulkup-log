@@ -1597,6 +1597,9 @@ function exDef(name){for(const d of ALLDAYS)for(const e of d.ex)if(e.n===name)re
 function isCardio(name){const d=exDef(name);return !!(d&&d.cardio)||CARDIO_RE.test(name);}
 function isAbs(name){const d=exDef(name);return !!(d&&d.abs)||ABS_RE.test(name);}
 // 그날 복근·유산소 완료 여부 (달력 문양용)
+// 달력용: 근력 기록 + 러닝 기록(store.runs)을 합쳐서
+function runKm(iso){return (store.runs||{})[iso]||0;}
+function calFlags(iso){const f=dayFlags(store.logs[iso]);if(runKm(iso))f.cardio=true;return f;}
 function dayFlags(l){const f={cardio:false,abs:false};if(!l)return f;
   Object.entries(l.ex).forEach(([n,e])=>{if(!e.sets.some(x=>x&&x.d))return;if(isCardio(n))f.cardio=true;if(isAbs(n))f.abs=true;});return f;}
 function carrySet(last,k){if(!last)return {};const v=last.sets.filter(x=>x&&(x.w!=null||x.r!=null));return last.sets[k]&&(last.sets[k].w!=null||last.sets[k].r!=null)?last.sets[k]:(v[v.length-1]||{});}
@@ -1954,16 +1957,17 @@ function renderCal(){
   for(let i=0;i<lead;i++)cells+='<div></div>';
   for(let d=1;d<=days;d++){
     const iso=prefix+String(d).padStart(2,'0'),l=store.logs[iso],done=isDone(l);
-    cells+=`<button class="cday ${done?'done':''} ${openDays.has(iso)?'sel':''} ${iso===tISO?'today':''}" onclick="selectDay('${iso}')" aria-label="${dayLabel(iso)}">${iso===tISO?'<span class="tlabel">Today</span>':''}<span class="dot"${done?` style="--c:${DAY_COLOR[l.day]||'var(--primary)'}"`:''}>${d}</span>${markIcons(dayFlags(l))}</button>`;
+    cells+=`<button class="cday ${done?'done':''} ${openDays.has(iso)?'sel':''} ${iso===tISO?'today':''}" onclick="selectDay('${iso}')" aria-label="${dayLabel(iso)}">${iso===tISO?'<span class="tlabel">Today</span>':''}<span class="dot"${done?` style="--c:${DAY_COLOR[l.day]||'var(--primary)'}"`:''}>${d}</span>${markIcons(calFlags(iso))}</button>`;
   }
   const vol=monthLogs.reduce((a,d)=>a+volume(store.logs[d]),0);
+  const runDays=Object.keys(store.runs||{}).filter(d=>d.startsWith(prefix)&&runKm(d)).sort(),runSum=runDays.reduce((a,d)=>a+runKm(d),0);
   const legend='<span class="lg"><i style="--c:var(--primary)"></i>운동 완료</span><span class="lg"><span class="mk-l dia"></span>유산소</span><span class="lg">'+BURST+'복근</span><span class="lg"><i class="lg-today"></i>오늘</span>';
   const chev=(d)=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
   return `<div class="calhead"><button class="btn ghost icon" onclick="calMove(-1)" aria-label="이전 달">${chev('m15 18-6-6 6-6')}</button><h2>${calY}년 ${String(calM+1).padStart(2,'0')}월</h2><button class="btn ghost icon" onclick="calMove(1)" aria-label="다음 달">${chev('m9 18 6-6-6-6')}</button></div>
   <div class="card cal"><div class="cgrid">${cells}</div></div>
   <div class="legend">${legend}</div>
-  <div class="msum"><span class="badge sec">이번 달<b>${monthLogs.length}회</b></span><span class="badge sec">총 볼륨<b>${Math.round(vol).toLocaleString()}kg</b></span>${openDays.size?`<button class="btn ghost small" style="margin-left:auto" onclick="closeAllDays()">모두 접기</button>`:''}</div>
-  <div id="calDetail">${renderCalList(monthLogs,prefix)}</div>`;
+  <div class="msum"><span class="badge sec">이번 달<b>${monthLogs.length}회</b></span><span class="badge sec">총 볼륨<b>${Math.round(vol).toLocaleString()}kg</b></span>${runDays.length?`<span class="badge sec">러닝<b>${runSum.toFixed(1)}km</b></span>`:''}${openDays.size?`<button class="btn ghost small" style="margin-left:auto" onclick="closeAllDays()">모두 접기</button>`:''}</div>
+  <div id="calDetail">${renderCalList(monthLogs,prefix,runDays)}</div>`;
 }
 const ICON_DOWN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
 const BURST='<svg class="mk-l burst" viewBox="0 0 24 24"><path d="M12 1.5l2.3 3.6 4.1-1.2-.3 4.3 3.9 1.9-2.8 3.2 1.8 3.9-4.2.6-1 4.2-3.8-2.1-3.8 2.1-1-4.2-4.2-.6 1.8-3.9L1.9 10l3.9-1.9-.3-4.3 4.1 1.2z" fill="currentColor"/></svg>';
@@ -1971,18 +1975,20 @@ function markIcons(f,small){
   if(!f.cardio&&!f.abs)return '';
   return `<span class="mks${small?' sm':''}">${f.cardio?'<span class="mk dia"></span>':''}${f.abs?BURST.replace('mk-l burst','mk burst'):''}</span>`;
 }
-function renderCalList(list,prefix){
+function renderCalList(list,prefix,runDays){
   // 기록 있는 날 + 달력에서 연 빈 날(기록하기 버튼용)
   const emptyOpen=[...openDays].filter(d=>(!prefix||d.startsWith(prefix))&&!isDone(store.logs[d]));
-  const all=[...new Set(list.concat(emptyOpen))].sort();
+  runDays=runDays||Object.keys(store.runs||{}).filter(d=>(!prefix||d.startsWith(prefix))&&runKm(d));
+  const all=[...new Set(list.concat(emptyOpen,runDays))].sort();
   if(!all.length) return `<div class="card muted" style="text-align:center">이번 달 운동 기록이 없어요.<br>루틴 화면에서 세트를 완료하면 여기 표시됩니다.</div>`;
   return all.map(d=>{const l=store.logs[d],open=openDays.has(d);
+    if(!isDone(l)&&runKm(d)&&!open) return `<div class="crow" id="cr-${d}" onclick="selectDay('${d}',1)" role="button"><div class="cdate"><span class="cdot-w">${markIcons({cardio:true},1)}</span>${+d.slice(8)}일</div><div class="citem"><span class="cname">러닝</span><span class="cmeta">${runKm(d)}km</span><span class="cchev">${ICON_DOWN}</span></div></div>`;
     if(!isDone(l)) return `<div class="cdet" id="cr-${d}">${renderCalDetail(d)}</div>`;
-    return `<div class="crow ${open?'open':''}" id="cr-${d}" onclick="selectDay('${d}',1)" role="button" aria-expanded="${open}"><div class="cdate"><span class="cdot-w"><i style="--c:${DAY_COLOR[l.day]}"></i>${markIcons(dayFlags(l),1)}</span>${+d.slice(8)}일</div><div class="citem"><span class="cname">${dayTitle(l.day)}</span><span class="cmeta">${doneSets(l)}세트 · ${Math.round(volume(l,d)).toLocaleString()}kg${l.at?'<br>'+l.at:''}</span><span class="cchev">${ICON_DOWN}</span></div></div>${open?`<div class="cdet">${renderCalDetail(d)}</div>`:''}`;}).join('');
+    return `<div class="crow ${open?'open':''}" id="cr-${d}" onclick="selectDay('${d}',1)" role="button" aria-expanded="${open}"><div class="cdate"><span class="cdot-w"><i style="--c:${DAY_COLOR[l.day]}"></i>${markIcons(calFlags(d),1)}</span>${+d.slice(8)}일</div><div class="citem"><span class="cname">${dayTitle(l.day)}</span><span class="cmeta">${doneSets(l)}세트 · ${Math.round(volume(l,d)).toLocaleString()}kg${runKm(d)?'<br>러닝 '+runKm(d)+'km':''}${l.at?'<br>'+l.at:''}</span><span class="cchev">${ICON_DOWN}</span></div></div>${open?`<div class="cdet">${renderCalDetail(d)}</div>`:''}`;}).join('');
 }
 function renderCalDetail(iso){
   const l=store.logs[iso];
-  if(!isDone(l)) return `<div class="card"><h3><span>${dayLabel(iso)}</span><button class="btn ghost small" onclick="selectDay('${iso}',1)">닫기</button></h3><div class="muted">이 날은 운동 기록이 없어요.</div><div class="rowbtns">${PROGRAM.map(p=>`<button class="btn small" onclick="openDay('${iso}','${p.id}')"><span class="cdot" style="--c:${DAY_COLOR[p.id]};margin-right:0"></span>${dayTitle(p.id)} 기록</button>`).join('')}</div></div>`;
+  if(!isDone(l)) return `<div class="card"><h3><span>${dayLabel(iso)}</span><button class="btn ghost small" onclick="selectDay('${iso}',1)">닫기</button></h3><div class="muted">${runKm(iso)?`러닝 ${runKm(iso)}km · 근력 운동 기록은 없어요.`:'이 날은 운동 기록이 없어요.'}</div><div class="rowbtns">${PROGRAM.map(p=>`<button class="btn small" onclick="openDay('${iso}','${p.id}')"><span class="cdot" style="--c:${DAY_COLOR[p.id]};margin-right:0"></span>${dayTitle(p.id)} 기록</button>`).join('')}</div></div>`;
   const p=ALLDAYS.find(x=>x.id===l.day),c=DAY_COLOR[l.day]||'var(--primary)';
   const total=(p?p.ex.reduce((a,e)=>a+nSets(e,l.ex[e.n]),0):0)+(l.custom||[]).reduce((a,c)=>a+nSets(customEx(c.n),l.ex[c.n]),0);
   const order=(p?p.ex.map(e=>e.n):[]).concat(Object.keys(l.ex).filter(n=>!p||!p.ex.some(e=>e.n===n)));
@@ -2726,7 +2732,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1792654879';
+const BUILD='1792655150';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
