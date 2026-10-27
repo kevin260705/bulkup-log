@@ -1468,6 +1468,8 @@ if(!store.latRenamed){const O='랫풀다운 (와이드)',N='랫풀다운';Object
 if(!store.notesMigrated){Object.keys(store.logs).sort().forEach(d=>Object.entries(store.logs[d].ex||{}).forEach(([n,e])=>{if(e&&e.note&&e.note.trim())store.notes[n]=e.note;}));store.notesMigrated=true;}
 // 인바디 2026-09-30 (체중 73.7 · 골격근 33.9 · 체지방량 13.7kg → 18.6%) 한 번만 추가
 if(!store.inbody0930){store.body=(store.body||[]).filter(x=>x.date!=='2026-09-30');store.body.push({date:'2026-09-30',w:73.7,smm:33.9,bf:18.6});store.inbody0930=true;}
+// 인바디 2026-10-27 (체중 74.8 · 골격근 33.7 · 체지방량 15.3kg → 20.4% · 기초대사 1656) 한 번만 추가. 옷 입고 측정
+if(!store.inbody1027){store.body=(store.body||[]).filter(x=>x.date!=='2026-10-27');store.body.push({date:'2026-10-27',w:74.8,smm:33.7,bf:20.4,bmr:1656});store.inbody1027=true;}
 applyPlan();
 store.body = store.body||[];     // 인바디 [{date,w,smm,bf,bmr}]
 if(!store.bodySeeded){           // 처음 알려준 스펙 + 기존 체중 기록 이관
@@ -2732,7 +2734,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793087917';
+const BUILD='1793090442';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
