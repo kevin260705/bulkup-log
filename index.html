@@ -1383,7 +1383,7 @@ const ALLDAYS = [
   {n:'랫풀다운',s:3,r:[10,12],rir:'1',rest:90,note:'어깨너비 그립, 새끼·약지로 당기기 (EP.8). 마지막 세트 드롭',v:['back3','back4']},
   {n:'인클라인 덤벨컬',s:3,r:[10,12],rir:'0~1',rest:75,note:'이두 신장 위치. 반동 금지',v:['bi1']},
   {n:'바벨컬 (EZ바)',s:2,r:[8,10],rir:'1',rest:90,note:'첫 세트 가볍게 15회 자극 → 중량',v:['bi1']},
-  {n:'덤벨 사이드 레터럴',s:3,r:[12,15],rir:'0',rest:60,note:'측면 어깨 보강 · 가볍게, 승모근 대신 어깨로. 마지막 세트 드롭',v:['sh2','sh1']},
+  {n:'리어델트 플라이',s:3,r:[12,15],rir:'0~1',rest:60,note:'펙덱 머신 리버스 · 라운드숄더 교정. 견갑골 모으지 말고 팔꿈치만 뒤로, 가볍게',v:['sh5','sh3']},
  ]},
  {id:'thu',short:'어깨·팔',name:'어깨 · 팔',ex:[
   {n:'덤벨 숄더프레스',s:3,r:[8,10],rir:'1~2',rest:120,note:'',v:['sh1','sh4']},
@@ -2760,7 +2760,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793261844';
+const BUILD='1793262090';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
