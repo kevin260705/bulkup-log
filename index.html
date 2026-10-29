@@ -1837,7 +1837,7 @@ function renderHist(){
     <button class="btn" onclick="const k=prompt('프로그램 시작일 (YYYY-MM-DD)',store.start||today());if(k){store.start=k;save();render();}">시작일 변경</button>
   </div><div class="muted" style="margin-top:6px">기록은 이 브라우저에만 저장됩니다. 기기 바꾸거나 브라우저 초기화 전에 내보내기 해두세요.</div></div>`;
 }
-function exportJSON(){const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(store,null,1));a.download=`workout-${today()}.json`;a.click();}
+function exportJSON(){if(NATIVE&&NATIVE.saveFile){NATIVE.saveFile(`workout-${today()}.json`,JSON.stringify(store,null,1));return;}const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(store,null,1));a.download=`workout-${today()}.json`;a.click();}
 function importJSON(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);Object.assign(store,o);save();render();alert('불러오기 완료');}catch(e){alert('파일 형식 오류');}};r.readAsText(f);}
 
 // ---------- 원칙·식단 화면 ----------
@@ -1882,8 +1882,12 @@ applyTheme();
 // ---------- 타이머 ----------
 let tInt=null,tLeft=0,tEnd=0,tTotal=0,tRaf=0;
 let restEndLabel='',mediaLeft=-1;
+// 안드로이드 앱(BulkupLog) 안에서 열렸을 때만 있는 네이티브 연결. 휴식 알림을 시스템 타이머로 띄운다
+const NATIVE=window.BulkupNative||null;
+// 이 화면이 직접 시작한 휴식만 알림을 띄운다 (같은 사이트를 앱·크롬 탭에서 동시에 열어도 알림 하나만)
+let ownTimer=false;
 let tTo=0;
-function startTimer(sec){stopTimer();closeRestAlert();askNoti();tTotal=sec*1000;tEnd=Date.now()+tTotal;store.timerEnd=tEnd;store.timerTotal=tTotal;persist();armAudio(sec);runTimer();markRest();openPip();clearTimeout(tTo);tTo=setTimeout(tick,tTotal+60);}
+function startTimer(sec){ownTimer=false;stopTimer();closeRestAlert();if(!NATIVE)askNoti();tTotal=sec*1000;tEnd=Date.now()+tTotal;ownTimer=true;store.timerEnd=tEnd;store.timerTotal=tTotal;persist();if(NATIVE){try{NATIVE.startRest(tEnd,tTotal,nextSetText());}catch(e){}}else armAudio(sec);runTimer();markRest();openPip();clearTimeout(tTo);tTo=setTimeout(tick,tTotal+60);}
 // 세트 완료 시: 항상 그 종목의 휴식 시간
 function startRest(def){startTimer(def);}
 // 초 버튼: 이번 휴식만 그 시간으로 (다음 세트는 다시 종목별 휴식)
@@ -1894,7 +1898,7 @@ function markRest(){const run=tEnd?Math.round(tTotal/1000):0;document.querySelec
 function stopBtn(){if(tEnd){stopTimer();tick();}}
 function gauge(){const b=document.querySelector('.timer');if(!b)return;const p=tEnd&&tTotal?Math.max(0,Math.min(1,(tEnd-Date.now())/tTotal)):0;b.style.setProperty('--p',p.toFixed(4));if(tEnd)tRaf=requestAnimationFrame(gauge);}
 function runTimer(){const b=document.querySelector('.timer');if(b)b.classList.add('running');tick();tInt=setInterval(tick,250);cancelAnimationFrame(tRaf);gauge();}
-function stopTimer(keepAudio){if(!keepAudio)disarmAudio();clearInterval(tInt);tInt=null;tEnd=0;cancelAnimationFrame(tRaf);if(store.timerEnd){store.timerEnd=0;persist();}const b=document.querySelector('.timer');if(b){b.classList.remove('running');b.style.setProperty('--p','0');}markRest();closeLive();}
+function stopTimer(keepAudio){if(!keepAudio){disarmAudio();if(NATIVE&&ownTimer){try{NATIVE.stopRest();}catch(e){}}}ownTimer=false;clearInterval(tInt);tInt=null;tEnd=0;cancelAnimationFrame(tRaf);if(store.timerEnd){store.timerEnd=0;persist();}const b=document.querySelector('.timer');if(b){b.classList.remove('running');b.style.setProperty('--p','0');}markRest();closeLive();}
 function tick(){
   const el=document.getElementById('timerText');
   tLeft=tEnd?Math.max(0,Math.ceil((tEnd-Date.now())/1000)):0;
@@ -2707,7 +2711,7 @@ function armAudio(sec){
 const LIVE_TAG='rest-live';
 function liveReg(cb){if(swReg)cb(swReg);else if('serviceWorker' in navigator)navigator.serviceWorker.ready.then(cb).catch(()=>{});}
 function restLive(){try{
-  if(!tEnd||!tTotal||store.notiOff||!('Notification' in window)||Notification.permission!=='granted')return;
+  if(NATIVE||!ownTimer||!tEnd||!tTotal||store.notiOff||!('Notification' in window)||Notification.permission!=='granted')return;
   const left=Math.max(0,Math.ceil((tEnd-Date.now())/1000));if(left===mediaLeft||left<=0)return;mediaLeft=left;
   const n=10,full=Math.max(0,Math.min(n,Math.ceil(left*1000/tTotal*n)));
   const title=`휴식 ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')} 남음`;
@@ -2756,7 +2760,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793261386';
+const BUILD='1793261844';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
