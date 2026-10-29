@@ -1582,10 +1582,17 @@ function renderTabs(){
 
 // ---------- 운동일 화면 ----------
 function getLog(dayId){
-  if(!store.logs[curDate]) store.logs[curDate]={day:dayId,ex:{}};
-  store.logs[curDate].day=dayId;
-  return store.logs[curDate];
+  const l=store.logs[curDate];
+  if(!l) return store.logs[curDate]={day:dayId,ex:{}};
+  // 하루에 기록은 하나 — 다른 부위 탭에서 입력해도 이미 한 운동이 말없이 그 부위로 바뀌지 않게
+  if(l.day!==dayId&&hasEntries(l)){
+    const nm=id=>(ALLDAYS.find(d=>d.id===id)||{}).name||id;
+    if(!confirm(`${curDate}에는 이미 ${nm(l.day)} 기록이 있어요.\n이 날짜 기록을 ${nm(dayId)}(으)로 바꿀까요?`)){render();throw new Error('day-locked');}
+  }
+  l.day=dayId;
+  return l;
 }
+function hasEntries(l){return !!(l.quick||(l.custom||[]).length||Object.values(l.ex||{}).some(e=>e&&(e.note||(e.sets||[]).some(s=>s&&s.r!=null))));}
 function effDay(day,iso){if(!isDeload(iso))return day;return Object.assign({},day,{ex:day.ex.map(e=>Object.assign({},e,{s:Math.max(1,Math.ceil(e.s/2)),rir:'3~4'}))});}
 const ASSIST=new Set();ALLDAYS.forEach(d=>d.ex.forEach(e=>{if(e.assist)ASSIST.add(e.n);}));
 // 루틴 밖 종목 (종목 추가 맨 위 그룹). cardio: 분·km로 기록, abs: 복근
@@ -1942,6 +1949,7 @@ function toggleDayDone(dayId){
     Object.keys(l.ex).forEach(n=>{const e=l.ex[n];e.sets=e.sets.filter(x=>x&&!x.auto);e.sets.forEach(x=>{x.d=false;});if(!e.sets.length&&!(e.note||'').trim())delete l.ex[n];});
   }else{
     if(other&&!confirm(`이 날은 ${other.name}(으)로 기록돼 있어요. ${ALLDAYS.find(d=>d.id===dayId).name}(으)로 바꿀까요?`))return;
+    if(other)l.day=dayId; // 방금 물어봤으니 getLog에서 또 묻지 않게
     const lg=getLog(dayId);lg.quick=true;if(!store.start)store.start=curDate;
     quickFill(lg,dayId,curDate);
   }
@@ -2747,10 +2755,28 @@ function testNoti(){
   setTimeout(()=>{disarmAudio();sendNoti('알림 테스트','휴식이 끝나면 이렇게 알려드려요',true);},5000);
 }
 function closeRestAlert(go){
-  const a=document.getElementById('restAlert');if(a)a.classList.remove('on');
+  const a=document.getElementById('restAlert');if(a){a.classList.remove('on');raReset(a);}
   if(go){const c=document.querySelector('.card.current');if(c)scrollCardTop(c);}
 }
 function restMore(sec){closeRestAlert();startTimer(sec);}
+// 휴식 끝 알림은 옆이나 위로 밀어서 닫기
+function raReset(a){a.style.transition='none';a.style.transform='';a.style.opacity='';a.style.animation='';void a.offsetWidth;a.style.transition='';}
+(function(){const a=document.getElementById('restAlert');if(!a)return;
+  let x0=0,y0=0,dx=0,dy=0,on=false,drag=false;
+  a.addEventListener('touchstart',e=>{const t=e.touches[0];x0=t.clientX;y0=t.clientY;dx=dy=0;on=true;drag=false;},{passive:true});
+  a.addEventListener('touchmove',e=>{if(!on)return;const t=e.touches[0];dx=t.clientX-x0;dy=Math.min(0,t.clientY-y0);
+    if(!drag&&Math.hypot(dx,dy)>8){drag=true;a.style.transition='none';a.style.animation='none';}
+    if(!drag)return;e.preventDefault();
+    a.style.transform=`translate(calc(-50% + ${dx}px),${dy}px)`;a.style.opacity=String(Math.max(.25,1-Math.max(Math.abs(dx)/260,-dy/130)));},{passive:false});
+  const end=()=>{if(!on)return;on=false;if(!drag)return;a.style.transition='';
+    const side=Math.abs(dx)>80,up=dy<-40;
+    if(!side&&!up){a.style.transform='';a.style.opacity='';return;}
+    a.style.transform=side?`translate(calc(-50% + ${dx>0?110:-110}vw),${dy}px)`:'translate(-50%,-140%)';a.style.opacity='0';
+    setTimeout(()=>closeRestAlert(false),260);};
+  a.addEventListener('touchend',end);a.addEventListener('touchcancel',end);
+  // 밀다가 손을 뗀 곳의 버튼이 눌리지 않게
+  a.addEventListener('click',e=>{if(drag){e.stopPropagation();e.preventDefault();drag=false;}},true);
+})();
 // 다음 운동 카드의 제목이 고정 헤더 바로 아래에 오도록 스크롤
 function scrollCardTop(c){const h=document.querySelector('header');const off=(h?h.getBoundingClientRect().bottom:0)+8;window.scrollTo({top:Math.max(0,c.getBoundingClientRect().top+window.scrollY-off),behavior:'smooth'});}
 function setNoti(on){
@@ -2760,7 +2786,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793262253';
+const BUILD='1793268425';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
