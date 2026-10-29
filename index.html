@@ -2744,9 +2744,11 @@ function testNoti(){
 }
 function closeRestAlert(go){
   const a=document.getElementById('restAlert');if(a)a.classList.remove('on');
-  if(go){const c=document.querySelector('.card.current');if(c&&c.scrollIntoView)c.scrollIntoView({behavior:'smooth',block:'center'});}
+  if(go){const c=document.querySelector('.card.current');if(c)scrollCardTop(c);}
 }
 function restMore(sec){closeRestAlert();startTimer(sec);}
+// 다음 운동 카드의 제목이 고정 헤더 바로 아래에 오도록 스크롤
+function scrollCardTop(c){const h=document.querySelector('header');const off=(h?h.getBoundingClientRect().bottom:0)+8;window.scrollTo({top:Math.max(0,c.getBoundingClientRect().top+window.scrollY-off),behavior:'smooth'});}
 function setNoti(on){
   store.notiOff=!on;persist();
   if(on&&'Notification' in window&&Notification.permission==='default'){try{Notification.requestPermission().then(()=>render());}catch(e){}return;}
@@ -2754,7 +2756,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793261231';
+const BUILD='1793261386';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
