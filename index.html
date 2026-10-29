@@ -1894,11 +1894,11 @@ function markRest(){const run=tEnd?Math.round(tTotal/1000):0;document.querySelec
 function stopBtn(){if(tEnd){stopTimer();tick();}}
 function gauge(){const b=document.querySelector('.timer');if(!b)return;const p=tEnd&&tTotal?Math.max(0,Math.min(1,(tEnd-Date.now())/tTotal)):0;b.style.setProperty('--p',p.toFixed(4));if(tEnd)tRaf=requestAnimationFrame(gauge);}
 function runTimer(){const b=document.querySelector('.timer');if(b)b.classList.add('running');tick();tInt=setInterval(tick,250);cancelAnimationFrame(tRaf);gauge();}
-function stopTimer(keepAudio){if(!keepAudio)disarmAudio();clearInterval(tInt);tInt=null;tEnd=0;cancelAnimationFrame(tRaf);if(store.timerEnd){store.timerEnd=0;persist();}const b=document.querySelector('.timer');if(b){b.classList.remove('running');b.style.setProperty('--p','0');}markRest();}
+function stopTimer(keepAudio){if(!keepAudio)disarmAudio();clearInterval(tInt);tInt=null;tEnd=0;cancelAnimationFrame(tRaf);if(store.timerEnd){store.timerEnd=0;persist();}const b=document.querySelector('.timer');if(b){b.classList.remove('running');b.style.setProperty('--p','0');}markRest();closeLive();}
 function tick(){
   const el=document.getElementById('timerText');
   tLeft=tEnd?Math.max(0,Math.ceil((tEnd-Date.now())/1000)):0;
-  el.classList.remove('done');el.textContent=Math.floor(tLeft/60)+':'+String(tLeft%60).padStart(2,'0');restMedia();
+  el.classList.remove('done');el.textContent=Math.floor(tLeft/60)+':'+String(tLeft%60).padStart(2,'0');restLive();
   if(tEnd&&tLeft<=0){stopTimer(true);el.classList.add('done');restDone();}
 }
 function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.2;o.start();setTimeout(()=>{o.stop();c.close();},350);}catch(e){}}
@@ -2514,6 +2514,7 @@ function renderSettings(){
     <div class="grow">${I(C.orange,ico.flag)}<span class="gl">현재</span><span class="gv">${w&&w>0?`${w}주차 · 7주차마다 디로드`:'첫 세트 완료 시 시작'}</span></div>
     <div class="grow">${I(C.gray,ico.moon)}<span class="gl">다크 모드</span><button class="sw ${dark?'on':''}" onclick="setTheme('${dark?'light':'dark'}')" aria-label="다크 모드"></button></div>
     <div class="grow">${I(C.gray,ico.bell)}<span class="gl">휴식 끝 알림<small class="gsub">${notiState()}</small></span><button class="sw ${store.notiOff?'':'on'}" onclick="setNoti(${store.notiOff?'true':'false'})" aria-label="휴식 끝 알림"></button></div>
+    <div class="grow">${I(C.gray,ico.bell)}<span class="gl">휴식 끝 소리 (다른 앱 사용 중)<small class="gsub">${store.restSound?'켜짐 · 음악 알림 카드 옆에 휴식 카드가 같이 떠요':'꺼짐 · 진동과 알림으로 알려요, 음악과 안 겹쳐요'}</small></span><button class="sw ${store.restSound?'on':''}" onclick="store.restSound=${store.restSound?'false':'true'};if(!store.restSound)disarmAudio();save();render();" aria-label="휴식 끝 소리"></button></div>
   </div>
 
   <div class="muted" style="margin:8px 16px 0">주 ${pr.freq||5}회 · ${PLAN_DESC[pr.freq||5]}</div>
@@ -2688,6 +2689,7 @@ function makeRestWav(sec){
   return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
 }
 function armAudio(sec){
+  if(!store.restSound){audioArmed=false;return;}
   try{
     if(!rAudio){rAudio=new Audio();rAudio.preload='auto';}
     if(rAudio.src&&rAudio.src.startsWith('blob:'))URL.revokeObjectURL(rAudio.src);
@@ -2697,20 +2699,23 @@ function armAudio(sec){
       const end=new Date(Date.now()+sec*1000),f=x=>String(x).padStart(2,'0');
       restEndLabel=`${f(end.getHours())}:${f(end.getMinutes())}:${f(end.getSeconds())} 종료`;mediaLeft=-1;
       navigator.mediaSession.metadata=new MediaMetadata({title:`휴식 중 · ${restEndLabel}`,artist:'운동',artwork:[{src:'icon-192.png',sizes:'192x192',type:'image/png'},{src:'icon-512.png',sizes:'512x512',type:'image/png'}]});
-      try{navigator.mediaSession.setPositionState({duration:sec,playbackRate:1,position:0});}catch(e){}
-      restMedia();
       try{navigator.mediaSession.setActionHandler('pause',()=>{stopTimer();tick();});}catch(e){}
     }
   }catch(e){audioArmed=false;}
 }
-// 알림센터 미디어 알림: 남은 시간과 줄어드는 게이지를 매초 갱신 (오디오가 도는 동안엔 백그라운드에서도 동작)
-function restMedia(){try{
-  if(!audioArmed||!tEnd||!tTotal||!('mediaSession' in navigator))return;
-  const md=navigator.mediaSession.metadata;if(!md)return;
-  const left=Math.max(0,Math.ceil((tEnd-Date.now())/1000));if(left===mediaLeft)return;mediaLeft=left;
+// 알림센터 휴식 게이지: 음악 플레이어와 겹치지 않게 미디어 카드가 아닌 별도 알림으로, 매초 조용히 갱신
+const LIVE_TAG='rest-live';
+function liveReg(cb){if(swReg)cb(swReg);else if('serviceWorker' in navigator)navigator.serviceWorker.ready.then(cb).catch(()=>{});}
+function restLive(){try{
+  if(!tEnd||!tTotal||store.notiOff||!('Notification' in window)||Notification.permission!=='granted')return;
+  const left=Math.max(0,Math.ceil((tEnd-Date.now())/1000));if(left===mediaLeft||left<=0)return;mediaLeft=left;
   const n=10,full=Math.max(0,Math.min(n,Math.ceil(left*1000/tTotal*n)));
-  try{md.title=`휴식 ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')} 남음`;md.artist=`${'▰'.repeat(full)}${'▱'.repeat(n-full)} · ${restEndLabel}`;}catch(e){}
+  const title=`휴식 ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')} 남음`;
+  const e=new Date(tEnd),f=x=>String(x).padStart(2,'0');
+  const body=`${'▰'.repeat(full)}${'▱'.repeat(n-full)}  ${f(e.getHours())}:${f(e.getMinutes())}:${f(e.getSeconds())} 종료`;
+  liveReg(r=>r.showNotification(title,{body,tag:LIVE_TAG,renotify:false,silent:true,requireInteraction:true,badge:'favicon.png'}).catch(()=>{}));
 }catch(e){}}
+function closeLive(){try{mediaLeft=-1;liveReg(r=>r.getNotifications({tag:LIVE_TAG}).then(ns=>{if(!tEnd)ns.forEach(x=>x.close());}).catch(()=>{}));}catch(e){}}
 function disarmAudio(){if(rAudio){try{rAudio.pause();}catch(e){}}audioArmed=false;}
 function restDone(){
   const msg=nextSetText();pipMsg=msg;drawPip();
@@ -2749,7 +2754,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793260786';
+const BUILD='1793261231';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
