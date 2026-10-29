@@ -1462,7 +1462,8 @@ if(!store.backfill1015){
 // 완료 스위치만 켜서 0kg로 보이던 날: 직전 기록 값으로 채우기 (한 번)
 if(!store.quickFilled){setTimeout(()=>{Object.keys(store.logs).sort().forEach(d=>{const l=store.logs[d];if(l&&l.quick&&!Object.values(l.ex||{}).some(e=>e.sets.some(x=>x&&x.d)))quickFill(l,l.day,d);});store.quickFilled=true;persist();if(typeof render==='function')render();},0);}
 // 타이머 프리셋에서 3분이 빠짐: 저장된 3분 선택은 종목별 기본값으로
-if(store.restSel&&![60,75,90,120,150].includes(store.restSel)){store.restSel=null;}
+// 휴식 시간 고정 선택은 없앰: 세트 완료는 항상 종목별 휴식, 버튼은 그 한 번만
+if(store.restSel!=null){delete store.restSel;}
 // 랫풀다운 (와이드) → 랫풀다운: 지난 기록·메모를 새 이름으로 옮기기
 if(!store.latRenamed){const O='랫풀다운 (와이드)',N='랫풀다운';Object.values(store.logs||{}).forEach(l=>{if(l.ex&&l.ex[O]&&!l.ex[N]){l.ex[N]=l.ex[O];delete l.ex[O];}(l.custom||[]).forEach(c=>{if(c.n===O)c.n=N;});});if(store.notes&&store.notes[O]&&!store.notes[N]){store.notes[N]=store.notes[O];delete store.notes[O];}store.latRenamed=true;}
 if(!store.notesMigrated){Object.keys(store.logs).sort().forEach(d=>Object.entries(store.logs[d].ex||{}).forEach(([n,e])=>{if(e&&e.note&&e.note.trim())store.notes[n]=e.note;}));store.notesMigrated=true;}
@@ -1881,16 +1882,18 @@ applyTheme();
 // ---------- 타이머 ----------
 let tInt=null,tLeft=0,tEnd=0,tTotal=0,tRaf=0;
 let tTo=0;
-function startTimer(sec){stopTimer();closeRestAlert();askNoti();tTotal=sec*1000;tEnd=Date.now()+tTotal;store.timerEnd=tEnd;store.timerTotal=tTotal;persist();armAudio(sec);runTimer();openPip();clearTimeout(tTo);tTo=setTimeout(tick,tTotal+60);}
-// 세트 완료 시: 직접 고른 시간이 있으면 그 시간, 없으면 종목별 기본 휴식
-function startRest(def){startTimer(store.restSel||def);}
-function pickRest(sec){store.restSel=sec;persist();markRest();startTimer(sec);}
-function markRest(){document.querySelectorAll('.timer .rp').forEach(b=>b.classList.toggle('on',+b.dataset.s===store.restSel));}
-// ■: 도는 중이면 정지, 멈춘 상태면 선택 해제(종목별 기본 휴식으로)
-function stopBtn(){if(tEnd){stopTimer();tick();}else if(store.restSel){store.restSel=null;persist();markRest();flashSaved('종목별 기본 휴식 시간으로 돌아가요');}}
+function startTimer(sec){stopTimer();closeRestAlert();askNoti();tTotal=sec*1000;tEnd=Date.now()+tTotal;store.timerEnd=tEnd;store.timerTotal=tTotal;persist();armAudio(sec);runTimer();markRest();openPip();clearTimeout(tTo);tTo=setTimeout(tick,tTotal+60);}
+// 세트 완료 시: 항상 그 종목의 휴식 시간
+function startRest(def){startTimer(def);}
+// 초 버튼: 이번 휴식만 그 시간으로 (다음 세트는 다시 종목별 휴식)
+function pickRest(sec){startTimer(sec);}
+// 지금 도는 휴식 시간과 같은 버튼만 표시
+function markRest(){const run=tEnd?Math.round(tTotal/1000):0;document.querySelectorAll('.timer .rp').forEach(b=>b.classList.toggle('on',run>0&&+b.dataset.s===run));}
+// ■: 도는 중이면 정지
+function stopBtn(){if(tEnd){stopTimer();tick();}}
 function gauge(){const b=document.querySelector('.timer');if(!b)return;const p=tEnd&&tTotal?Math.max(0,Math.min(1,(tEnd-Date.now())/tTotal)):0;b.style.setProperty('--p',p.toFixed(4));if(tEnd)tRaf=requestAnimationFrame(gauge);}
 function runTimer(){const b=document.querySelector('.timer');if(b)b.classList.add('running');tick();tInt=setInterval(tick,250);cancelAnimationFrame(tRaf);gauge();}
-function stopTimer(keepAudio){if(!keepAudio)disarmAudio();clearInterval(tInt);tInt=null;tEnd=0;cancelAnimationFrame(tRaf);if(store.timerEnd){store.timerEnd=0;persist();}const b=document.querySelector('.timer');if(b){b.classList.remove('running');b.style.setProperty('--p','0');}}
+function stopTimer(keepAudio){if(!keepAudio)disarmAudio();clearInterval(tInt);tInt=null;tEnd=0;cancelAnimationFrame(tRaf);if(store.timerEnd){store.timerEnd=0;persist();}const b=document.querySelector('.timer');if(b){b.classList.remove('running');b.style.setProperty('--p','0');}markRest();}
 function tick(){
   const el=document.getElementById('timerText');
   tLeft=tEnd?Math.max(0,Math.ceil((tEnd-Date.now())/1000)):0;
@@ -2580,7 +2583,7 @@ function render(){
   try{render();}catch(e){view='home';curTab=null;render();}
   if(u&&Date.now()-u.t<6*3600e3&&u.y) setTimeout(()=>window.scrollTo(0,u.y),0);
   markRest();
-  if(store.timerEnd&&store.timerEnd>Date.now()){tEnd=store.timerEnd;tTotal=store.timerTotal||Math.max(1,tEnd-Date.now());runTimer();}
+  if(store.timerEnd&&store.timerEnd>Date.now()){tEnd=store.timerEnd;tTotal=store.timerTotal||Math.max(1,tEnd-Date.now());runTimer();markRest();}
 })();
 function saveNow(){if(store.ui){store.ui.y=window.scrollY;store.ui.t=Date.now();}persist();}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow();else{if(tEnd)tick();else closePip();}});
@@ -2734,7 +2737,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793090442';
+const BUILD='1793260225';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
