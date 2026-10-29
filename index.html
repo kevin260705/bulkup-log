@@ -1373,8 +1373,8 @@ const ALLDAYS = [
   {n:'펙덱 / 인클라인 케이블 플라이',s:3,r:[12,15],rir:'1~2',rest:60,note:'선피로 — 벤치 전에 가슴만 먼저 지치게. 실패 1~2개 전에서 멈추고 바로 벤치로',v:['chest3','chest2']},
   {n:'플랫 바벨/머신 프레스',s:3,r:[6,10],rir:'1~2',rest:120,note:'선피로 직후 — 평소 무게의 80~90%로 시작, 세이프티 바 필수. 마지막 세트 드롭세트',v:['chest1','chest3']},
   {n:'인클라인 덤벨프레스',s:3,r:[8,12],rir:'1~2',rest:120,note:'윗가슴. 벤치 후라 평소보다 가볍게 시작',v:['chest1','chest2']},
-  {n:'오버헤드 케이블 익스텐션',s:3,r:[12,15],rir:'0~1',rest:75,note:'장두 — 황철순 EP.7 포인트',v:['tri1']},
-  {n:'라잉 트라이셉스 익스텐션',s:2,r:[10,12],rir:'1',rest:90,note:'팔꿈치 고정, 내릴 때 3초',v:['tri2','tri1']},
+  {n:'라잉 트라이셉스 익스텐션',s:3,r:[10,12],rir:'1',rest:90,note:'장두 — 바를 머리 뒤로 깊게 내려 삼두를 늘리기. 팔꿈치 고정, 내릴 때 3초',v:['tri2','tri1']},
+  {n:'케이블 푸시다운',s:2,r:[12,15],rir:'0~1',rest:60,note:'',v:['tri1']},
   {n:'덤벨 사이드 레터럴',s:3,r:[12,15],rir:'0',rest:60,note:'측면 어깨 보강 · 가볍게, 승모근 대신 어깨로. 마지막 세트 드롭',v:['sh2','sh1']},
  ]},
  {id:'tue',short:'등·이두',name:'등 · 이두',ex:[
@@ -2760,7 +2760,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793262090';
+const BUILD='1793262253';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
