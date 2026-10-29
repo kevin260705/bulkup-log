@@ -1881,6 +1881,7 @@ applyTheme();
 
 // ---------- 타이머 ----------
 let tInt=null,tLeft=0,tEnd=0,tTotal=0,tRaf=0;
+let restEndLabel='',mediaLeft=-1;
 let tTo=0;
 function startTimer(sec){stopTimer();closeRestAlert();askNoti();tTotal=sec*1000;tEnd=Date.now()+tTotal;store.timerEnd=tEnd;store.timerTotal=tTotal;persist();armAudio(sec);runTimer();markRest();openPip();clearTimeout(tTo);tTo=setTimeout(tick,tTotal+60);}
 // 세트 완료 시: 항상 그 종목의 휴식 시간
@@ -1897,7 +1898,7 @@ function stopTimer(keepAudio){if(!keepAudio)disarmAudio();clearInterval(tInt);tI
 function tick(){
   const el=document.getElementById('timerText');
   tLeft=tEnd?Math.max(0,Math.ceil((tEnd-Date.now())/1000)):0;
-  el.classList.remove('done');el.textContent=Math.floor(tLeft/60)+':'+String(tLeft%60).padStart(2,'0');
+  el.classList.remove('done');el.textContent=Math.floor(tLeft/60)+':'+String(tLeft%60).padStart(2,'0');restMedia();
   if(tEnd&&tLeft<=0){stopTimer(true);el.classList.add('done');restDone();}
 }
 function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.2;o.start();setTimeout(()=>{o.stop();c.close();},350);}catch(e){}}
@@ -2694,11 +2695,22 @@ function armAudio(sec){
     const p=rAudio.play();audioArmed=true;if(p&&p.catch)p.catch(()=>{audioArmed=false;});
     if('mediaSession' in navigator){
       const end=new Date(Date.now()+sec*1000),f=x=>String(x).padStart(2,'0');
-      navigator.mediaSession.metadata=new MediaMetadata({title:`휴식 중 · ${f(end.getHours())}:${f(end.getMinutes())}:${f(end.getSeconds())} 종료`,artist:'운동',artwork:[{src:'icon-192.png',sizes:'192x192',type:'image/png'},{src:'icon-512.png',sizes:'512x512',type:'image/png'}]});
+      restEndLabel=`${f(end.getHours())}:${f(end.getMinutes())}:${f(end.getSeconds())} 종료`;mediaLeft=-1;
+      navigator.mediaSession.metadata=new MediaMetadata({title:`휴식 중 · ${restEndLabel}`,artist:'운동',artwork:[{src:'icon-192.png',sizes:'192x192',type:'image/png'},{src:'icon-512.png',sizes:'512x512',type:'image/png'}]});
+      try{navigator.mediaSession.setPositionState({duration:sec,playbackRate:1,position:0});}catch(e){}
+      restMedia();
       try{navigator.mediaSession.setActionHandler('pause',()=>{stopTimer();tick();});}catch(e){}
     }
   }catch(e){audioArmed=false;}
 }
+// 알림센터 미디어 알림: 남은 시간과 줄어드는 게이지를 매초 갱신 (오디오가 도는 동안엔 백그라운드에서도 동작)
+function restMedia(){try{
+  if(!audioArmed||!tEnd||!tTotal||!('mediaSession' in navigator))return;
+  const md=navigator.mediaSession.metadata;if(!md)return;
+  const left=Math.max(0,Math.ceil((tEnd-Date.now())/1000));if(left===mediaLeft)return;mediaLeft=left;
+  const n=10,full=Math.max(0,Math.min(n,Math.ceil(left*1000/tTotal*n)));
+  try{md.title=`휴식 ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')} 남음`;md.artist=`${'▰'.repeat(full)}${'▱'.repeat(n-full)} · ${restEndLabel}`;}catch(e){}
+}catch(e){}}
 function disarmAudio(){if(rAudio){try{rAudio.pause();}catch(e){}}audioArmed=false;}
 function restDone(){
   const msg=nextSetText();pipMsg=msg;drawPip();
@@ -2737,7 +2749,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793260225';
+const BUILD='1793260786';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
