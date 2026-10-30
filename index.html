@@ -1478,7 +1478,7 @@ if(!store.bodySeeded){           // 처음 알려준 스펙 + 기존 체중 기�
   store.bw.forEach(b=>{if(!store.body.some(x=>x.date===b.date))store.body.push({date:b.date,w:b.kg});});
   store.bodySeeded=true;
 }
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}syncSoon();}
 function save(){persist();renderWeek();}
 let savedT=null;
 function flashSaved(msg){const el=document.getElementById('saved');if(!el)return;el.textContent=msg||'자동 저장됨';el.classList.add('on');clearTimeout(savedT);savedT=setTimeout(()=>el.classList.remove('on'),msg?1800:1100);}
@@ -1583,13 +1583,13 @@ function renderTabs(){
 // ---------- 운동일 화면 ----------
 function getLog(dayId){
   const l=store.logs[curDate];
-  if(!l) return store.logs[curDate]={day:dayId,ex:{}};
+  if(!l) return store.logs[curDate]={day:dayId,ex:{},u:Date.now()};
   // 하루에 기록은 하나 — 다른 부위 탭에서 입력해도 이미 한 운동이 말없이 그 부위로 바뀌지 않게
   if(l.day!==dayId&&hasEntries(l)){
     const nm=id=>(ALLDAYS.find(d=>d.id===id)||{}).name||id;
     if(!confirm(`${curDate}에는 이미 ${nm(l.day)} 기록이 있어요.\n이 날짜 기록을 ${nm(dayId)}(으)로 바꿀까요?`)){render();throw new Error('day-locked');}
   }
-  l.day=dayId;
+  l.day=dayId;l.u=Date.now();
   return l;
 }
 function hasEntries(l){return !!(l.quick||(l.custom||[]).length||Object.values(l.ex||{}).some(e=>e&&(e.note||(e.sets||[]).some(s=>s&&s.r!=null))));}
@@ -1944,7 +1944,7 @@ function toggleDayDone(dayId){
   if(l&&l.day===dayId&&isDone(l)){
     const hasSets=Object.values(l.ex).some(e=>e.sets.some(s=>s&&s.d&&!s.auto));
     if(hasSets&&!confirm('완료한 세트 표시도 모두 해제할까요?'))return;
-    delete l.quick;
+    delete l.quick;l.u=Date.now();
     // 스위치로 자동으로 채운 세트는 지우고, 직접 적은 세트는 완료 표시만 해제
     Object.keys(l.ex).forEach(n=>{const e=l.ex[n];e.sets=e.sets.filter(x=>x&&!x.auto);e.sets.forEach(x=>{x.d=false;});if(!e.sets.length&&!(e.note||'').trim())delete l.ex[n];});
   }else{
@@ -2040,6 +2040,98 @@ function aiKey(){try{return localStorage.getItem(COACH_KEY)||'';}catch(e){return
 function setAiKey(k){k=(k||'').trim();try{k?localStorage.setItem(COACH_KEY,k):localStorage.removeItem(COACH_KEY);}catch(e){}render();}
 // QR(주소#k=키)로 열면 키를 저장하고 주소창에서 바로 지우기
 (function(){const m=location.hash.match(/^#k=([\w-]{20,})$/);if(m){try{localStorage.setItem(COACH_KEY,m[1]);}catch(e){}history.replaceState(null,'',location.pathname+location.search);}})();
+// ---------- 기기 동기화 (GitHub 비공개 Gist) ----------
+// 토큰은 이 기기에만 저장 (store와 분리 → 백업·동기화 파일에 안 들어감). Gist는 고칠 때마다 이전 버전이 남는다.
+const SYNC_KEY='wl_sync',SYNC_FILE='bulkup-log.json',SYNC_DESC='bulkup-log sync',SYNC_POLL=15000;
+// 기기마다 다른 값 (화면 위치·타이머·알림 설정)은 동기화하지 않는다
+const SYNC_LOCAL=['ui','timerEnd','timerTotal','notiAsked','pushSub','pipOn','notiOff','bodyDraft','restSound','restSel','theme','projW'];
+let syncBusy=false,syncAgain=false,syncT=null,syncMsg='';
+function syncCfg(){try{return JSON.parse(localStorage.getItem(SYNC_KEY)||'null');}catch(e){return null;}}
+function syncSave(c){try{c?localStorage.setItem(SYNC_KEY,JSON.stringify(c)):localStorage.removeItem(SYNC_KEY);}catch(e){}}
+function syncData(){const o={};Object.keys(store).forEach(k=>{if(!SYNC_LOCAL.includes(k))o[k]=store[k];});return JSON.parse(JSON.stringify(o));}
+function syncHash(o){const t=JSON.stringify(o);let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return h+':'+t.length;}
+function syncApply(d){Object.keys(store).forEach(k=>{if(!SYNC_LOCAL.includes(k))delete store[k];});Object.keys(d).forEach(k=>{if(!SYNC_LOCAL.includes(k))store[k]=d[k];});store.logs=store.logs||{};}
+function syncStore(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+// 두 기기가 따로 고쳤을 때: 날짜별 기록은 더 최근에 고친 쪽, 인바디는 날짜별 합치기, 나머지는 이 기기 우선
+function syncMerge(loc,rem){
+  const out=Object.assign({},rem,loc);
+  const nDone=l=>Object.values(l.ex||{}).reduce((n,e)=>n+(e.sets||[]).filter(x=>x&&x.d).length,0);
+  out.logs=Object.assign({},rem.logs||{});
+  Object.entries(loc.logs||{}).forEach(([d,l])=>{const r=out.logs[d];if(!r||(l.u||0)>(r.u||0)||((l.u||0)===(r.u||0)&&nDone(l)>=nDone(r)))out.logs[d]=l;});
+  const body={};[...(rem.body||[]),...(loc.body||[])].forEach(b=>{body[b.date]=b;});
+  out.body=Object.values(body).sort((a,b)=>a.date<b.date?-1:1);
+  out.notes=Object.assign({},rem.notes||{},loc.notes||{});
+  out.runs=Object.assign({},rem.runs||{},loc.runs||{});
+  if((rem.chat||[]).length>(loc.chat||[]).length)out.chat=rem.chat;
+  return out;
+}
+async function ghApi(path,opt){
+  const c=syncCfg();
+  const r=await fetch('https://api.github.com'+path,Object.assign({cache:'no-cache'},opt||{},{headers:{Authorization:'Bearer '+c.token,Accept:'application/vnd.github+json','Content-Type':'application/json'}}));
+  if(r.status===401)throw new Error('토큰이 틀렸거나 만료됐어요');
+  if(!r.ok)throw new Error('GitHub 응답 '+r.status);
+  return r.json();
+}
+async function syncRead(c){
+  const g=await ghApi('/gists/'+c.gist);const f=g.files&&g.files[SYNC_FILE];if(!f)throw new Error('동기화 파일이 없어요');
+  return JSON.parse(f.truncated?await (await fetch(f.raw_url,{cache:'no-cache'})).text():f.content);
+}
+async function syncWrite(c,data){
+  const rev=Date.now();
+  await ghApi('/gists/'+c.gist,{method:'PATCH',body:JSON.stringify({files:{[SYNC_FILE]:{content:JSON.stringify({rev,by:c.dev,data})}}})});
+  return rev;
+}
+function onSettings(){try{return view==='set';}catch(e){return false;}}
+// 받아오기 + (이 기기에서 바뀐 게 있으면) 올리기
+async function syncNow(){
+  const c=syncCfg();if(!c||!c.gist)return;
+  if(syncBusy){syncAgain=true;return;}
+  syncBusy=true;clearTimeout(syncT);
+  try{
+    const rem=await syncRead(c),mine=syncData(),dirty=syncHash(mine)!==c.hash;
+    let next=mine,pulled=false;
+    if(rem.rev!==c.rev){next=dirty?syncMerge(mine,rem.data):rem.data;pulled=syncHash(next)!==syncHash(mine);}
+    if(pulled){syncApply(next);syncStore();}
+    c.rev=syncHash(next)!==syncHash(rem.data)?await syncWrite(c,next):rem.rev;
+    c.hash=syncHash(syncData());c.at=Date.now();syncMsg='';syncSave(c);
+    if(pulled){render();flashSaved('다른 기기 기록을 반영했어요');}
+    else if(onSettings())render();
+  }catch(e){syncMsg=e.message||'동기화 실패';if(onSettings())render();}
+  syncBusy=false;
+  if(syncAgain){syncAgain=false;syncSoon();}
+}
+// 기록이 바뀌면 잠깐 모았다가 올리기
+function syncSoon(){try{const c=syncCfg();if(!c||!c.gist)return;if(syncHash(syncData())===c.hash)return;clearTimeout(syncT);syncT=setTimeout(syncNow,1500);}catch(e){}}
+async function syncConnect(token){
+  token=(token||'').trim();if(!token)return;
+  const c={token,dev:Math.random().toString(36).slice(2,8)};syncSave(c);syncMsg='연결 중…';render();
+  try{
+    const list=await ghApi('/gists?per_page=100');
+    const g=list.find(x=>x.description===SYNC_DESC&&x.files&&x.files[SYNC_FILE]);
+    if(g){
+      // 다른 기기가 이미 올려둔 기록을 받아오고, 이 기기에만 있는 날짜는 더한다 (겹치면 올라가 있는 쪽 우선)
+      c.gist=g.id;const rem=await syncRead(c),mine=syncData();
+      const next=syncMerge(rem.data,mine);
+      syncApply(next);syncStore();
+      c.rev=syncHash(next)!==syncHash(rem.data)?await syncWrite(c,next):rem.rev;
+    }else{
+      const rev=Date.now(),data=syncData();
+      const ng=await ghApi('/gists',{method:'POST',body:JSON.stringify({description:SYNC_DESC,public:false,files:{[SYNC_FILE]:{content:JSON.stringify({rev,by:c.dev,data})}}})});
+      c.gist=ng.id;c.rev=rev;
+    }
+    c.hash=syncHash(syncData());c.at=Date.now();syncSave(c);syncMsg='';render();flashSaved('동기화 켜짐 · 이제 모든 기기가 같은 기록을 봐요');
+  }catch(e){syncSave(null);syncMsg='연결 실패: '+(e.message||e);render();}
+}
+function syncOff(){if(!confirm('이 기기의 동기화를 끌까요? 기록은 이 기기에 그대로 남아요.'))return;syncSave(null);syncMsg='';render();}
+function syncBox(){
+  const c=syncCfg(),f=x=>String(x).padStart(2,'0');
+  if(c&&c.gist){const t=c.at?new Date(c.at):null;
+    return `<div class="grow" style="padding:0"><span class="gl">동기화 켜짐<small class="gsub">${syncMsg?hesc(syncMsg):t?`마지막 ${f(t.getHours())}:${f(t.getMinutes())}:${f(t.getSeconds())} · 폰·PC 같은 기록`:'대기 중'}</small></span><button class="btn ghost small" onclick="syncNow()">지금</button><button class="btn ghost small" onclick="syncOff()">끄기</button></div>`;}
+  return `<b>폰 · PC 동기화</b><div class="muted" style="margin-top:4px">GitHub 비공개 Gist에 기록을 저장해서 모든 기기가 같은 기록을 봐요. <a href="https://github.com/settings/tokens/new?scopes=gist&description=%EC%9A%B4%EB%8F%99%EC%95%B1%20%EB%8F%99%EA%B8%B0%ED%99%94" target="_blank" rel="noopener">여기서 토큰 만들기</a> (gist 권한만) 후 붙여넣기. 토큰은 이 기기에만 저장돼요.</div>${syncMsg?`<div class="muted" style="margin-top:6px">${hesc(syncMsg)}</div>`:''}<input id="syncIn" type="password" autocomplete="off" placeholder="ghp_로 시작하는 토큰"><button class="btn primary small" onclick="syncConnect(document.getElementById('syncIn').value)">연결</button>`;
+}
+// 켜져 있는 동안 다른 기기 변경 받아오기
+setTimeout(()=>{syncNow();setInterval(()=>{if(document.visibilityState==='visible')syncNow();},SYNC_POLL);},800);
+document.addEventListener('visibilitychange',()=>{if(syncCfg())syncNow();});
 function maskKey(k){return k?k.slice(0,7)+'…'+k.slice(-4):'';}
 function coachKeyBox(){
   const k=aiKey();
@@ -2561,13 +2653,16 @@ function renderSettings(){
   <div class="set-sec">가이드</div>
   <div class="card glist"><button class="grow" onclick="setView('guide')">${I(C.pink,ico.book)}<span class="gl">운동 원칙 · 연구 근거 · 황철순 채널</span><span class="gv">${ICON_CHEV}</span></button></div>
 
+  <div class="set-sec">동기화</div>
+  <div class="card pad keybox">${syncBox()}</div>
+
   <div class="set-sec">데이터 관리</div>
   <div class="card glist">
     <button class="grow" onclick="exportJSON()">${I(C.blue,ico.down)}<span class="gl">백업 내보내기</span><span class="gv">${ICON_CHEV}</span></button>
     <label class="grow">${I(C.cyan,ico.up)}<span class="gl">백업 불러오기</span><span class="gv">${ICON_CHEV}</span><input type="file" accept="application/json" style="display:none" onchange="importJSON(this.files[0])"></label>
     <button class="grow danger" onclick="resetAll()">${I(C.red,ico.trash)}<span class="gl">모든 기록 초기화</span></button>
   </div>
-  <div class="muted" style="margin:8px 16px 0">기록은 이 기기 브라우저에만 저장돼요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 내보내기 해두세요.</div>
+  <div class="muted" style="margin:8px 16px 0">${syncCfg()?'기록은 이 기기와 GitHub Gist에 함께 저장돼요.':'기록은 이 기기 브라우저에만 저장돼요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 내보내기 해두세요.'}</div>
   <div class="muted center" style="margin:22px 0 4px">운동</div>`;
 }
 
@@ -2786,7 +2881,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793268425';
+const BUILD='1793331249';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
