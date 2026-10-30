@@ -1557,8 +1557,26 @@ function stallBanner(ex,st){
     ?`<div class="stall up"><b>📈 같은 무게 ${st.c}회째 · ${span}</b><span>${ex.assist?'💡 보조를 줄여보세요!':'💡 무게를 증량해보세요!'}</span></div>`
     :`<div class="stall hold"><b>⏸ 같은 무게 ${st.c}회째 · 반복이 안 늘어요</b><span>이번엔 마지막 세트를 끝까지. 다음에도 그대로면 쉬어가거나 종목을 바꿔보세요.</span></div>`;
 }
+// 목표 반복을 3개 이상 넘긴 세트로 "이 힘이면 몇으로 몇 개" 추정 (Epley 1RM, 기구별 최소 증량 단위)
+function wStep(n,w){return /덤벨/.test(n)?(w<10?1:2):/바벨|EZ/.test(n)?2.5:5;}
+function repsAt(e1,w){return Math.max(0,Math.round(30*(e1/w-1)));}
+function overInfo(ex,sets){
+  if(!ex||ex.cardio||ex.assist)return null;
+  const ds=(sets||[]).filter(x=>x&&x.d!==false&&x.w>0&&x.r>0);if(!ds.length)return null;
+  const over=Math.max(...ds.map(x=>x.r))-ex.r[1];if(over<3)return null;
+  const b=ds.reduce((a,x)=>x.w*(1+x.r/30)>a.w*(1+a.r/30)?x:a),e1=b.w*(1+b.r/30),st=wStep(ex.n,b.w);
+  const fix=w=>Math.round(w*100)/100;
+  let w=fix(b.w+st);for(let i=0;i<6&&repsAt(e1,fix(w+st))>=ex.r[0];i++)w=fix(w+st);
+  return {over,w,r:repsAt(e1,w),w2:fix(w+st),r2:repsAt(e1,fix(w+st))};
+}
+// 숫자 뒤 조사: 읽는 소리 끝 받침 기준 (0 십/백, 1 일, 3 삼, 6 육, 7 칠, 8 팔은 받침, ㄹ받침 1·7·8은 '로')
+function numEun(n){return '013678'.includes(String(n).slice(-1))?'은':'는';}
+function numRo(n){const d=String(n).slice(-1);return '036'.includes(d)?'으로':'로';}
+function overText(o){return `목표보다 ${o.over}개 더 했어요 · 이 힘이면 ${o.w}${numRo(o.w)} 약 ${o.r}개 (${o.w2}${numEun(o.w2)} 약 ${o.r2}개)`;}
 function progressionHint(ex, last){
   if(!last||ex.cardio) return '';
+  const ov=overInfo(ex,last.sets);
+  if(ov) return `<span class="hint">💡 ${overText(ov)}</span>`;
   const done=last.sets.filter(s=>s.r!=null);
   if(!done.length) return '';
   const allTop=done.length>=ex.s && done.every(s=>s.r>=ex.r[1]);
@@ -1785,7 +1803,8 @@ function setVal(dayId,exName,k,f,v){
   if(f==='d'&&v){const c0=carrySet(lastLog(dayId,exName)||lastAnyLog(exName),k),dx=exDef(exName),ph=(c0.w!=null||c0.r!=null)?c0:((dx&&dx.def)||{});if(e.sets[k].w==null&&ph.w!=null)e.sets[k].w=ph.w;if(e.sets[k].r==null&&ph.r!=null)e.sets[k].r=ph.r;}
   if(f==='d'&&v&&!log.at){const n=new Date();log.at=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
   if(!store.start) store.start=curDate;
-  save();flashSaved();
+  const ov=f==='d'&&v?overInfo(exDef(exName),[e.sets[k]]):null;
+  save();flashSaved(ov?`💡 ${overText(ov)} · 다음 세트 ${ov.w}${numRo(ov.w)} 가보세요`:undefined);
   if(f==='d') render();
 }
 function setNote(dayId,exName,v){store.notes[exName]=v;const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};e.note=v;save();flashSaved();}
@@ -2199,7 +2218,8 @@ function coachNext(){
   const L=[];
   if(nd)L.push(`다음 운동 (${nd.name}) 종목별 지난 실제 기록 → 앱 기준:\n`+nd.ex.map(e=>{const l=lastReal(e.n);if(!l)return `- ${e.n} ${e.s}×${e.r[0]}~${e.r[1]}: 기록 없음`;
     const ds=l.sets.filter(x=>x&&x.d&&x.r!=null),top=ds.length>0&&ds.every(x=>x.r>=e.r[1]),low=ds.some(x=>x.r<e.r[0]);
-    return `- ${e.n} ${e.s}×${e.r[0]}~${e.r[1]} RIR ${e.rir}, 휴식 ${e.rest}초: ${l.date} ${ds.map(x=>`${x.w??'-'}×${x.r}`).join(', ')} → ${top?(e.assist?'보조 줄일 때':'증량할 때'):low?'같은 무게로 범위 채우기':'같은 무게로 반복 늘리기'}`;}).join('\n'));
+    const ov=overInfo(e,ds);
+    return `- ${e.n} ${e.s}×${e.r[0]}~${e.r[1]} RIR ${e.rir}, 휴식 ${e.rest}초: ${l.date} ${ds.map(x=>`${x.w??'-'}×${x.r}`).join(', ')} → ${top?(e.assist?'보조 줄일 때':'증량할 때'):low?'같은 무게로 범위 채우기':'같은 무게로 반복 늘리기'}${ov?` · ${overText(ov)}(추정)`:''}`;}).join('\n'));
   const lastBy=PROGRAM.map(d=>{const ds=Object.keys(store.logs).filter(x=>x<=t&&store.logs[x].day===d.id&&isDone(store.logs[x])).sort();const x=ds[ds.length-1];return `${d.name} ${x?`${tn-dnum(x)}일 전`:'한 번도 안 함'}`;});
   L.push('요일별 마지막 운동: '+lastBy.join(' · '));
   return L.join('\n\n');
@@ -2270,6 +2290,7 @@ const COACH_SYSTEM=`너는 이 사람을 몇 주째 직접 맡고 있는 퍼스�
 효과 있게:
 - 막연한 말 대신 다음 운동에서 바로 쓸 숫자를 준다: 종목, 무게(기록과 같은 단위), 세트별 목표 반복, RIR, 휴식. 예: "랫풀다운 40으로 12·12·10을 노려보세요. 앞 두 세트가 12면 다음엔 한 칸 올려요."
 - 증량은 최소 단위로(머신·케이블 한 칸, 덤벨 1~2kg). [다음 운동] 목록의 앱 기준과 어긋나게 처방하지 않는다.
+- 목표 반복보다 훨씬 많이 했으면(예: 12~15회 목표인데 20회) 그냥 넘기지 말고 짚는다. 그 무게는 이제 가벼워서 근비대 자극이 떨어진다는 걸 말하고, [다음 운동]의 추정치("이 힘이면 X로 약 Y개")로 다음에 들 무게와 예상 반복을 준다. 추정은 추정이라고 말하고, 첫 세트 결과를 보고 조정하라고 한다.
 - 판단 기준: 부위별 주 10~20세트, 대부분 세트 RIR 0~2, 같은 무게에서 반복이 안 늘면 정체, 체중 변화 속도가 목표 범위를 벗어나면 하루 ±100~200kcal, 단백질 체중당 1.6~2.2g.
 - 가장 큰 병목을 찾는다: 출석·빈도, 오래 빠진 부위(요일별 마지막 운동 참고), 정체 종목, 체지방 추세, 회복. 기록에 문제가 보이면 묻지 않아도 짚는다.
 - [앱이 계산한 분석 지표]는 판단 근거로 쓰고, 숫자를 줄줄 읽어주지 않는다.
@@ -2906,7 +2927,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793334850';
+const BUILD='1793335137';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
