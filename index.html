@@ -1820,7 +1820,7 @@ function renderForm(name, open){
 function setVal(dayId,exName,k,f,v){
   const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};
   for(let i=0;i<=k;i++)if(!e.sets[i])e.sets[i]={};
-  if(f==='d') e.sets[k].d=v; else e.sets[k][f]=v===''?null:Number(v);
+  if(f==='d'){e.sets[k].d=v;if(v)lastSetEx=exName;} else e.sets[k][f]=v===''?null:Number(v);
   if(f==='d'&&v){const c0=carrySet(lastLog(dayId,exName)||lastAnyLog(exName),k),dx=exDef(exName),ph=(c0.w!=null||c0.r!=null)?c0:((dx&&dx.def)||{});if(e.sets[k].w==null&&ph.w!=null)e.sets[k].w=ph.w;if(e.sets[k].r==null&&ph.r!=null)e.sets[k].r=ph.r;}
   if(f==='d'&&v&&!log.at){const n=new Date();log.at=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
   if(!store.start) store.start=curDate;
@@ -2848,11 +2848,16 @@ function askNoti(){ // 처음 타이머를 쓸 때 한 번만 권한 요청 (사
   if(store.notiOff||!('Notification' in window)||Notification.permission!=='default'||store.notiAsked)return;
   store.notiAsked=true;persist();try{Notification.requestPermission().then(()=>render());}catch(e){}
 }
+// 방금 체크한 종목 기준 (기구 자리 때문에 순서를 바꿔 해도 맞게). 다 했으면 그 뒤로 남은 종목
+let lastSetEx=null;
 function nextSetText(){
-  const c=document.querySelector('.card.current');if(!c)return '다음 세트 시작할 시간이에요';
-  const rows=[...c.querySelectorAll('tr')].filter(r=>r.querySelector('.chk'));
-  const i=rows.findIndex(r=>!r.querySelector('.chk').checked);
-  return i<0?`${c.dataset.ex} 끝! 다음 종목으로`:`다음: ${c.dataset.ex} ${i+1}세트`;
+  const cards=[...document.querySelectorAll('.card[data-ex]')];
+  const left=c=>{const rows=[...c.querySelectorAll('tr')].filter(r=>r.querySelector('.chk'));return {i:rows.findIndex(r=>!r.querySelector('.chk').checked),n:rows.length};};
+  let at=cards.findIndex(c=>c.dataset.ex===lastSetEx);if(at<0)at=cards.findIndex(c=>c.classList.contains('current'));
+  if(at<0)return '다음 세트 시작할 시간이에요';
+  const a=left(cards[at]);if(a.i>=0)return `${cards[at].dataset.ex} · ${a.i+1}/${a.n}세트`;
+  for(let k=1;k<cards.length;k++){const c=cards[(at+k)%cards.length],x=left(c);if(x.i>=0)return `${cards[at].dataset.ex} 끝 → ${c.dataset.ex} · ${x.i+1}/${x.n}세트`;}
+  return '오늘 운동 다 했어요! 마무리하세요';
 }
 // 백그라운드 알람: '휴식 시간만큼 무음 + 끝에 삐삐'인 오디오를 재생.
 // 음악이 재생 중인 페이지는 폰이 잠재우지 않아서, 다른 앱을 써도 정확한 시각에 소리·알림이 나옴.
@@ -2952,7 +2957,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793510860';
+const BUILD='1793511765';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
