@@ -1409,7 +1409,6 @@ const ALLDAYS = [
   {n:'힙 어브덕션',s:2,r:[15,20],rir:'3~4',rest:45,warm:true,note:'몸풀기 — 엉덩이 옆을 깨우기만. 타는 느낌 직전에서 멈추고 바로 레그프레스로',v:['leg2']},
   {n:'레그프레스 / 핵스쿼트',s:3,r:[8,12],rir:'1~2',rest:150,note:'엉덩이·허벅지 — 발을 발판 위쪽에 넓게 두고 깊게. 첫 세트 전에 가볍게 웜업 1~2세트',v:['leg1','leg2']},
   {n:'루마니안 데드리프트',s:3,r:[8,10],rir:'1~2',rest:120,note:'데드 80kg 기준 60kg부터. 쿠션 두꺼운 러닝화보다 양말이나 납작한 신발',v:['leg1','sh1']},
-  {n:'힙 쓰러스트',s:3,r:[8,12],rir:'1~2',rest:90,note:'엉덩이 메인 — 머신이 있으면 머신, 없으면 스미스. 처음 1주는 가벼운 무게로 자세만',v:['leg2']},
   {n:'레그 익스텐션',s:3,r:[12,15],rir:'0~1',rest:75,note:'허벅지 앞',v:['leg2']},
   {n:'레그컬 (시티드/라잉)',s:3,r:[10,12],rir:'0~1',rest:75,note:'뒷허벅지 — 앉아서 하는 시티드가 있으면 그걸로',v:['leg2']},
   {n:'카프레이즈',s:2,r:[12,15],rir:'0',rest:60,note:'하단 정지 2초 · 시간 없으면 생략',v:['leg1']},
@@ -2946,7 +2945,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793509129';
+const BUILD='1793510716';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
