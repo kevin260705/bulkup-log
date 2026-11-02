@@ -1829,8 +1829,9 @@ function workTime(l){
   if(!l||!l.t0||!l.t1)return null;
   const min=Math.floor(l.t1/60000)-Math.floor(l.t0/60000);if(min<5)return null;
   const f=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
-  return {from:f(l.t0),to:f(l.t1),min,label:min>=60?`${Math.floor(min/60)}시간 ${min%60}분`:`${min}분`};
+  return {from:f(l.t0),to:f(l.t1),min,label:durLabel(min)};
 }
+function durLabel(min){return min>=60?`${Math.floor(min/60)}시간${min%60?` ${min%60}분`:''}`:`${min}분`;}
 function setVal(dayId,exName,k,f,v){
   const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};
   for(let i=0;i<=k;i++)if(!e.sets[i])e.sets[i]={};
@@ -2036,13 +2037,14 @@ function renderCal(){
     cells+=`<button class="cday ${done?'done':''} ${openDays.has(iso)?'sel':''} ${iso===tISO?'today':''}" onclick="selectDay('${iso}')" aria-label="${dayLabel(iso)}">${iso===tISO?'<span class="tlabel">Today</span>':''}<span class="dot"${done?` style="--c:${DAY_COLOR[l.day]||'var(--primary)'}"`:''}>${d}</span>${markIcons(calFlags(iso))}</button>`;
   }
   const vol=monthLogs.reduce((a,d)=>a+volume(store.logs[d]),0);
+  const workMin=monthLogs.reduce((a,d)=>a+((workTime(store.logs[d])||{}).min||0),0);
   const runDays=Object.keys(store.runs||{}).filter(d=>d.startsWith(prefix)&&runKm(d)).sort(),runSum=runDays.reduce((a,d)=>a+runKm(d),0);
   const legend='<span class="lg"><i style="--c:var(--primary)"></i>운동 완료</span><span class="lg"><span class="mk-l dia"></span>유산소</span><span class="lg">'+BURST+'복근</span><span class="lg"><i class="lg-today"></i>오늘</span>';
   const chev=(d)=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
   return `<div class="calhead"><button class="btn ghost icon" onclick="calMove(-1)" aria-label="이전 달">${chev('m15 18-6-6 6-6')}</button><h2>${calY}년 ${String(calM+1).padStart(2,'0')}월</h2><button class="btn ghost icon" onclick="calMove(1)" aria-label="다음 달">${chev('m9 18 6-6-6-6')}</button></div>
   <div class="card cal"><div class="cgrid">${cells}</div></div>
   <div class="legend">${legend}</div>
-  <div class="msum"><span class="badge sec">이번 달<b>${monthLogs.length}회</b></span><span class="badge sec">총 볼륨<b>${Math.round(vol).toLocaleString()}kg</b></span>${runDays.length?`<span class="badge sec">러닝<b>${runSum.toFixed(1)}km</b></span>`:''}${openDays.size?`<button class="btn ghost small" style="margin-left:auto" onclick="closeAllDays()">모두 접기</button>`:''}</div>
+  <div class="msum"><span class="badge sec">이번 달<b>${monthLogs.length}회</b></span><span class="badge sec">총 볼륨<b>${Math.round(vol).toLocaleString()}kg</b></span><span class="badge sec">총 시간<b>${workMin?durLabel(workMin):'-'}</b></span>${runDays.length?`<span class="badge sec">러닝<b>${runSum.toFixed(1)}km</b></span>`:''}${openDays.size?`<button class="btn ghost small" style="margin-left:auto" onclick="closeAllDays()">모두 접기</button>`:''}</div>
   <div id="calDetail">${renderCalList(monthLogs,prefix,runDays)}</div>`;
 }
 const ICON_DOWN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
@@ -2060,7 +2062,7 @@ function renderCalList(list,prefix,runDays){
   return all.map(d=>{const l=store.logs[d],open=openDays.has(d);
     if(!isDone(l)&&runKm(d)&&!open) return `<div class="crow" id="cr-${d}" onclick="selectDay('${d}',1)" role="button"><div class="cdate"><span class="cdot-w">${markIcons({cardio:true},1)}</span>${+d.slice(8)}일</div><div class="citem"><span class="cname">러닝</span><span class="cmeta">${runKm(d)}km</span><span class="cchev">${ICON_DOWN}</span></div></div>`;
     if(!isDone(l)) return `<div class="cdet" id="cr-${d}">${renderCalDetail(d)}</div>`;
-    return `<div class="crow ${open?'open':''}" id="cr-${d}" onclick="selectDay('${d}',1)" role="button" aria-expanded="${open}"><div class="cdate"><span class="cdot-w"><i style="--c:${DAY_COLOR[l.day]}"></i>${markIcons(calFlags(d),1)}</span>${+d.slice(8)}일</div><div class="citem"><span class="cname">${dayTitle(l.day)}</span><span class="cmeta">${doneSets(l)}세트 · ${Math.round(volume(l,d)).toLocaleString()}kg${runKm(d)?'<br>러닝 '+runKm(d)+'km':''}${workTime(l)?'<br>'+workTime(l).label:l.at?'<br>'+l.at:''}</span><span class="cchev">${ICON_DOWN}</span></div></div>${open?`<div class="cdet">${renderCalDetail(d)}</div>`:''}`;}).join('');
+    return `<div class="crow ${open?'open':''}" id="cr-${d}" onclick="selectDay('${d}',1)" role="button" aria-expanded="${open}"><div class="cdate"><span class="cdot-w"><i style="--c:${DAY_COLOR[l.day]}"></i>${markIcons(calFlags(d),1)}</span>${+d.slice(8)}일</div><div class="citem"><span class="cname">${dayTitle(l.day)}</span><span class="cmeta">${doneSets(l)}세트 · ${Math.round(volume(l,d)).toLocaleString()}kg${runKm(d)?'<br>러닝 '+runKm(d)+'km':''}${workTime(l)?`<br>${workTime(l).from} - ${workTime(l).to}`:l.at?'<br>'+l.at:''}</span><span class="cchev">${ICON_DOWN}</span></div></div>${open?`<div class="cdet">${renderCalDetail(d)}</div>`:''}`;}).join('');
 }
 function renderCalDetail(iso){
   const l=store.logs[iso];
@@ -2977,7 +2979,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793603234';
+const BUILD='1793603728';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
