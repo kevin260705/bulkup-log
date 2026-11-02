@@ -2112,17 +2112,18 @@ function syncData(){const o={};Object.keys(store).forEach(k=>{if(!SYNC_LOCAL.inc
 function syncHash(o){const t=JSON.stringify(o);let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return h+':'+t.length;}
 function syncApply(d){Object.keys(store).forEach(k=>{if(!SYNC_LOCAL.includes(k))delete store[k];});Object.keys(d).forEach(k=>{if(!SYNC_LOCAL.includes(k))store[k]=d[k];});store.logs=store.logs||{};}
 function syncStore(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
-// 두 기기가 따로 고쳤을 때: 날짜별 기록은 더 최근에 고친 쪽, 인바디는 날짜별 합치기, 나머지는 이 기기 우선
-function syncMerge(loc,rem){
-  const out=Object.assign({},rem,loc);
+// 두 기기가 따로 고쳤을 때 합치기. 올라가 있는 값(up)이 기준이고 이 기기(mine)는 없는 것만 채운다 — 새 기기·오래된 탭의 기본값이 진짜 기록을 덮지 않게
+// 날짜별 기록만 예외: 더 최근에 고친 쪽, 같으면 완료 세트가 더 많은 쪽
+function syncMerge(mine,up){
+  const out=Object.assign({},mine);Object.keys(up).forEach(k=>{if(up[k]!=null)out[k]=up[k];});
   const nDone=l=>Object.values(l.ex||{}).reduce((n,e)=>n+(e.sets||[]).filter(x=>x&&x.d).length,0);
-  out.logs=Object.assign({},rem.logs||{});
-  Object.entries(loc.logs||{}).forEach(([d,l])=>{const r=out.logs[d];if(!r||(l.u||0)>(r.u||0)||((l.u||0)===(r.u||0)&&nDone(l)>=nDone(r)))out.logs[d]=l;});
-  const body={};[...(rem.body||[]),...(loc.body||[])].forEach(b=>{body[b.date]=b;});
-  out.body=Object.values(body).sort((a,b)=>a.date<b.date?-1:1);
-  out.notes=Object.assign({},rem.notes||{},loc.notes||{});
-  out.runs=Object.assign({},rem.runs||{},loc.runs||{});
-  if((rem.chat||[]).length>(loc.chat||[]).length)out.chat=rem.chat;
+  out.logs=Object.assign({},up.logs||{});
+  Object.entries(mine.logs||{}).forEach(([d,l])=>{const r=out.logs[d];if(!r||(l.u||0)>(r.u||0)||((l.u||0)===(r.u||0)&&nDone(l)>nDone(r)))out.logs[d]=l;});
+  const byDate=(x,y)=>{const m={};[...(x||[]),...(y||[])].forEach(b=>{m[b.date]=b;});return Object.values(m).sort((p,q)=>p.date<q.date?-1:1);};
+  out.body=byDate(mine.body,up.body);out.bw=byDate(mine.bw,up.bw);
+  out.notes=Object.assign({},mine.notes||{},up.notes||{});
+  out.runs=Object.assign({},mine.runs||{},up.runs||{});
+  if((mine.chat||[]).length>(up.chat||[]).length)out.chat=mine.chat;
   return out;
 }
 async function ghApi(path,opt){
@@ -2169,9 +2170,9 @@ async function syncConnect(token){
     const list=await ghApi('/gists?per_page=100');
     const g=list.find(x=>x.description===SYNC_DESC&&x.files&&x.files[SYNC_FILE]);
     if(g){
-      // 다른 기기가 이미 올려둔 기록을 받아오고, 이 기기에만 있는 날짜는 더한다 (겹치면 올라가 있는 쪽 우선)
+      // 다른 기기가 이미 올려둔 기록을 받아오고, 이 기기에만 있는 날짜는 더한다
       c.gist=g.id;const rem=await syncRead(c),mine=syncData();
-      const next=syncMerge(rem.data,mine);
+      const next=syncMerge(mine,rem.data);
       syncApply(next);syncStore();
       c.rev=syncHash(next)!==syncHash(rem.data)?await syncWrite(c,next):rem.rev;
     }else{
@@ -2192,6 +2193,8 @@ function syncBox(){
 // 켜져 있는 동안 다른 기기 변경 받아오기
 setTimeout(()=>{syncNow();setInterval(()=>{if(document.visibilityState==='visible')syncNow();},SYNC_POLL);},800);
 document.addEventListener('visibilitychange',()=>{if(syncCfg())syncNow();});
+// 다른 탭이 저장하면 이 탭의 기록도 맞춘다 (오래 열어둔 탭이 옛 기록을 올리지 않게)
+window.addEventListener('storage',e=>{if(e.key!==KEY||!e.newValue)return;try{syncApply(JSON.parse(e.newValue));render();}catch(err){}});
 function maskKey(k){return k?k.slice(0,7)+'…'+k.slice(-4):'';}
 function coachKeyBox(){
   const k=aiKey();
@@ -2979,7 +2982,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793603880';
+const BUILD='1793611243';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
