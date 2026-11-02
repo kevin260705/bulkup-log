@@ -1514,12 +1514,12 @@ function dnum(iso){const [y,m,d]=iso.split('-').map(Number);return Math.round(Da
 // 주는 월요일~일요일. dnum 0(1970-01-01)은 목요일 → 월요일 시작 보정 +3
 function monOf(n){return n-((n+3)%7);}
 function weekNo(iso){if(!store.start)return null;return Math.floor((monOf(dnum(iso||today()))-monOf(dnum(store.start)))/7)+1;}
-function isDeload(iso){const w=weekNo(iso);return !!w&&w>0&&w%7===0;}
+function isDeload(iso){const w=weekNo(iso);return !!w&&w>0&&w%7===0&&!(store.skipDeload||[]).includes(w);}
 function weekSessions(){const s0=monOf(dnum(today()));return Object.keys(store.logs).filter(d=>{const n=dnum(d);return n>=s0&&n<s0+7&&isDone(store.logs[d]);}).length;}
 function renderWeek(){
   const el=document.getElementById('weekBadge'),wc=document.getElementById('weekCount');if(!el)return;const w=weekNo(today());
   if(!w||w<1){el.textContent='첫 세트 완료 시 1주차 시작';el.className='';if(wc)wc.textContent='0/'+PROGRAM.length;return;}
-  const dl=w%7===0;
+  const dl=isDeload(today());
   el.textContent=`${w}주차${dl?' · 디로드 주':''}`;el.className=dl?'deload':'';
   if(wc)wc.textContent=`${weekSessions()}/${PROGRAM.length}`;
 }
@@ -2251,6 +2251,8 @@ function coachContext(){
   if(notes.length)L.push('종목 메모: '+notes.map(([k,v])=>`${k}: ${v.trim()}`).join(' / '));
   const runs=Object.entries(store.runs||{}).filter(([d])=>d<=t).sort().slice(-12);
   if(runs.length)L.push('러닝 기록(km): '+runs.map(([d,v])=>`${d} ${v}km`).join(', ')+` · 이번 주 합계 ${runWeekKm().toFixed(1)}km`);
+  if(store.goalText)L.push(`사용자의 목표: ${store.goalText}`);
+  if(store.routineFreeze&&t<=store.routineFreeze)L.push(`루틴 고정 기간: ${store.routineFreeze}까지. 사용자가 정한 약속이다. 이 기간에는 종목·세트 구성을 바꾸자고 제안하지 말고, 무게와 반복 처방, 출석, 회복에 집중한다. 하체 볼륨을 늘리는 건 기간이 끝난 뒤에 다룬다. 몸 변화는 다음 인바디(11월 24일쯤, 공복에 같은 복장) 전까지 단정하지 않는다.`);
   L.push(coachNext());
   L.push(coachAnalytics());
   return L.join('\n\n');
@@ -2982,7 +2984,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793611243';
+const BUILD='1793615134';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
