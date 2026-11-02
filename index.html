@@ -1838,7 +1838,7 @@ function setVal(dayId,exName,k,f,v){
   if(f==='d'){e.sets[k].d=v;if(v)lastSetEx=exName;} else e.sets[k][f]=v===''?null:Number(v);
   if(f==='d'&&v){const c0=carrySet(lastLog(dayId,exName)||lastAnyLog(exName),k),dx=exDef(exName),ph=(c0.w!=null||c0.r!=null)?c0:((dx&&dx.def)||{});if(e.sets[k].w==null&&ph.w!=null)e.sets[k].w=ph.w;if(e.sets[k].r==null&&ph.r!=null)e.sets[k].r=ph.r;}
   if(f==='d'&&v&&!log.at){const n=new Date();log.at=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
-  if(f==='d'&&v)stampWork(log);
+  if((f==='d'&&v)||(f!=='d'&&v!==''&&isCardio(exName)))stampWork(log); // 러닝은 체크 없이 분·km만 적기도 한다
   if(!store.start) store.start=curDate;
   const ov=f==='d'&&v?overInfo(exDef(exName),[e.sets[k]]):null;
   save();flashSaved(ov?`💡 ${overText(ov)} · 다음 세트 ${ov.w}${numRo(ov.w)} 가보세요`:undefined);
@@ -2979,7 +2979,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793603728';
+const BUILD='1793603880';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
