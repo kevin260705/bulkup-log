@@ -1740,7 +1740,7 @@ function renderDay(day){
    day=effDay(day,curDate);if(cs.length)day=Object.assign({},day,{ex:day.ex.concat(cs)});}const dl=isDeload(curDate);
   const log=store.logs[curDate]&&store.logs[curDate].day===day.id?store.logs[curDate]:{ex:{}};
   let totalSets=0,doneSets=0;
-  // 아직 완료 안 된 첫 종목 = 지금 하는 운동 → 자세 설명 자동 펼침
+  // 아직 완료 안 된 첫 종목 = 지금 하는 운동
   const currentIdx=day.ex.findIndex(ex=>{const e=log.ex[ex.n];if(!e)return true;let c=0;const n=nSets(ex,e);for(let k=0;k<n;k++)if(e.sets[k]&&e.sets[k].d)c++;return c<n;});
   const cards=day.ex.map((ex,i)=>{
     const isCurrent=i===currentIdx;
@@ -1769,7 +1769,7 @@ function renderDay(day){
       <h3><span><span class="exn">${i+1}</span>${ex.n}${ex.custom?'<span class="add-badge">추가</span>':''}${ex.warm?'<span class="add-badge">몸풀기</span>':''}${isCurrent?'<span class="cur-badge">진행 중</span>':''}</span><span class="idx">${i+1}/${day.ex.length}</span></h3>
       <div class="target"><span>세트 <b>${N}${extra?`<small class="plus">+${extra}</small>`:''}</b></span>${ex.cardio?`<span>시간 <b>${ex.r[0]}~${ex.r[1]}분</b></span><span style="grid-column:span 2">강도 <b style="font-size:13px">${ex.rir}</b></span>`:`<span>반복 <b>${ex.r[0]===ex.r[1]?ex.r[0]:ex.r[0]+'~'+ex.r[1]}</b></span><span>RIR <b>${ex.rir}</b></span><span>휴식 <b>${ex.rest>=120?(ex.rest/60)+'분':ex.rest+'초'}</b></span>`}</div>
       ${ex.note?`<div class="note">${ex.note}</div>`:''}
-      ${renderForm(ex.n, isCurrent)}
+      ${renderForm(ex.n)}
       <div class="last">지난 기록${last?` (${last.date.slice(5)}): <b>${fmtSets(last.sets)}</b>`:': 없음'} ${progressionHint(ex,last)}</div>
       ${stallBanner(ex,stallInfo(ex))}
       <textarea class="memo-ta" rows="2" placeholder="메모 (느낌, 통증, 다음에 바꿀 것)" oninput="setNote('${day.id}','${esc(ex.n)}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'">${(store.notes[exKey(ex.n)]||'').replace(/</g,'&lt;')}</textarea>
@@ -1811,9 +1811,11 @@ function nextField(e,el){
   if(i>-1&&i<all.length-1){all[i+1].focus();}else el.blur();
 }
 function esc(s){return s.replace(/'/g,"\\'");}
-function renderForm(name, open){
+// 기본은 접힘. 직접 펼친 건 세트 체크로 화면이 다시 그려져도 유지
+const formOpen=new Set();
+function renderForm(name){
   const f=FORM[name]; if(!f) return '';
-  return `<details class="form" ${open?'open':''}><summary>자세 설명</summary>
+  return `<details class="form" ${formOpen.has(name)?'open':''} ontoggle="formOpen[this.open?'add':'delete']('${esc(name)}')"><summary>자세 설명</summary>
     <div class="fbox">
       <div class="frow"><b>준비</b><span>${f.set}</span></div>
       <div class="frow"><b>동작</b><span>${f.do}</span></div>
@@ -1847,7 +1849,7 @@ function setVal(dayId,exName,k,f,v){
   if(!store.start) store.start=curDate;
   const ov=f==='d'&&v?overInfo(exDef(exName),[e.sets[k]]):null;
   save();flashSaved(ov?`💡 ${overText(ov)} · 다음 세트 ${ov.w}${numRo(ov.w)} 가보세요`:undefined);
-  if(f==='d') render();
+  if(f==='d'){render();if(v)scrollAfterSet();}
 }
 function setNote(dayId,exName,v){store.notes[exKey(exName)]=v;const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};e.note=v;save();flashSaved();}
 function finishDay(dayId){
@@ -2882,14 +2884,24 @@ function askNoti(){ // 처음 타이머를 쓸 때 한 번만 권한 요청 (사
 }
 // 방금 체크한 종목 기준 (기구 자리 때문에 순서를 바꿔 해도 맞게). 다 했으면 그 뒤로 남은 종목
 let lastSetEx=null;
-function nextSetText(){
+function nextSetInfo(){
   const cards=[...document.querySelectorAll('.card[data-ex]')];
   const left=c=>{const rows=[...c.querySelectorAll('tr')].filter(r=>r.querySelector('.chk'));return {i:rows.findIndex(r=>!r.querySelector('.chk').checked),n:rows.length};};
   let at=cards.findIndex(c=>c.dataset.ex===lastSetEx);if(at<0)at=cards.findIndex(c=>c.classList.contains('current'));
-  if(at<0)return '다음 세트 시작할 시간이에요';
-  const a=left(cards[at]);if(a.i>=0)return `${cards[at].dataset.ex} · ${a.i+1}/${a.n}세트`;
-  for(let k=1;k<cards.length;k++){const c=cards[(at+k)%cards.length],x=left(c);if(x.i>=0)return `${cards[at].dataset.ex} 끝 → ${c.dataset.ex} · ${x.i+1}/${x.n}세트`;}
-  return '오늘 운동 다 했어요! 마무리하세요';
+  if(at<0)return null;
+  const a=left(cards[at]);if(a.i>=0)return {from:cards[at],card:cards[at],i:a.i,n:a.n};
+  for(let k=1;k<cards.length;k++){const c=cards[(at+k)%cards.length],x=left(c);if(x.i>=0)return {from:cards[at],card:c,i:x.i,n:x.n};}
+  return {from:cards[at],card:null};
+}
+function nextSetText(){
+  const x=nextSetInfo();if(!x)return '다음 세트 시작할 시간이에요';
+  if(!x.card)return '오늘 운동 다 했어요! 마무리하세요';
+  return x.card===x.from?`${x.card.dataset.ex} · ${x.i+1}/${x.n}세트`:`${x.from.dataset.ex} 끝 → ${x.card.dataset.ex} · ${x.i+1}/${x.n}세트`;
+}
+// 한 종목의 마지막 세트를 체크하면 다음 종목을 헤더 바로 아래로. 다 했으면 마무리 버튼으로
+function scrollAfterSet(){
+  const x=nextSetInfo();if(!x||x.card===x.from)return;
+  const c=x.card||document.querySelector('.finish');if(c)requestAnimationFrame(()=>scrollCardTop(c));
 }
 // 백그라운드 알람: '휴식 시간만큼 무음 + 끝에 삐삐'인 오디오를 재생.
 // 음악이 재생 중인 페이지는 폰이 잠재우지 않아서, 다른 앱을 써도 정확한 시각에 소리·알림이 나옴.
@@ -2959,7 +2971,7 @@ function testNoti(){
 }
 function closeRestAlert(go){
   const a=document.getElementById('restAlert');if(a){a.classList.remove('on');raReset(a);}
-  if(go){const c=document.querySelector('.card.current');if(c)scrollCardTop(c);}
+  if(go){const x=nextSetInfo(),c=x&&x.card||document.querySelector('.card.current');if(c)scrollCardTop(c);}
 }
 function restMore(sec){closeRestAlert();startTimer(sec);}
 // 휴식 끝 알림은 옆이나 위로 밀어서 닫기
@@ -2989,7 +3001,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793692184';
+const BUILD='1793692897';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
