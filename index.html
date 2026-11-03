@@ -1487,6 +1487,8 @@ if(!store.quickFilled){setTimeout(()=>{Object.keys(store.logs).sort().forEach(d=
 if(store.restSel!=null){delete store.restSel;}
 // 랫풀다운 (와이드) → 랫풀다운: 지난 기록·메모를 새 이름으로 옮기기
 if(!store.latRenamed){const O='랫풀다운 (와이드)',N='랫풀다운';Object.values(store.logs||{}).forEach(l=>{if(l.ex&&l.ex[O]&&!l.ex[N]){l.ex[N]=l.ex[O];delete l.ex[O];}(l.custom||[]).forEach(c=>{if(c.n===O)c.n=N;});});if(store.notes&&store.notes[O]&&!store.notes[N]){store.notes[N]=store.notes[O];delete store.notes[O];}store.latRenamed=true;}
+// 사이드 레터럴 메모를 이름 하나로 합치기
+if(!store.notesAlias1){const O='사이드 레터럴 (머신/덤벨)',N='덤벨 사이드 레터럴',o=((store.notes||{})[O]||'').trim();if(o){const n=(store.notes[N]||'').trim();store.notes[N]=n?n+'\n'+o:o;}if(store.notes)delete store.notes[O];store.notesAlias1=true;}
 if(!store.notesMigrated){Object.keys(store.logs).sort().forEach(d=>Object.entries(store.logs[d].ex||{}).forEach(([n,e])=>{if(e&&e.note&&e.note.trim())store.notes[n]=e.note;}));store.notesMigrated=true;}
 // 인바디 2026-09-30 (체중 73.7 · 골격근 33.9 · 체지방량 13.7kg → 18.6%) 한 번만 추가
 if(!store.inbody0930){store.body=(store.body||[]).filter(x=>x.date!=='2026-09-30');store.body.push({date:'2026-09-30',w:73.7,smm:33.9,bf:18.6});store.inbody0930=true;}
@@ -1548,14 +1550,15 @@ function suggestDay(){
 }
 
 // ---------- 지난 기록 찾기 ----------
+// 이름만 다르고 같은 운동. 기록과 메모를 함께 쓴다
+const EX_ALIAS={'사이드 레터럴 (머신/덤벨)':'덤벨 사이드 레터럴'};
+function exKey(n){return EX_ALIAS[n]||n;}
+// 루틴 요일과 상관없이 그 운동의 가장 최근 기록
 function lastAnyLog(exName){
-  const dates=Object.keys(store.logs).filter(d=>d<curDate&&store.logs[d].ex[exName]&&store.logs[d].ex[exName].sets.some(s=>s&&(s.w!=null||s.r!=null))).sort().reverse();
-  return dates.length?{date:dates[0],...store.logs[dates[0]].ex[exName]}:null;
-}
-function lastLog(dayId, exName){
-  const dates=Object.keys(store.logs).filter(d=>d<curDate && store.logs[d].day===dayId && store.logs[d].ex[exName]).sort().reverse();
-  if(!dates.length) return null;
-  return {date:dates[0], ...store.logs[dates[0]].ex[exName]};
+  const key=exKey(exName),has=e=>e&&e.sets.some(s=>s&&(s.w!=null||s.r!=null));
+  const hit=d=>Object.keys(store.logs[d].ex).find(n=>exKey(n)===key&&has(store.logs[d].ex[n]));
+  const dates=Object.keys(store.logs).filter(d=>d<curDate&&hit(d)).sort().reverse();
+  return dates.length?{date:dates[0],...store.logs[dates[0]].ex[hit(dates[0])]}:null;
 }
 function fmtSets(sets){return (sets||[]).filter(s=>s&&(s.w!=null||s.r!=null)).map(s=>`${s.w??'-'}×${s.r??'-'}`).join(', ')||'-';}
 // 같은 무게 정체 감지: 최근 기록이 같은 무게로 3회 이상 이어졌는지
@@ -1616,7 +1619,7 @@ function renderTabs(){
   const done=doneTodayId(),next=nextDay();
   document.getElementById('tabs').innerHTML=
     PROGRAM.map(p=>`<button class="tab ${p.id===curTab?'active':''}" style="--c:${DAY_COLOR[p.id]}" onclick="curTab='${p.id}';render()"><i></i>${p.short}${p.id===done?'<em class="done">완료</em>':p.id===next&&p.id!==curTab?`<em>${done?'다음':'추천'}</em>`:''}</button>`).join('')
-    +`<button class="tab ${curTab==='run'?'active':''}" onclick="curTab='run';render()"><i></i>러닝${(store.runs||{})[today()]?'<em class="done">완료</em>':''}</button>`;
+    +`<button class="tab ${curTab==='run'?'active':''}" onclick="curTab='run';render()"><i></i>러닝${runKm(today())?'<em class="done">완료</em>':''}</button>`;
 }
 
 // ---------- 운동일 화면 ----------
@@ -1647,10 +1650,12 @@ function isCardio(name){const d=exDef(name);return !!(d&&d.cardio)||CARDIO_RE.te
 function isAbs(name){const d=exDef(name);return !!(d&&d.abs)||ABS_RE.test(name);}
 // 그날 복근·유산소 완료 여부 (달력 문양용)
 // 달력용: 근력 기록 + 러닝 기록(store.runs)을 합쳐서
-function runKm(iso){return (store.runs||{})[iso]||0;}
+// 러닝 탭 입력(store.runs)과 운동 탭의 러닝 종목 중 큰 값 (같은 러닝을 양쪽에 적어도 두 번 세지 않게)
+function runKm(iso){const l=store.logs[iso];let km=0;if(l)Object.entries(l.ex||{}).forEach(([n,e])=>{if(/러닝|달리기/.test(n))(e.sets||[]).forEach(x=>{if(x&&x.r>0)km+=x.r;});});return Math.max((store.runs||{})[iso]||0,Math.round(km*100)/100);}
+function runDates(){return [...new Set([...Object.keys(store.runs||{}),...Object.keys(store.logs)])].filter(d=>runKm(d)>0).sort();}
 function calFlags(iso){const f=dayFlags(store.logs[iso]);if(runKm(iso))f.cardio=true;return f;}
 function dayFlags(l){const f={cardio:false,abs:false};if(!l)return f;
-  Object.entries(l.ex).forEach(([n,e])=>{if(!e.sets.some(x=>x&&x.d))return;if(isCardio(n))f.cardio=true;if(isAbs(n))f.abs=true;});return f;}
+  Object.entries(l.ex).forEach(([n,e])=>{if(isCardio(n)&&e.sets.some(x=>x&&(x.d||x.w>0||x.r>0)))f.cardio=true;if(isAbs(n)&&e.sets.some(x=>x&&x.d))f.abs=true;});return f;}
 function carrySet(last,k){if(!last)return {};const v=last.sets.filter(x=>x&&(x.w!=null||x.r!=null));return last.sets[k]&&(last.sets[k].w!=null||last.sets[k].r!=null)?last.sets[k]:(v[v.length-1]||{});}
 // 종목 세트 수 = 기본 세트 + 이 날 추가한 세트
 function nSets(ex,e){return ex.s+((e&&e.extra)||0);}
@@ -1716,7 +1721,7 @@ function removeCustomEx(dayId,name){
   log.custom=(log.custom||[]).filter(c=>c.n!==name);delete log.ex[name];save();render();
 }
 // ---------- 러닝: 날짜별 거리(km)만 기록 ----------
-function runWeekKm(){const s0=monOf(dnum(today()));return Object.entries(store.runs||{}).filter(([d])=>{const n=dnum(d);return n>=s0&&n<s0+7;}).reduce((a,[,v])=>a+v,0);}
+function runWeekKm(){const s0=monOf(dnum(today()));return runDates().filter(d=>{const n=dnum(d);return n>=s0&&n<s0+7;}).reduce((a,d)=>a+runKm(d),0);}
 function setRun(v){store.runs=store.runs||{};const x=parseFloat(v);if(x>0)store.runs[curDate]=Math.round(x*100)/100;else delete store.runs[curDate];persist();
   const w=document.getElementById('runWeek');if(w)w.textContent=runWeekKm().toFixed(1);renderTabs();if(typeof centerTab==='function')centerTab();}
 function renderRun(){
@@ -1740,7 +1745,7 @@ function renderDay(day){
   const cards=day.ex.map((ex,i)=>{
     const isCurrent=i===currentIdx;
     const e=log.ex[ex.n]||{sets:[],note:''};
-    const last=ex.custom?lastAnyLog(ex.n):(lastLog(day.id,ex.n)||lastAnyLog(ex.n));
+    const last=lastAnyLog(ex.n);
     const N=nSets(ex,e),extra=N-ex.s;
     totalSets+=N;
     const rows=[];
@@ -1757,7 +1762,7 @@ function renderDay(day){
       </tr>`);
     }
     // 지난번에 추가했던 세트: 흐린 줄로 보여주고 누르면 활성화
-    const lastN=last?ex.s+(last.extra||0):0;
+    const lastN=last&&store.logs[last.date].day===day.id?ex.s+(last.extra||0):0;
     for(let k=N;k<lastN;k++){const ls=(last.sets||[])[k]||{};
       rows.push(`<tr class="ghostrow" onclick="addSet('${day.id}','${esc(ex.n)}')" role="button" aria-label="${k+1}세트 활성화"><td><span class="sn">${k+1}</span></td><td colspan="2"><span class="gtext">지난번 추가한 세트${ls.w!=null?` · ${ls.w}${ex.assist?'lb':'kg'} × ${ls.r??'-'}`:''}</span></td><td><span class="gadd">+</span></td></tr>`);}
     return `<div class="card ${isCurrent?'current':''}" id="ex${i}" data-ex="${ex.n.replace(/"/g,'&quot;')}" style="--c:${DAY_COLOR[day.id]}">
@@ -1767,7 +1772,7 @@ function renderDay(day){
       ${renderForm(ex.n, isCurrent)}
       <div class="last">지난 기록${last?` (${last.date.slice(5)}): <b>${fmtSets(last.sets)}</b>`:': 없음'} ${progressionHint(ex,last)}</div>
       ${stallBanner(ex,stallInfo(ex))}
-      <textarea class="memo-ta" rows="2" placeholder="메모 (느낌, 통증, 다음에 바꿀 것)" oninput="setNote('${day.id}','${esc(ex.n)}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'">${(store.notes[ex.n]||'').replace(/</g,'&lt;')}</textarea>
+      <textarea class="memo-ta" rows="2" placeholder="메모 (느낌, 통증, 다음에 바꿀 것)" oninput="setNote('${day.id}','${esc(ex.n)}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'">${(store.notes[exKey(ex.n)]||'').replace(/</g,'&lt;')}</textarea>
       <table><tr><th>${ex.cardio?'회차':'세트'}</th><th>${ex.cardio?'시간(분)':ex.assist?'보조 lb':'kg'}</th><th>${ex.cardio?'거리(km)':'회'}</th><th>완료</th></tr>${rows.join('')}</table>
       <div class="setbtns"><button class="btn small tint" onclick="addSet('${day.id}','${esc(ex.n)}')">+ 세트 추가</button>${extra>0?`<button class="delx" onclick="delSetAt('${day.id}','${esc(ex.n)}',${N-1})">− 추가한 세트 삭제</button>`:''}</div>
       ${ex.assist?assistNote(e,last,curDate):''}
@@ -1836,7 +1841,7 @@ function setVal(dayId,exName,k,f,v){
   const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};
   for(let i=0;i<=k;i++)if(!e.sets[i])e.sets[i]={};
   if(f==='d'){e.sets[k].d=v;if(v)lastSetEx=exName;} else e.sets[k][f]=v===''?null:Number(v);
-  if(f==='d'&&v){const c0=carrySet(lastLog(dayId,exName)||lastAnyLog(exName),k),dx=exDef(exName),ph=(c0.w!=null||c0.r!=null)?c0:((dx&&dx.def)||{});if(e.sets[k].w==null&&ph.w!=null)e.sets[k].w=ph.w;if(e.sets[k].r==null&&ph.r!=null)e.sets[k].r=ph.r;}
+  if(f==='d'&&v){const c0=carrySet(lastAnyLog(exName),k),dx=exDef(exName),ph=(c0.w!=null||c0.r!=null)?c0:((dx&&dx.def)||{});if(e.sets[k].w==null&&ph.w!=null)e.sets[k].w=ph.w;if(e.sets[k].r==null&&ph.r!=null)e.sets[k].r=ph.r;}
   if(f==='d'&&v&&!log.at){const n=new Date();log.at=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
   if((f==='d'&&v)||(f!=='d'&&v!==''&&isCardio(exName)))stampWork(log); // 러닝은 체크 없이 분·km만 적기도 한다
   if(!store.start) store.start=curDate;
@@ -1844,14 +1849,14 @@ function setVal(dayId,exName,k,f,v){
   save();flashSaved(ov?`💡 ${overText(ov)} · 다음 세트 ${ov.w}${numRo(ov.w)} 가보세요`:undefined);
   if(f==='d') render();
 }
-function setNote(dayId,exName,v){store.notes[exName]=v;const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};e.note=v;save();flashSaved();}
+function setNote(dayId,exName,v){store.notes[exKey(exName)]=v;const log=getLog(dayId);const e=log.ex[exName]=log.ex[exName]||{sets:[],note:''};e.note=v;save();flashSaved();}
 function finishDay(dayId){
   const log=getLog(dayId);
   // 빈 칸은 placeholder(지난 기록) 값으로 채움
   const day=ALLDAYS.find(d=>d.id===dayId);
   day.ex.forEach(ex=>{
     const e=log.ex[ex.n]=log.ex[ex.n]||{sets:[],note:''};
-    const last=lastLog(dayId,ex.n);
+    const last=lastAnyLog(ex.n);
     for(let k=0;k<nSets(ex,e);k++){
       for(let i=0;i<k;i++)if(!e.sets[i])e.sets[i]={};const s=e.sets[k]=e.sets[k]||{};
       if(s.d){ if(s.w==null&&last&&last.sets[k]) s.w=last.sets[k].w; if(s.r==null&&last&&last.sets[k]) s.r=last.sets[k].r; }
@@ -2038,7 +2043,7 @@ function renderCal(){
   }
   const vol=monthLogs.reduce((a,d)=>a+volume(store.logs[d]),0);
   const workMin=monthLogs.reduce((a,d)=>a+((workTime(store.logs[d])||{}).min||0),0);
-  const runDays=Object.keys(store.runs||{}).filter(d=>d.startsWith(prefix)&&runKm(d)).sort(),runSum=runDays.reduce((a,d)=>a+runKm(d),0);
+  const runDays=runDates().filter(d=>d.startsWith(prefix)),runSum=runDays.reduce((a,d)=>a+runKm(d),0);
   const legend='<span class="lg"><i style="--c:var(--primary)"></i>운동 완료</span><span class="lg"><span class="mk-l dia"></span>유산소</span><span class="lg">'+BURST+'복근</span><span class="lg"><i class="lg-today"></i>오늘</span>';
   const chev=(d)=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
   return `<div class="calhead"><button class="btn ghost icon" onclick="calMove(-1)" aria-label="이전 달">${chev('m15 18-6-6 6-6')}</button><h2>${calY}년 ${String(calM+1).padStart(2,'0')}월</h2><button class="btn ghost icon" onclick="calMove(1)" aria-label="다음 달">${chev('m9 18 6-6-6-6')}</button></div>
@@ -2056,7 +2061,7 @@ function markIcons(f,small){
 function renderCalList(list,prefix,runDays){
   // 기록 있는 날 + 달력에서 연 빈 날(기록하기 버튼용)
   const emptyOpen=[...openDays].filter(d=>(!prefix||d.startsWith(prefix))&&!isDone(store.logs[d]));
-  runDays=runDays||Object.keys(store.runs||{}).filter(d=>(!prefix||d.startsWith(prefix))&&runKm(d));
+  runDays=runDays||runDates().filter(d=>!prefix||d.startsWith(prefix));
   const all=[...new Set(list.concat(emptyOpen,runDays))].sort();
   if(!all.length) return `<div class="card muted" style="text-align:center">이번 달 운동 기록이 없어요.<br>루틴 화면에서 세트를 완료하면 여기 표시됩니다.</div>`;
   return all.map(d=>{const l=store.logs[d],open=openDays.has(d);
@@ -2249,7 +2254,7 @@ function coachContext(){
   if(stalls.length)L.push('같은 무게가 이어지는 종목: '+stalls.map(s=>`${s.n} ${s.c}회째(${s.days}일)${s.up?' · 반복 수 충분, 증량 시점':' · 반복 수 정체'}`).join(' / '));
   const notes=Object.entries(store.notes||{}).filter(([,v])=>v&&v.trim());
   if(notes.length)L.push('종목 메모: '+notes.map(([k,v])=>`${k}: ${v.trim()}`).join(' / '));
-  const runs=Object.entries(store.runs||{}).filter(([d])=>d<=t).sort().slice(-12);
+  const runs=runDates().filter(d=>d<=t).slice(-12).map(d=>[d,runKm(d)]);
   if(runs.length)L.push('러닝 기록(km): '+runs.map(([d,v])=>`${d} ${v}km`).join(', ')+` · 이번 주 합계 ${runWeekKm().toFixed(1)}km`);
   if(store.goalText)L.push(`사용자의 목표: ${store.goalText}`);
   if(store.routineFreeze&&t<=store.routineFreeze)L.push(`루틴 고정 기간: ${store.routineFreeze}까지. 사용자가 정한 약속이다. 이 기간에는 종목·세트 구성을 바꾸자고 제안하지 말고, 무게와 반복 처방, 출석, 회복에 집중한다. 하체 볼륨을 늘리는 건 기간이 끝난 뒤에 다룬다. 몸 변화는 다음 인바디(11월 24일쯤, 공복에 같은 복장) 전까지 단정하지 않는다.`);
@@ -2984,7 +2989,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793615134';
+const BUILD='1793692184';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
