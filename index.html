@@ -2620,7 +2620,7 @@ function tileHTML(k,label,unit,good){
 const FIXED_MEALS=[
   {t:'아침',n:'한끼통살 폭탄볶음밥 1봉',k:535,p:40,c:64,f:13},
   {t:'간식',n:'한끼통살 폭탄볶음밥 1봉',k:535,p:40,c:64,f:13},
-  {t:'저녁',n:'파스타 (면 100g + 소스 200g)',k:559,p:28,c:81,f:14.1},
+  {t:'저녁',n:'파스타 (면 110g + 소스 200g)',k:595,p:29.3,c:88.3,f:14.3},
   {t:'저녁',n:'목살 200g',k:360,p:40.4,c:2.6,f:19},
 ];
 const LUNCH_REF={n:'제육덮밥 1인분',k:800,p:30,c:110,f:25};
@@ -3009,7 +3009,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793693452';
+const BUILD='1793790596';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
