@@ -1963,6 +1963,8 @@ let tInt=null,tLeft=0,tEnd=0,tTotal=0,tRaf=0;
 let restEndLabel='',mediaLeft=-1;
 // 안드로이드 앱(BulkupLog) 안에서 열렸을 때만 있는 네이티브 연결. 휴식 알림을 시스템 타이머로 띄운다
 const NATIVE=window.BulkupNative||null;
+function nativeReminderSupported(){return !!NATIVE&&typeof NATIVE.setWorkoutReminders==='function';}
+function workoutRemindersOn(){return nativeReminderSupported()?!!NATIVE.workoutRemindersEnabled():!!store.pushSub;}
 // 이 화면이 직접 시작한 휴식만 알림을 띄운다 (같은 사이트를 앱·크롬 탭에서 동시에 열어도 알림 하나만)
 let ownTimer=false;
 let tTo=0;
@@ -2684,6 +2686,7 @@ function renderData(){
 function setProfile(k,v,re){store.profile[k]=['age','height','freq'].includes(k)?(v===''?null:Number(v)):v;if(k==='freq'){applyPlan();if(!PROGRAM.some(d=>d.id===curTab))curTab=null;}save();if(re)render();else{flashSaved();renderNav();}}
 function notiState(){
   if(store.notiOff)return '꺼짐';
+  if(nativeReminderSupported())return NATIVE.notificationsEnabled()?'앱을 닫아도 알림':'휴대폰 설정에서 운동 앱 알림을 허용해 주세요';
   if(!('Notification' in window))return '화면 알림만 (이 브라우저는 시스템 알림 미지원)';
   if(Notification.permission==='granted')return '다른 앱 사용 중에도 소리·알림';
   if(Notification.permission==='denied')return '화면 알림만 · 브라우저 설정에서 알림 허용 필요';
@@ -2737,16 +2740,16 @@ function renderSettings(){
   <div class="muted" style="margin:8px 16px 0">주 ${pr.freq||5}회 · ${PLAN_DESC[pr.freq||5]}</div>
   <div class="set-sec">알림 설정 · 다른 앱 위에 뜨게</div>
   <div class="card glist">
-    <div class="grow">${I(C.gray,ico.bell)}<span class="gl">알림 권한<small class="gsub">${({granted:'허용됨 ✓',denied:'차단됨 · 아래 방법으로 허용해 주세요',default:'아직 설정 안 함',unsupported:'이 브라우저는 알림 미지원'})[notiPerm()]}</small></span>${notiPerm()==='default'?'<button class="btn primary small" onclick="reqNoti()">허용하기</button>':notiPerm()==='granted'?'<span class="gv" style="color:hsl(var(--primary));font-weight:600">켜짐</span>':''}</div>
+    <div class="grow">${I(C.gray,ico.bell)}<span class="gl">알림 권한<small class="gsub">${({granted:'허용됨 ✓',denied:'차단됨 · 아래 방법으로 허용해 주세요',default:'아직 설정 안 함',unsupported:'이 브라우저는 알림 미지원'})[notiPerm()]}</small></span>${notiPerm()==='default'||(nativeReminderSupported()&&notiPerm()==='denied')?'<button class="btn primary small" onclick="reqNoti()">설정 열기</button>':notiPerm()==='granted'?'<span class="gv" style="color:hsl(var(--primary));font-weight:600">켜짐</span>':''}</div>
     <div class="grow">${I(C.gray,ico.flag)}<span class="gl">플로팅 타이머<small class="gsub">${pipSupported()?'휴식 중 계속 떠 있는 작은 창 (기본 꺼짐)':'이 폰(브라우저)은 미지원 · 팝업 알림을 써주세요'}</small></span>${pipSupported()?`<button class="sw ${pipOn()?'on':''}" onclick="setPip(${pipOn()?'false':'true'})" aria-label="플로팅 타이머"></button>`:''}</div>
     ${pipSupported()?'<button class="grow" onclick="testPip()">'+I(C.gray,ico.flag)+'<span class="gl">플로팅 타이머 테스트<small class="gsub">10초 타이머 · 홈 화면으로 나가서 확인</small></span><span class="gv">'+ICON_CHEV+'</span></button>':''}
-    ${pushSupported()?`<div class="grow">${I(C.gray,ico.bell)}<span class="gl">운동 알림<small class="gsub">${store.pushSub?PUSH_TIMES+' · 오늘의 한 문장':PUSH_TIMES+' · 앱을 꺼둬도 와요'}</small></span><button class="sw ${store.pushSub?'on':''}" onclick="setPush(${store.pushSub?'false':'true'})" aria-label="운동 알림"></button></div>
-    ${store.pushSub?`<button class="grow" onclick="copyPush()">${I(C.gray,ico.flag)}<span class="gl">연결 코드 복사<small class="gsub">${pushCopied?'복사됨 ✓ · Claude에게 붙여넣어 주세요':'처음 한 번만 Claude에게 전달'}</small></span><span class="gv">${ICON_CHEV}</span></button>`:''}`:''}
-    <button class="grow" onclick="testNoti()">${I(C.gray,ico.flag)}<span class="gl">알림 테스트<small class="gsub">누르고 5초 안에 홈 화면으로 나가보세요</small></span><span class="gv">${ICON_CHEV}</span></button>
+    ${pushSupported()?`<div class="grow">${I(C.gray,ico.bell)}<span class="gl">운동 알림<small class="gsub">${PUSH_TIMES} · 오늘의 한 문장${nativeReminderSupported()?' · 앱에서 직접 예약':''}</small></span><button class="sw ${workoutRemindersOn()?'on':''}" onclick="setPush(${workoutRemindersOn()?'false':'true'})" aria-label="운동 알림"></button></div>
+    ${!nativeReminderSupported()&&store.pushSub?`<button class="grow" onclick="copyPush()">${I(C.gray,ico.flag)}<span class="gl">연결 코드 복사<small class="gsub">${pushCopied?'복사됨 ✓ · Claude에게 붙여넣어 주세요':'처음 한 번만 Claude에게 전달'}</small></span><span class="gv">${ICON_CHEV}</span></button>`:''}`:''}
+    <button class="grow" onclick="testNoti()">${I(C.gray,ico.flag)}<span class="gl">알림 테스트<small class="gsub">${nativeReminderSupported()?'운동 알림을 지금 바로 보내요':'누르고 5초 안에 홈 화면으로 나가보세요'}</small></span><span class="gv">${ICON_CHEV}</span></button>
   </div>
   <div class="card pad" style="margin-top:10px">
     <details class="tbl" ${notiPerm()==='granted'?'':'open'}><summary>갤럭시에서 팝업으로 뜨게 하는 법</summary><div class="pcalc steps">
-      ${notiPerm()==='denied'?`<p><b>0. 차단 풀기</b> 크롬에서 이 앱 주소를 열고, 주소창 왼쪽 <b>자물쇠(또는 ⓘ)</b> → <b>권한</b> → <b>알림</b> → <b>허용</b></p>`:''}
+      ${notiPerm()==='denied'?`<p><b>0. 차단 풀기</b> ${nativeReminderSupported()?'위의 설정 열기 → 운동 앱 알림 허용':'크롬에서 이 앱 주소를 열고, 주소창 왼쪽 <b>자물쇠(또는 ⓘ)</b> → <b>권한</b> → <b>알림</b> → <b>허용'}</p>`:''}
       <p style="color:hsl(var(--primary));font-weight:600">가장 빠른 방법</p>
       <p><b>①</b> 아래 <b>알림 테스트</b>로 알림을 받기</p>
       <p><b>②</b> 알림창에서 그 알림을 <b>길게 누르기</b> → <b>⚙ 알림 설정</b></p>
@@ -2863,10 +2866,11 @@ function setPip(on){store.pipOn=on;persist();render();}
 
 // ---------- 휴식 종료 알림 (화면 위 플로팅 + 백그라운드 시스템 알림) ----------
 let swReg=null;
-function pushSupported(){return 'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;}
+function pushSupported(){return nativeReminderSupported()||('serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window);}
 function b64u(t){t=t.replace(/-/g,'+').replace(/_/g,'/');t+='='.repeat((4-t.length%4)%4);return Uint8Array.from(atob(t),c=>c.charCodeAt(0));}
 async function setPush(on){
   try{
+    if(nativeReminderSupported()){NATIVE.setWorkoutReminders(on);render();return;}
     const reg=swReg||await navigator.serviceWorker.ready;
     if(on){
       if(Notification.permission!=='granted'&&await Notification.requestPermission()!=='granted'){render();return;}
@@ -2968,11 +2972,12 @@ function sendNoti(title,body,force){
   if(swReg)go(swReg);else if('serviceWorker' in navigator)navigator.serviceWorker.ready.then(go).catch(()=>go(null));else go(null);
   return true;
 }
-function isApp(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;}
-function notiPerm(){return 'Notification' in window?Notification.permission:'unsupported';}
-function reqNoti(){if(!('Notification' in window))return;try{Notification.requestPermission().then(()=>render());}catch(e){}}
+function isApp(){return !!NATIVE||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;}
+function notiPerm(){return nativeReminderSupported()?(NATIVE.notificationsEnabled()?'granted':'denied'):('Notification' in window?Notification.permission:'unsupported');}
+function reqNoti(){if(nativeReminderSupported()){NATIVE.openNotificationSettings();return;}if(!('Notification' in window))return;try{Notification.requestPermission().then(()=>render());}catch(e){}}
 function testNoti(){
   if(notiPerm()!=='granted'){reqNoti();return;}
+  if(nativeReminderSupported()){NATIVE.testWorkoutReminder();flashSaved('오늘의 한 문장 알림을 보냈어요');return;}
   armAudio(5);
   flashSaved('5초 뒤 알림이 와요 · 지금 홈 화면이나 다른 앱으로 나가보세요');
   setTimeout(()=>{disarmAudio();sendNoti('알림 테스트','휴식이 끝나면 이렇게 알려드려요',true);},5000);
@@ -3009,7 +3014,7 @@ function setNoti(on){
 }
 window.addEventListener('pagehide',saveNow);
 // ---------- 새 버전 자동 적용: 앱을 열거나 돌아올 때 서버 버전과 비교해서 다르면 새로고침 (기록은 그대로) ----------
-const BUILD='1793790596';
+const BUILD='1794279644';
 let lastVerCheck=0;
 function checkUpdate(){
   if(location.protocol==='file:'||Date.now()-lastVerCheck<30000)return;lastVerCheck=Date.now();
