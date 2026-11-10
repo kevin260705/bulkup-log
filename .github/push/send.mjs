@@ -1,5 +1,5 @@
 // 운동 알림 푸시 발송 (GitHub Actions에서 실행)
-import webpush from 'web-push';
+import * as webpush from 'web-push';
 import fs from 'fs';
 import { execSync } from 'child_process';
 
